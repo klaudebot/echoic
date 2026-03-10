@@ -15,24 +15,26 @@ export default function MarketingLayout({
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="wave-bar w-[3px] rounded-full bg-brand-violet"
-                    style={{ height: `${12 + Math.random() * 12}px` }}
-                  />
-                ))}
-              </div>
-              <span className="font-heading text-2xl tracking-tight text-foreground">
-                Echoic
-              </span>
-            </Link>
+          <div className="flex h-16 items-center">
+            {/* Logo — fixed width left column */}
+            <div className="flex-1">
+              <Link href="/" className="inline-flex items-center gap-2.5">
+                <div className="flex items-center gap-1">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="wave-bar w-[3px] rounded-full bg-brand-violet"
+                      style={{ height: `${12 + Math.random() * 12}px` }}
+                    />
+                  ))}
+                </div>
+                <span className="font-heading text-2xl tracking-tight text-foreground">
+                  Echoic
+                </span>
+              </Link>
+            </div>
 
-            {/* Desktop Nav */}
+            {/* Desktop Nav — true center */}
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Features
@@ -45,8 +47,8 @@ export default function MarketingLayout({
               </a>
             </div>
 
-            {/* Desktop CTAs */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Desktop CTAs — fixed width right column */}
+            <div className="hidden md:flex flex-1 items-center justify-end gap-3">
               <Link
                 href="/sign-in"
                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

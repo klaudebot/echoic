@@ -8,8 +8,6 @@ import {
   Pause,
   Play,
   ArrowLeft,
-  Clock,
-  Save,
   CheckCircle2,
 } from "lucide-react";
 

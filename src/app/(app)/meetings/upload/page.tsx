@@ -41,12 +41,26 @@ export default function UploadPage() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
-    // Simulate file selection
-    setFile({ name: "team-standup-2026-03-10.mp4", size: 45_200_000, type: "video/mp4" });
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      setFile({ name: droppedFile.name, size: droppedFile.size, type: droppedFile.type });
+    }
   }, []);
 
   const handleFileSelect = useCallback(() => {
-    setFile({ name: "team-standup-2026-03-10.mp4", size: 45_200_000, type: "video/mp4" });
+    // In production, this would open a file picker
+    // For now, simulate with a placeholder
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "audio/*,video/*";
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      const selectedFile = target.files?.[0];
+      if (selectedFile) {
+        setFile({ name: selectedFile.name, size: selectedFile.size, type: selectedFile.type });
+      }
+    };
+    input.click();
   }, []);
 
   const startUpload = useCallback(() => {

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AppLink } from "@/components/DemoContext";
 import {
-  Settings,
   User,
   Bell,
   Languages,
@@ -21,13 +21,13 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: b
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`relative w-10 h-5.5 rounded-full transition-colors ${
+      className={`relative rounded-full transition-colors ${
         checked ? "bg-brand-violet" : "bg-muted"
       }`}
       style={{ minWidth: 40, height: 22 }}
     >
       <div
-        className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${
+        className={`absolute top-0.5 rounded-full bg-white shadow transition-transform ${
           checked ? "translate-x-5" : "translate-x-0.5"
         }`}
         style={{ width: 18, height: 18 }}
@@ -38,8 +38,8 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: b
 
 export default function SettingsPage() {
   // Profile
-  const [name, setName] = useState("Jamie");
-  const [email, setEmail] = useState("jamie@echoic.ai");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
   const [language, setLanguage] = useState("en");
 
@@ -50,12 +50,12 @@ export default function SettingsPage() {
 
   // Transcription
   const [transcriptionLang, setTranscriptionLang] = useState("en-US");
-  const [customVocab, setCustomVocab] = useState("Echoic, Meridian Corp, KubeCon, Okta");
+  const [customVocab, setCustomVocab] = useState("");
 
   // API
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
-  const apiKey = "echo_sk_live_7x9kM2nP4qR8sT1vW3yZ5bD6fH0jL";
+  const apiKey = "echo_sk_live_" + "*".repeat(24);
 
   function handleCopyApiKey() {
     setApiKeyCopied(true);
@@ -86,7 +86,8 @@ export default function SettingsPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
+              placeholder="Your name"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
             />
           </div>
           <div>
@@ -95,7 +96,8 @@ export default function SettingsPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
+              placeholder="you@company.com"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
             />
           </div>
           <div>
@@ -212,15 +214,15 @@ export default function SettingsPage() {
               <Crown className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-foreground">Pro Plan</div>
-              <div className="text-xs text-muted-foreground">$29/month - Unlimited meetings, AI features, team collaboration</div>
+              <div className="text-sm font-semibold text-foreground">Free Plan</div>
+              <div className="text-xs text-muted-foreground">5 meetings/month included</div>
             </div>
           </div>
-          <span className="text-xs font-medium px-2 py-1 rounded-full bg-brand-emerald/10 text-brand-emerald">Active</span>
+          <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">Current</span>
         </div>
 
         <button className="text-sm font-medium px-4 py-2 border border-brand-violet text-brand-violet rounded-lg hover:bg-brand-violet/5 transition-colors">
-          Upgrade to Enterprise
+          Upgrade to Pro
         </button>
       </div>
 
@@ -251,17 +253,6 @@ export default function SettingsPage() {
             </button>
           </div>
           {apiKeyCopied && <p className="text-xs text-brand-emerald mt-1">Copied to clipboard!</p>}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <div className="text-lg font-semibold text-foreground">1,247</div>
-            <div className="text-[10px] text-muted-foreground">API Calls (this month)</div>
-          </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <div className="text-lg font-semibold text-foreground">10,000</div>
-            <div className="text-[10px] text-muted-foreground">Monthly Limit</div>
-          </div>
         </div>
       </div>
 

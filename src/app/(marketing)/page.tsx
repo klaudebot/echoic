@@ -96,9 +96,11 @@ const features = [
     ),
     title: "Meeting Coach",
     description: "Real-time speaking analytics: talk ratio, filler words, pace, and clarity. Get personalized improvement tips.",
+    whyItMatters: "Teams using Meeting Coach reduce filler words by 40% and improve talk-to-listen ratios within 2 weeks.",
     color: "brand-emerald",
-    gradient: "from-brand-emerald/10 to-brand-emerald/5",
-    badge: "Unique",
+    gradient: "from-brand-violet/10 via-brand-emerald/10 to-brand-cyan/5",
+    badge: "Only on Echoic",
+    exclusive: true,
   },
   {
     icon: (
@@ -108,9 +110,11 @@ const features = [
     ),
     title: "Decision Tracker",
     description: "A living log of every decision across all your meetings. Never lose track of what was agreed upon.",
+    whyItMatters: "No more 'didn't we already decide this?' moments. Every decision is tracked, timestamped, and searchable.",
     color: "brand-amber",
-    gradient: "from-brand-amber/10 to-brand-amber/5",
-    badge: "Unique",
+    gradient: "from-brand-violet/10 via-brand-amber/10 to-brand-cyan/5",
+    badge: "Only on Echoic",
+    exclusive: true,
   },
   {
     icon: (
@@ -120,9 +124,11 @@ const features = [
     ),
     title: "Smart Clips",
     description: "Auto-generated shareable audio clips of key moments. Share decisions and insights without rewatching entire meetings.",
+    whyItMatters: "Async teams save 5+ hours per week by sharing 30-second clips instead of scheduling recap calls.",
     color: "brand-rose",
-    gradient: "from-brand-rose/10 to-brand-rose/5",
-    badge: "Unique",
+    gradient: "from-brand-violet/10 via-brand-rose/10 to-brand-cyan/5",
+    badge: "Only on Echoic",
+    exclusive: true,
   },
   {
     icon: (
@@ -172,50 +178,58 @@ const plans = [
   {
     name: "Free",
     price: "$0",
-    period: "forever",
+    period: "/mo",
     description: "For individuals getting started",
     features: [
-      "5 hours of transcription / month",
-      "Basic AI summaries",
-      "Action item extraction",
-      "3-day transcript history",
+      "3 hours of transcription / month",
+      "Basic summaries",
       "1 integration",
     ],
     cta: "Start Free",
     highlighted: false,
   },
   {
-    name: "Pro",
-    price: "$12",
-    period: "/month",
+    name: "Starter",
+    price: "$9",
+    period: "/seat/mo",
     description: "For professionals who run meetings",
     features: [
+      "30 hours of transcription / month",
+      "AI summaries + action items",
+      "3 integrations",
+      "Unlimited transcript history",
+    ],
+    cta: "Start Starter Trial",
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: "$19",
+    period: "/seat/mo",
+    description: "For power users who live in meetings",
+    features: [
       "Unlimited transcription",
-      "Advanced AI summaries",
-      "Meeting Coach analytics",
+      "AI Coach",
       "Decision Tracker",
       "Smart Clips",
-      "Unlimited history",
       "All integrations",
-      "Priority support",
+      "Advanced analytics",
     ],
     cta: "Start Pro Trial",
     highlighted: true,
   },
   {
     name: "Team",
-    price: "$29",
-    period: "/seat/month",
-    description: "For teams that need to stay aligned",
+    price: "$39",
+    period: "/seat/mo",
+    description: "For teams that need full control",
     features: [
       "Everything in Pro",
-      "Team workspace & library",
-      "Admin dashboard",
       "SSO / SAML",
-      "Team analytics & reports",
-      "Custom vocabulary",
+      "Admin controls & dashboard",
       "API access",
-      "Dedicated support",
+      "Priority support",
+      "Custom vocabulary",
     ],
     cta: "Contact Sales",
     highlighted: false,
@@ -387,9 +401,22 @@ export default function MarketingPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
               <RevealSection key={i}>
-                <div className={`group relative rounded-2xl border border-border/50 bg-gradient-to-br ${f.gradient} p-6 hover:shadow-lg hover:shadow-${f.color}/5 transition-all duration-300 h-full`}>
+                <div className={`group relative rounded-2xl p-6 hover:shadow-lg hover:shadow-${f.color}/5 transition-all duration-300 h-full bg-gradient-to-br ${f.gradient} ${
+                  f.exclusive
+                    ? "border-2 border-transparent bg-clip-padding shadow-md"
+                    : "border border-border/50"
+                }`}
+                  style={f.exclusive ? {
+                    borderImage: "linear-gradient(135deg, #7c3aed, #06b6d4) 1",
+                    borderImageSlice: 1,
+                  } : undefined}
+                >
                   {f.badge && (
-                    <span className="absolute top-4 right-4 rounded-full bg-brand-violet/10 px-2.5 py-0.5 text-[11px] font-semibold text-brand-violet">
+                    <span className={`absolute top-4 right-4 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                      f.exclusive
+                        ? "bg-gradient-to-r from-brand-violet to-brand-cyan text-white"
+                        : "bg-brand-violet/10 text-brand-violet"
+                    }`}>
                       {f.badge}
                     </span>
                   )}
@@ -398,9 +425,120 @@ export default function MarketingPage() {
                   </div>
                   <h3 className="mt-4 text-lg font-semibold font-sans text-foreground">{f.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.description}</p>
+                  {f.whyItMatters && (
+                    <p className="mt-3 text-xs leading-relaxed text-brand-violet font-medium italic">
+                      {f.whyItMatters}
+                    </p>
+                  )}
                 </div>
               </RevealSection>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ──── WHY ECHOIC ──────────────────────── */}
+      <section className="py-24 sm:py-32 bg-gradient-to-br from-brand-deep via-[#1a1040] to-brand-deep relative overflow-hidden">
+        {/* Decorative blurs */}
+        <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-brand-violet/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-brand-cyan/10 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <RevealSection className="text-center mb-16">
+            <p className="text-sm font-semibold text-brand-cyan mb-2">Only on Echoic</p>
+            <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
+              Why{" "}
+              <span className="gradient-text">Echoic?</span>
+            </h2>
+            <p className="mt-4 text-lg text-white/60 max-w-2xl mx-auto">
+              Other tools transcribe. Echoic transforms how your team communicates.
+            </p>
+          </RevealSection>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {/* Meeting Coach */}
+            <RevealSection>
+              <div className="relative h-full rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-all duration-300">
+                <div className="inline-flex rounded-xl p-3 bg-brand-emerald/20 text-brand-emerald mb-4">
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold font-sans text-white">Meeting Coach</h3>
+                <p className="mt-2 text-base font-medium text-brand-cyan">
+                  Most tools transcribe. Echoic coaches.
+                </p>
+                <p className="mt-3 text-sm text-white/60 leading-relaxed">
+                  Real-time feedback on talk-to-listen ratio, filler words, and speaking pace.
+                  Teams see a 40% reduction in filler words and 2x improvement in meeting efficiency
+                  within the first month.
+                </p>
+                <div className="mt-6 flex items-center gap-4">
+                  <div className="rounded-lg bg-brand-emerald/10 px-3 py-1.5">
+                    <span className="text-xs font-semibold text-brand-emerald">-40% filler words</span>
+                  </div>
+                  <div className="rounded-lg bg-brand-cyan/10 px-3 py-1.5">
+                    <span className="text-xs font-semibold text-brand-cyan">2x efficiency</span>
+                  </div>
+                </div>
+              </div>
+            </RevealSection>
+
+            {/* Decision Tracker */}
+            <RevealSection>
+              <div className="relative h-full rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-all duration-300">
+                <div className="inline-flex rounded-xl p-3 bg-brand-amber/20 text-brand-amber mb-4">
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold font-sans text-white">Decision Tracker</h3>
+                <p className="mt-2 text-base font-medium text-brand-amber">
+                  Never lose a decision again.
+                </p>
+                <p className="mt-3 text-sm text-white/60 leading-relaxed">
+                  Every decision is automatically extracted, timestamped, and linked to its meeting context.
+                  Track decisions across hundreds of meetings with cross-meeting search, so your team
+                  always knows what was agreed and when.
+                </p>
+                <div className="mt-6 flex items-center gap-4">
+                  <div className="rounded-lg bg-brand-amber/10 px-3 py-1.5">
+                    <span className="text-xs font-semibold text-brand-amber">Cross-meeting tracking</span>
+                  </div>
+                  <div className="rounded-lg bg-brand-violet/10 px-3 py-1.5">
+                    <span className="text-xs font-semibold text-brand-violet">Auto-linked</span>
+                  </div>
+                </div>
+              </div>
+            </RevealSection>
+
+            {/* Smart Clips */}
+            <RevealSection>
+              <div className="relative h-full rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-all duration-300">
+                <div className="inline-flex rounded-xl p-3 bg-brand-rose/20 text-brand-rose mb-4">
+                  <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25H12" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold font-sans text-white">Smart Clips</h3>
+                <p className="mt-2 text-base font-medium text-brand-rose">
+                  Share the moment, skip the meeting.
+                </p>
+                <p className="mt-3 text-sm text-white/60 leading-relaxed">
+                  AI automatically identifies key moments and generates shareable 30-second audio clips.
+                  Async teams save 5+ hours per week by sharing clips instead of scheduling recap calls
+                  or watching full recordings.
+                </p>
+                <div className="mt-6 flex items-center gap-4">
+                  <div className="rounded-lg bg-brand-rose/10 px-3 py-1.5">
+                    <span className="text-xs font-semibold text-brand-rose">5+ hrs saved/week</span>
+                  </div>
+                  <div className="rounded-lg bg-brand-cyan/10 px-3 py-1.5">
+                    <span className="text-xs font-semibold text-brand-cyan">Async-first</span>
+                  </div>
+                </div>
+              </div>
+            </RevealSection>
           </div>
         </div>
       </section>
@@ -525,7 +663,7 @@ export default function MarketingPage() {
             </p>
           </RevealSection>
 
-          <div className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
             {plans.map((plan, i) => (
               <RevealSection key={i}>
                 <div

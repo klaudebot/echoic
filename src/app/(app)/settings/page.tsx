@@ -72,7 +72,9 @@ export default function SettingsPage() {
   const apiKey = "rvb_sk_live_" + "*".repeat(24);
 
   function handleSaveProfile() {
-    setUser({ name, email });
+    if (user) {
+      setUser({ ...user, name, email });
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }

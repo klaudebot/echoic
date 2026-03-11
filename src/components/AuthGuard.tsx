@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/components/UserContext";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
   const [checked, setChecked] = useState(false);
@@ -17,29 +17,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Give UserContext time to hydrate from localStorage
-    const timeout = setTimeout(() => {
-      if (!user) {
-        // Double-check localStorage directly (UserContext may not have hydrated yet)
-        try {
-          const stored = localStorage.getItem("reverbic_user");
-          if (!stored) {
-            router.replace("/sign-in");
-            return;
-          }
-        } catch {
-          router.replace("/sign-in");
-          return;
-        }
-      }
-      setChecked(true);
-    }, 100);
+    // Wait for UserContext to finish loading from Supabase
+    if (loading) return;
 
-    return () => clearTimeout(timeout);
-  }, [user, router, pathname]);
+    if (!user) {
+      router.replace(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    setChecked(true);
+  }, [user, loading, router, pathname]);
 
   // Don't render protected content until auth is verified
-  if (!checked) {
+  if (!checked || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center gap-3">

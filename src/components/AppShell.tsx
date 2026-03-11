@@ -176,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isDemo = pathname.startsWith("/demo");
-  const { user, clearUser } = useUser();
+  const { user, signOut } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(["/meetings"]);
   const { resolvedTheme, setTheme } = useTheme();
@@ -406,8 +406,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <button
-              onClick={() => {
-                clearUser();
+              onClick={async () => {
+                await signOut();
                 router.replace("/sign-in");
               }}
               className="text-muted-foreground hover:text-foreground transition-colors p-1"

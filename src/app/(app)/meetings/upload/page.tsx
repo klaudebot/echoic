@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useRef } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
-import { saveMeeting, updateMeeting, type Meeting } from "@/lib/meeting-store";
+import { saveMeeting, type Meeting } from "@/lib/meeting-store";
+import { runProcessingPipeline } from "@/lib/process-pipeline";
 import { compressAudioFile } from "@/lib/audio-compress";
 import {
   Upload,
@@ -231,35 +232,13 @@ export default function UploadPage() {
         decisions: [],
       });
 
-      // Trigger the processing pipeline
-      fetch('/api/meetings/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          s3Key: `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
-          title: file.name.replace(/\.[^.]+$/, ''),
-          language: language.toLowerCase().slice(0, 2),
-        }),
-      }).then(async (res) => {
-        if (res.ok) {
-          const result = await res.json();
-          updateMeeting(rid, {
-            status: result.status === 'silent' ? 'silent' : 'completed',
-            audioAnalysis: result.audioAnalysis,
-            transcript: result.transcript,
-            summary: result.summary,
-            keyPoints: result.keyPoints ?? [],
-            actionItems: result.actionItems ?? [],
-            decisions: result.decisions ?? [],
-            duration: result.transcript?.duration ?? null,
-          });
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          updateMeeting(rid, { status: 'failed', errorMessage: errData.error || `Processing failed (${res.status})` });
-        }
-      }).catch((err) => {
-        updateMeeting(rid, { status: 'failed', errorMessage: err instanceof Error ? err.message : 'Processing failed' });
-      });
+      // Trigger staged processing pipeline (fire and forget)
+      runProcessingPipeline(
+        rid,
+        `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
+        file.name.replace(/\.[^.]+$/, ''),
+        language.toLowerCase().slice(0, 2),
+      );
     } catch (err) {
       setCompressing(false);
       setUploading(false);

@@ -36,6 +36,8 @@ export interface Meeting {
   notes: string;
   createdAt: string;
   status: "uploading" | "processing" | "completed" | "failed" | "silent";
+  processingStep?: "preparing" | "transcribing" | "summarizing";
+  processingProgress?: string; // e.g. "Transcribing chunk 2/5"
   errorMessage?: string;
   // Processing results (current version)
   audioAnalysis: {

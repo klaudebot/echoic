@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { AppLink } from "@/components/DemoContext";
 import { getMeeting, updateMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
+import { runProcessingPipeline } from "@/lib/process-pipeline";
 import {
   ArrowLeft,
   FileQuestion,
@@ -93,14 +94,41 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 // --- Processing state ---
-function ProcessingState() {
+function ProcessingState({ step, progress }: { step?: string; progress?: string }) {
+  const stepLabels: Record<string, { title: string; pct: number }> = {
+    preparing: { title: "Preparing audio", pct: 20 },
+    transcribing: { title: "Transcribing", pct: 55 },
+    summarizing: { title: "Generating insights", pct: 85 },
+  };
+
+  const current = step ? stepLabels[step] : null;
+
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <Loader2 className="w-10 h-10 text-brand-violet animate-spin mb-5" />
-      <h2 className="font-heading text-2xl text-foreground mb-2">Processing your recording...</h2>
+      <h2 className="font-heading text-2xl text-foreground mb-2">
+        {current?.title ?? "Processing your recording"}...
+      </h2>
       <p className="text-muted-foreground text-sm max-w-md">
-        We&apos;re transcribing and analyzing your meeting. This usually takes a few minutes.
+        {progress ?? "We're transcribing and analyzing your meeting. This usually takes a few minutes."}
       </p>
+
+      {/* Step progress bar */}
+      {current && (
+        <div className="w-full max-w-xs mt-6">
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full bg-brand-violet transition-all duration-700"
+              style={{ width: `${current.pct}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2 text-[11px] text-muted-foreground">
+            <span className={step === "preparing" ? "text-brand-violet font-medium" : ""}>Prepare</span>
+            <span className={step === "transcribing" ? "text-brand-violet font-medium" : ""}>Transcribe</span>
+            <span className={step === "summarizing" ? "text-brand-violet font-medium" : ""}>Summarize</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -679,7 +707,7 @@ export default function MeetingDetailPage() {
         <ArrowLeft className="w-4 h-4" /> Back to Meetings
       </AppLink>
 
-      {meeting.status === "processing" && <ProcessingState />}
+      {meeting.status === "processing" && <ProcessingState step={meeting.processingStep} progress={meeting.processingProgress} />}
       {meeting.status === "uploading" && <ProcessingState />}
       {meeting.status === "silent" && (
         <SilentState recommendation={meeting.audioAnalysis?.recommendation ?? "Try re-recording with a better microphone or in a quieter environment."} />
@@ -688,43 +716,18 @@ export default function MeetingDetailPage() {
         <FailedState
           errorMessage={meeting.errorMessage}
           onRetry={() => {
-            // Snapshot existing transcript data if any (e.g. silent detection had partial data)
             if (meeting.transcript) {
               snapshotTranscriptVersion(id, "Before retry");
             }
             updateMeeting(id, { status: "processing", errorMessage: undefined });
             setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
-            fetch("/api/meetings/process", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                s3Key: meeting.s3Key,
-                title: meeting.title,
-                language: meeting.language?.toLowerCase().slice(0, 2),
-              }),
-            }).then(async (res) => {
-              if (res.ok) {
-                const result = await res.json();
-                updateMeeting(id, {
-                  status: result.status === "silent" ? "silent" : "completed",
-                  audioAnalysis: result.audioAnalysis,
-                  transcript: result.transcript,
-                  summary: result.summary,
-                  keyPoints: result.keyPoints ?? [],
-                  actionItems: result.actionItems ?? [],
-                  decisions: result.decisions ?? [],
-                  duration: result.transcript?.duration ?? null,
-                  errorMessage: undefined,
-                });
-              } else {
-                const errData = await res.json().catch(() => ({}));
-                updateMeeting(id, { status: "failed", errorMessage: errData.error || `Processing failed (${res.status})` });
-              }
-              loadMeeting();
-            }).catch((err) => {
-              updateMeeting(id, { status: "failed", errorMessage: err instanceof Error ? err.message : "Processing failed" });
-              loadMeeting();
-            });
+            runProcessingPipeline(
+              id,
+              meeting.s3Key,
+              meeting.title,
+              meeting.language?.toLowerCase().slice(0, 2),
+              { onStep: () => loadMeeting(), onComplete: () => loadMeeting(), onError: () => loadMeeting() }
+            );
           }}
         />
       )}
@@ -733,7 +736,6 @@ export default function MeetingDetailPage() {
           meeting={meeting}
           onRestore={loadMeeting}
           onReprocess={() => {
-            // Snapshot current version before reprocessing
             const label = meeting.audioAnalysis
               ? `Transcript (peak: ${meeting.audioAnalysis.peakDb}dB)`
               : "Previous transcript";
@@ -741,37 +743,13 @@ export default function MeetingDetailPage() {
 
             updateMeeting(id, { status: "processing", errorMessage: undefined });
             setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
-            fetch("/api/meetings/process", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                s3Key: meeting.s3Key,
-                title: meeting.title,
-                language: meeting.language?.toLowerCase().slice(0, 2),
-              }),
-            }).then(async (res) => {
-              if (res.ok) {
-                const result = await res.json();
-                updateMeeting(id, {
-                  status: result.status === "silent" ? "silent" : "completed",
-                  audioAnalysis: result.audioAnalysis,
-                  transcript: result.transcript,
-                  summary: result.summary,
-                  keyPoints: result.keyPoints ?? [],
-                  actionItems: result.actionItems ?? [],
-                  decisions: result.decisions ?? [],
-                  duration: result.transcript?.duration ?? null,
-                  errorMessage: undefined,
-                });
-              } else {
-                const errData = await res.json().catch(() => ({}));
-                updateMeeting(id, { status: "failed", errorMessage: errData.error || `Processing failed (${res.status})` });
-              }
-              loadMeeting();
-            }).catch((err) => {
-              updateMeeting(id, { status: "failed", errorMessage: err instanceof Error ? err.message : "Processing failed" });
-              loadMeeting();
-            });
+            runProcessingPipeline(
+              id,
+              meeting.s3Key,
+              meeting.title,
+              meeting.language?.toLowerCase().slice(0, 2),
+              { onStep: () => loadMeeting(), onComplete: () => loadMeeting(), onError: () => loadMeeting() }
+            );
           }}
         />
       )}

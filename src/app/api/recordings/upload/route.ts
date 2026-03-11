@@ -43,7 +43,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { fileName, contentType, accountId, userId } = body;
 
+    console.log(`[upload] Presign request: file=${fileName} type=${contentType} account=${accountId}`);
+
     if (!fileName || !contentType || !accountId || !userId) {
+      console.log("[upload] ERROR: missing required fields");
       return NextResponse.json(
         { error: "Missing required fields: fileName, contentType, accountId, userId" },
         { status: 400 }
@@ -51,6 +54,7 @@ export async function POST(request: Request) {
     }
 
     if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
+      console.log(`[upload] ERROR: unsupported content type: ${contentType}`);
       return NextResponse.json(
         { error: `Unsupported content type: ${contentType}. Allowed: webm, mp4, m4a, mp3, wav, ogg` },
         { status: 400 }
@@ -63,13 +67,15 @@ export async function POST(request: Request) {
 
     const uploadUrl = await getUploadPresignedUrl(key, contentType);
 
+    console.log(`[upload] Presigned URL generated: id=${recordingId} key=${key}`);
+
     return NextResponse.json({
       uploadUrl,
       recordingId,
       key,
     });
   } catch (error) {
-    console.error("Upload presign error:", error);
+    console.error("[upload] ERROR:", error);
     return NextResponse.json(
       { error: "Failed to generate upload URL" },
       { status: 500 }

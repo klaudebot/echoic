@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useUser } from "@/components/UserContext";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import {
@@ -79,6 +79,8 @@ export default function TeamPage() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const menuBtnRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sb = getSupabaseBrowser() as any;
@@ -351,36 +353,26 @@ export default function TeamPage() {
                 <StatusBadge status={member.status} />
 
                 {/* Actions menu */}
-                <div className="relative">
+                <div>
                   <button
-                    onClick={() => setOpenMenu(openMenu === member.id ? null : member.id)}
+                    ref={(el) => { if (el) menuBtnRefs.current.set(member.id, el); }}
+                    onClick={() => {
+                      if (openMenu === member.id) {
+                        setOpenMenu(null);
+                        setMenuPos(null);
+                      } else {
+                        const btn = menuBtnRefs.current.get(member.id);
+                        if (btn) {
+                          const rect = btn.getBoundingClientRect();
+                          setMenuPos({ top: rect.bottom + 4, left: rect.right - 176 });
+                        }
+                        setOpenMenu(member.id);
+                      }
+                    }}
                     className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
-                  {openMenu === member.id && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
-                      <div className="absolute right-0 top-full mt-1 z-20 w-44 bg-card border border-border rounded-lg shadow-lg py-1">
-                        {member.status === "pending" && (
-                          <button
-                            onClick={() => handleResend(member)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            Resend Invite
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleRemove(member.id)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-brand-rose hover:bg-brand-rose/5 transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Remove
-                        </button>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
             ))}
@@ -398,6 +390,38 @@ export default function TeamPage() {
           </p>
         </div>
       )}
+
+      {/* Floating actions menu — rendered outside overflow-hidden container */}
+      {openMenu && menuPos && (() => {
+        const member = members.find((m) => m.id === openMenu);
+        if (!member) return null;
+        return (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => { setOpenMenu(null); setMenuPos(null); }} />
+            <div
+              className="fixed z-50 w-44 bg-card border border-border rounded-lg shadow-lg py-1"
+              style={{ top: menuPos.top, left: Math.max(8, menuPos.left) }}
+            >
+              {member.status === "pending" && (
+                <button
+                  onClick={() => handleResend(member)}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Resend Invite
+                </button>
+              )}
+              <button
+                onClick={() => handleRemove(member.id)}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-brand-rose hover:bg-brand-rose/5 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Remove
+              </button>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

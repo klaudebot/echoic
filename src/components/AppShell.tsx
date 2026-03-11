@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import {
@@ -69,6 +69,7 @@ function isActive(pathname: string, href: string): boolean {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isDemo = pathname.startsWith("/demo");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(["/meetings"]);
@@ -213,7 +214,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="text-sm font-medium text-foreground truncate">Jamie</div>
               <div className="text-xs text-muted-foreground truncate">jamie@reverbic.ai</div>
             </div>
-            <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
+            <button
+              onClick={() => router.push("/")}
+              className="text-muted-foreground hover:text-foreground transition-colors p-1"
+              title="Sign out"
+            >
               <LogOut className="w-4 h-4" />
             </button>
           </div>

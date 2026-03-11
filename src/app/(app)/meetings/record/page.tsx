@@ -406,6 +406,26 @@ export default function RecordPage() {
     }
   }, [isDemo, stopWaveform]);
 
+  // "R" key starts recording when idle
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+      if ((e.key === "r" || e.key === "R") && status === "idle") {
+        e.preventDefault();
+        startRecording();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [status, startRecording]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {

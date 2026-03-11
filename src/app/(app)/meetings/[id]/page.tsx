@@ -23,7 +23,10 @@ import {
   Gavel,
   StickyNote,
   RefreshCw,
+  Download,
+  FileText,
 } from "lucide-react";
+import AudioPlayer from "@/components/AudioPlayer";
 
 function formatDuration(seconds: number | null): string {
   if (seconds == null) return "--";
@@ -171,9 +174,186 @@ function NotFoundState() {
   );
 }
 
+// --- Transcript download helpers ---
+function buildTranscriptSections(meeting: Meeting) {
+  const date = formatDate(meeting.createdAt);
+  const segments = meeting.transcript?.segments ?? [];
+
+  const transcriptLines = segments.map(
+    (seg) => `[${formatTimecode(seg.start)}] ${seg.text}`
+  );
+
+  const sections: string[] = [];
+
+  // Header
+  sections.push(meeting.title);
+  sections.push(`Date: ${date}`);
+  sections.push("");
+
+  // Transcript
+  if (transcriptLines.length > 0) {
+    sections.push("─".repeat(60));
+    sections.push("TRANSCRIPT");
+    sections.push("─".repeat(60));
+    sections.push("");
+    sections.push(...transcriptLines);
+    sections.push("");
+  }
+
+  // Summary
+  if (meeting.summary) {
+    sections.push("─".repeat(60));
+    sections.push("AI SUMMARY");
+    sections.push("─".repeat(60));
+    sections.push("");
+    sections.push(meeting.summary);
+    sections.push("");
+  }
+
+  // Key Points
+  if (meeting.keyPoints.length > 0) {
+    sections.push("─".repeat(60));
+    sections.push("KEY POINTS");
+    sections.push("─".repeat(60));
+    sections.push("");
+    meeting.keyPoints.forEach((p) => sections.push(`• ${p}`));
+    sections.push("");
+  }
+
+  // Action Items
+  if (meeting.actionItems.length > 0) {
+    sections.push("─".repeat(60));
+    sections.push("ACTION ITEMS");
+    sections.push("─".repeat(60));
+    sections.push("");
+    meeting.actionItems.forEach((item) => {
+      let line = `• ${item.text}`;
+      if (item.priority) line += ` [${item.priority}]`;
+      if (item.assignee) line += ` — ${item.assignee}`;
+      sections.push(line);
+    });
+    sections.push("");
+  }
+
+  // Decisions
+  if (meeting.decisions.length > 0) {
+    sections.push("─".repeat(60));
+    sections.push("DECISIONS");
+    sections.push("─".repeat(60));
+    sections.push("");
+    meeting.decisions.forEach((dec) => {
+      let line = `• ${dec.text}`;
+      if (dec.madeBy) line += ` — Made by ${dec.madeBy}`;
+      sections.push(line);
+    });
+    sections.push("");
+  }
+
+  return sections;
+}
+
+function buildMarkdownContent(meeting: Meeting) {
+  const date = formatDate(meeting.createdAt);
+  const segments = meeting.transcript?.segments ?? [];
+  const lines: string[] = [];
+
+  lines.push(`# ${meeting.title}`);
+  lines.push("");
+  lines.push(`**Date:** ${date}`);
+  lines.push("");
+
+  if (segments.length > 0) {
+    lines.push("---");
+    lines.push("");
+    lines.push("## Transcript");
+    lines.push("");
+    segments.forEach((seg) => {
+      lines.push(`**[${formatTimecode(seg.start)}]** ${seg.text}`);
+      lines.push("");
+    });
+  }
+
+  if (meeting.summary) {
+    lines.push("---");
+    lines.push("");
+    lines.push("## AI Summary");
+    lines.push("");
+    lines.push(meeting.summary);
+    lines.push("");
+  }
+
+  if (meeting.keyPoints.length > 0) {
+    lines.push("---");
+    lines.push("");
+    lines.push("## Key Points");
+    lines.push("");
+    meeting.keyPoints.forEach((p) => lines.push(`- ${p}`));
+    lines.push("");
+  }
+
+  if (meeting.actionItems.length > 0) {
+    lines.push("---");
+    lines.push("");
+    lines.push("## Action Items");
+    lines.push("");
+    meeting.actionItems.forEach((item) => {
+      let line = `- ${item.text}`;
+      if (item.priority) line += ` \`${item.priority}\``;
+      if (item.assignee) line += ` — *${item.assignee}*`;
+      lines.push(line);
+    });
+    lines.push("");
+  }
+
+  if (meeting.decisions.length > 0) {
+    lines.push("---");
+    lines.push("");
+    lines.push("## Decisions");
+    lines.push("");
+    meeting.decisions.forEach((dec) => {
+      let line = `- ${dec.text}`;
+      if (dec.madeBy) line += ` — *Made by ${dec.madeBy}*`;
+      lines.push(line);
+    });
+    lines.push("");
+  }
+
+  return lines.join("\n");
+}
+
+function triggerDownload(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadAsTxt(meeting: Meeting) {
+  const content = buildTranscriptSections(meeting).join("\n");
+  const filename = `Reverbic - ${meeting.title} - Transcript.txt`;
+  triggerDownload(content, filename, "text/plain;charset=utf-8");
+}
+
+function downloadAsMd(meeting: Meeting) {
+  const content = buildMarkdownContent(meeting);
+  const filename = `Reverbic - ${meeting.title} - Transcript.md`;
+  triggerDownload(content, filename, "text/markdown;charset=utf-8");
+}
+
 // --- Completed meeting view ---
 function CompletedView({ meeting }: { meeting: Meeting }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
+  const [seekToTime, setSeekToTime] = useState<number | null>(null);
+
+  const handleSeekToTimestamp = useCallback((time: number) => {
+    // Use a new value each time so effect fires even if same timestamp clicked twice
+    setSeekToTime(time + Math.random() * 0.001);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -212,16 +392,47 @@ function CompletedView({ meeting }: { meeting: Meeting }) {
         )}
       </div>
 
+      {/* Audio Player */}
+      {meeting.s3Key && (
+        <AudioPlayer
+          meetingId={meeting.id}
+          s3Key={meeting.s3Key}
+          seekToTime={seekToTime}
+        />
+      )}
+
       {/* Transcript */}
       {meeting.transcript && meeting.transcript.segments.length > 0 && (
         <div className="bg-card border border-border rounded-xl p-6">
-          <h2 className="font-heading text-lg text-foreground mb-4">Transcript</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-heading text-lg text-foreground">Transcript</h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => downloadAsTxt(meeting)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg text-foreground hover:bg-muted transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download .txt
+              </button>
+              <button
+                onClick={() => downloadAsMd(meeting)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-border rounded-lg text-foreground hover:bg-muted transition-colors"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                Download .md
+              </button>
+            </div>
+          </div>
           <div className="max-h-96 overflow-y-auto space-y-3 pr-2">
             {meeting.transcript.segments.map((seg, i) => (
               <div key={i} className="flex gap-3">
-                <span className="text-xs text-muted-foreground font-mono shrink-0 pt-0.5 w-12 text-right">
+                <button
+                  onClick={() => handleSeekToTimestamp(seg.start)}
+                  className="text-xs text-brand-violet/70 hover:text-brand-violet font-mono shrink-0 pt-0.5 w-12 text-right transition-colors cursor-pointer hover:underline"
+                  title="Click to seek audio to this timestamp"
+                >
                   {formatTimecode(seg.start)}
-                </span>
+                </button>
                 <p className="text-sm text-foreground leading-relaxed">{seg.text}</p>
               </div>
             ))}

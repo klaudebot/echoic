@@ -1,71 +1,71 @@
 # Reverbic — Production TODO
 
-## Status: UI Prototype → Production App
+## Status: Working Prototype (Core Pipeline Functional)
 
-Every page has polished UI but zero backend. This file tracks what needs to be built.
+The core upload → transcription → summarization pipeline works end-to-end. Data is stored in localStorage (no database yet). Auth is faked (localStorage only). This file tracks what's done and what still needs building.
 
 ---
 
-## P0 — Core Infrastructure (Must Have)
+## P0 — Core Infrastructure ✅ MOSTLY DONE
 
-### Storage & Upload Pipeline
-- [ ] Create S3 bucket `reverbic-recordings` with folder structure: `/{account_id}/{user_id}/{recording_id}.webm`
-- [ ] API route `POST /api/recordings/upload` — presigned URL generation for direct browser→S3 upload
-- [ ] API route `GET /api/recordings/[id]` — fetch recording metadata + signed playback URL
-- [ ] Wire upload page to actually upload files to S3 with real progress tracking
-- [ ] Support audio formats: webm, mp4, m4a, mp3, wav, ogg
-- [ ] File size limit: 500MB per recording
-- [ ] Validate audio file before upload (not empty, has audio track)
+### Storage & Upload Pipeline ✅
+- [x] S3 bucket `reverbic-recordings` with folder structure `/{account_id}/{user_id}/{recording_id}.ext`
+- [x] API route `POST /api/recordings/upload` — presigned URL generation
+- [x] API route `GET /api/recordings/[id]` — signed playback URL
+- [x] Upload page wired to S3 with real progress tracking
+- [x] Support audio formats: webm, mp4, m4a, mp3, wav, ogg
+- [x] File size limit: 500MB per recording
+- [x] Client-side compression for large files (lamejs MP3 encoder)
+- [x] Server-side ffmpeg fallback for compression failures
+- [ ] Validate audio file before upload (check for audio track)
 
-### Audio Recording (Browser)
-- [ ] Implement Web Audio API / MediaRecorder in record page
-- [ ] Request microphone permission with fallback UI
-- [ ] Real waveform visualization from live audio stream
-- [ ] Pause/resume recording
-- [ ] Auto-upload to S3 on stop
-- [ ] Show recording duration and file size estimate
+### Audio Recording (Browser) ✅
+- [x] Web Audio API + MediaRecorder
+- [x] Microphone permission request with fallback UI
+- [x] Real waveform visualization (canvas + AnalyserNode)
+- [x] Pause/resume recording
+- [x] Auto-upload to S3 on stop
+- [x] Recording duration display
 
-### AI Transcription Pipeline
-- [ ] API route `POST /api/transcription/start` — trigger transcription job
-- [ ] Integrate OpenAI Whisper API for transcription
-- [ ] Speaker diarization (identify who said what)
-- [ ] Store transcript segments with timestamps in database
-- [ ] Handle long recordings (chunk into segments if needed)
-- [ ] Support 50+ languages (Whisper supports this natively)
-- [ ] Webhook/polling for transcription job status
+### AI Transcription Pipeline ✅
+- [x] Integrated pipeline via `POST /api/meetings/process`
+- [x] OpenAI Whisper API transcription
+- [x] Transcript segments with timestamps
+- [x] Large file handling (ffmpeg compress → chunk → transcribe each)
+- [x] Multi-language support (Whisper natively)
+- [x] Auto-polling on meeting detail page during processing
+- [ ] Speaker diarization (who said what) — Whisper doesn't do this natively
+- [ ] Store transcripts in database (currently localStorage only)
 
-### AI Summarization
-- [ ] API route `POST /api/summarize` — generate meeting summary
-- [ ] Use GPT-4o to generate:
-  - Professional meeting summary (paragraph format)
-  - Key points (bullet list)
-  - Action items with assignees
-  - Decisions made
-- [ ] Professional voice/tone in all generated text
-- [ ] Store summaries linked to meeting record
+### AI Summarization ✅
+- [x] GPT-4o generates: summary, key points, action items, decisions
+- [x] Professional voice/tone
+- [x] JSON-mode structured output
+- [ ] Store summaries in database
 
-### Audio Quality
-- [ ] Volume amplifier — detect low audio levels and offer gain boost
-- [ ] Silence detector — flag recordings that are blank/silent (mic issues)
-  - Analyze RMS levels across recording
-  - Alert user if >80% of recording is silence
-  - Prevent wasted transcription credits on blank recordings
+### Audio Quality ✅
+- [x] Silence detector (RMS analysis, flags >80% silence)
+- [x] Audio level analysis (peak dB detection)
+- [x] User-facing warnings for silent/low recordings
+- [ ] Volume amplifier — ffmpeg gain boost endpoint exists but not wired to UI
 - [ ] Audio normalization before transcription
 
 ---
 
-## P1 — Auth & Data Layer
+## P1 — Auth & Data Layer ❌ NOT STARTED
 
 ### Supabase Auth
 - [ ] Create Supabase project and configure
-- [ ] Wire sign-up page to `supabase.auth.signUp()`
-- [ ] Wire sign-in page to `supabase.auth.signInWithPassword()`
-- [ ] Wire Google OAuth to `supabase.auth.signInWithOAuth({ provider: 'google' })`
+- [ ] Wire sign-up to `supabase.auth.signUp()`
+- [ ] Wire sign-in to `supabase.auth.signInWithPassword()`
+- [ ] Wire Google OAuth
 - [ ] Wire Apple OAuth
-- [ ] Middleware: enforce auth on protected routes (redirect to /sign-in)
+- [ ] Middleware: enforce auth on protected routes
 - [ ] Session management with `@supabase/ssr`
 - [ ] Password reset flow
 - [ ] Email verification
+
+**Current state:** Sign-up/sign-in save name+email to localStorage and redirect to /dashboard. OAuth buttons redirect without authenticating. No real auth.
 
 ### Database Schema (Supabase Postgres)
 - [ ] `accounts` — organization/team accounts
@@ -80,12 +80,14 @@ Every page has polished UI but zero backend. This file tracks what needs to be b
 - [ ] `integrations` — account_id, provider, access_token, status
 - [ ] Row-level security policies for multi-tenant isolation
 
-### API Routes
+**Current state:** All data lives in localStorage under `reverbic_meetings` key. Cleared if user clears browser data. No multi-user support.
+
+### API Routes (Database-backed)
 - [ ] `GET /api/meetings` — list user's meetings (paginated)
 - [ ] `GET /api/meetings/[id]` — single meeting with transcript + summary
 - [ ] `POST /api/meetings` — create meeting from upload/recording
 - [ ] `PATCH /api/meetings/[id]` — update meeting title/details
-- [ ] `DELETE /api/meetings/[id]` — delete meeting + recording
+- [ ] `DELETE /api/meetings/[id]` — delete meeting + recording from S3
 - [ ] `GET /api/action-items` — list across all meetings
 - [ ] `PATCH /api/action-items/[id]` — toggle status, update
 - [ ] `GET /api/decisions` — list across all meetings
@@ -96,37 +98,53 @@ Every page has polished UI but zero backend. This file tracks what needs to be b
 
 ---
 
-## P2 — Feature Completion
+## P2 — Feature Completion (Mixed)
 
-### Meeting Detail Page (`/meetings/[id]`)
-- [ ] Full transcript viewer with timestamps and speaker labels
+### Meeting Detail Page (`/meetings/[id]`) — MOSTLY DONE
+- [x] Full transcript viewer with timestamps
+- [x] AI summary panel (collapsible)
+- [x] Key points display
+- [x] Action items with priority badges
+- [x] Decisions list
+- [x] Notes section
+- [x] Audio quality badge (good/low/silent)
+- [x] Auto-poll during processing
+- [x] Try Again button on failure
+- [ ] Speaker labels in transcript (needs diarization)
 - [ ] Audio player with waveform, seek, playback speed
-- [ ] AI summary panel (collapsible)
-- [ ] Action items list with inline edit/complete
-- [ ] Decisions list
 - [ ] Clip creation (select time range → save clip)
 - [ ] Share meeting via link
 - [ ] Download transcript as TXT/PDF
 
-### Meetings List Page
-- [ ] Show real meetings from database (not demo data)
+### Meetings List Page — MOSTLY DONE
+- [x] Real meetings from store
+- [x] Status badges (processing, completed, failed, silent)
+- [x] Duration, date, tags display
+- [x] Summary preview for completed meetings
 - [ ] Search by title, transcript content
-- [ ] Filter by date range, platform, status
-- [ ] Sort by date, duration
+- [ ] Filter by date range, status
+- [ ] Sort options (date, duration)
 - [ ] Pagination
 
-### Action Items Page
-- [ ] Real data from database
-- [ ] Filter by status (open/completed), priority, assignee
-- [ ] Inline edit, mark complete
-- [ ] Group by meeting
+### Action Items Page — DONE ✅
+- [x] Real data from meeting store
+- [x] Grouped by meeting
+- [x] Filter by status (open/completed) and priority
+- [x] Toggle completion (persisted)
+- [x] Drag-and-drop reorder within groups
+- [x] Meeting tags displayed
+- [ ] Inline text editing
+- [ ] Assignee editing
+- [ ] Due dates
 
-### Decisions Page
-- [ ] Real data from database
+### Decisions Page — ❌ NOT WIRED
+- [ ] Wire to meeting store (data exists in `meeting.decisions[]`)
 - [ ] Cross-meeting search
 - [ ] Filter by date, meeting
 
-### AI Coach Page
+**Current state:** Empty state page. Decision data is extracted by GPT-4o but the page doesn't read it.
+
+### AI Coach Page — ❌ NOT BUILT
 - [ ] Analyze speaking patterns from transcript data
 - [ ] Talk-to-listen ratio per user
 - [ ] Filler word count and trends
@@ -134,45 +152,63 @@ Every page has polished UI but zero backend. This file tracks what needs to be b
 - [ ] Weekly coaching tips generated by AI
 - [ ] Score trending chart
 
-### Smart Clips Page
+**Current state:** Empty state page.
+
+### Smart Clips Page — ❌ NOT BUILT
 - [ ] List clips with audio preview
 - [ ] Share clip via link
 - [ ] Auto-generate clips from key moments (AI-detected)
+- [ ] Clip creation UI (time range selector on meeting detail)
 
-### Analytics Page
+**Current state:** Empty state page. No clips data model.
+
+### Analytics Page — ❌ NOT BUILT
 - [ ] Meeting frequency chart (last 30 days)
 - [ ] Total hours transcribed
 - [ ] Action item completion rate
 - [ ] Top speakers / talk time distribution
 - [ ] Trends over time
 
-### Library Page
-- [ ] Searchable meeting archive
-- [ ] Folder organization
-- [ ] Full-text search across all transcripts
+**Current state:** Empty state page. Could be partially built from localStorage data.
 
-### Team Page
+### Library Page — DONE ✅
+- [x] Searchable meeting archive
+- [x] Search by title, transcript content, tags
+- [x] Status badges and duration
+- [ ] Folder organization
+- [ ] Bulk actions
+
+### Team Page — ❌ FAKE
 - [ ] Real invite email via Resend
 - [ ] Team member list from database
 - [ ] Role management (admin, member)
 - [ ] Usage stats per member
 
-### Integrations Page
-- [ ] Actually connect to Zoom, Google Meet, Teams via OAuth
+**Current state:** Invite form shows success toast but doesn't send emails.
+
+### Integrations Page — DISPLAY ONLY
+- [x] Categorized layout with 10 integrations
+- [x] "Coming Soon" badges on all
+- [ ] OAuth flows for Zoom, Google Meet, Teams
 - [ ] Slack notifications for meeting summaries
 - [ ] Notion export for meeting notes
-- [ ] Show connected vs disconnected state from database
-- [ ] OAuth callback routes for each provider
+- [ ] Connection status from database
+- [ ] OAuth callback routes
 
-### Settings Page
+### Settings Page — PARTIALLY WORKING
+- [x] Profile form (name/email from UserContext, saves to localStorage)
+- [x] Notification toggles (UI only, no persistence)
+- [x] Transcription language/vocabulary (UI only)
+- [x] Billing plan display
 - [ ] Persist all settings to database
-- [ ] Stripe Customer Portal link for billing
+- [ ] Stripe Customer Portal link
 - [ ] Real API key generation and management
 - [ ] Account deletion flow with confirmation
+- [ ] "Export All Data" — download all meetings as ZIP
 
 ---
 
-## P3 — Payments & Polish
+## P3 — Payments & Polish ❌ NOT STARTED
 
 ### Stripe Billing
 - [ ] Create Stripe products/prices for Free, Starter ($9), Pro ($19), Team ($39)
@@ -189,54 +225,70 @@ Every page has polished UI but zero backend. This file tracks what needs to be b
 - [ ] Team invite emails
 - [ ] Meeting shared notification
 
-### Dashboard (Authenticated)
-- [ ] Show real stats (meetings this week, hours, action items)
-- [ ] Today's meetings from calendar integration
-- [ ] Recent activity feed from database
+### Dashboard — PARTIALLY DONE
+- [x] Personalized greeting from UserContext
+- [x] Onboarding checklist (4 steps, local toggle)
+- [x] Quick action buttons (wired to real pages)
+- [ ] Real stats (meetings this week, hours recorded, open action items)
+- [ ] Recent activity feed
 - [ ] Weekly digest with AI insights
 
 ---
 
 ## Bugs & Polish
 
-- [ ] Integrations page — shows flat list of cards with "Connect" that does nothing. Needs real OAuth flows or at minimum "Coming Soon" badges
-- [ ] Google/Apple OAuth buttons on sign-in/sign-up do nothing (redirect to dashboard without auth)
+- [x] ~~Integrations page flat/ugly~~ → Categorized with Coming Soon badges
+- [ ] Google/Apple OAuth buttons redirect to dashboard without authenticating
+- [ ] Header search bar is non-functional (placeholder only)
 - [ ] No loading states on page transitions
 - [ ] No error boundaries
 - [ ] No 404 page
-- [ ] Demo mode indicator should link back to sign-up
-- [ ] Mobile recording page needs testing
-- [ ] API key in settings is always the same fake key
+- [ ] API key in settings is hardcoded fake key
 - [ ] "Export All Data" and "Delete Account" buttons do nothing
-- [ ] No toast notifications for save actions (except settings)
+- [ ] No toast notifications for most save actions
+- [ ] Dashboard stats show hardcoded zeros
+- [ ] Mobile recording page needs testing
 
 ---
 
-## Environment Variables Needed
+## Environment Variables
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-# AWS S3
+# AWS S3 ✅ CONFIGURED
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 AWS_S3_BUCKET=reverbic-recordings
 
-# OpenAI
+# OpenAI ✅ CONFIGURED
 OPENAI_API_KEY=
 
-# Stripe
+# App ✅ CONFIGURED
+NEXT_PUBLIC_APP_URL=https://reverbic.ai
+
+# Supabase — NOT YET SET UP
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# Stripe — NOT YET SET UP
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
-# Resend
+# Resend — NOT YET SET UP
 RESEND_API_KEY=
-
-# App
-NEXT_PUBLIC_APP_URL=https://reverbic.ai
 ```
+
+---
+
+## Quick Wins (Can Do Without External Services)
+
+These can be built now using only localStorage data:
+
+1. **Wire Decisions page** — data already exists in `meeting.decisions[]`
+2. **Dashboard real stats** — count meetings, sum durations, count open action items from store
+3. **Analytics page** — basic charts from localStorage meeting data
+4. **Header search** — search across meetings/transcripts in store
+5. **Meeting detail audio player** — generate S3 presigned URL, use `<audio>` tag
+6. **Download transcript** — export as .txt from stored transcript text

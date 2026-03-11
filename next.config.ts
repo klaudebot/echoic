@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     "fluent-ffmpeg",
     "@ffmpeg-installer/ffmpeg",
     "@ffmpeg-installer/linux-x64",
+    "@ffprobe-installer/ffprobe",
   ],
 };
 

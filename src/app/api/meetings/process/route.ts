@@ -9,7 +9,10 @@ import ffmpeg from "fluent-ffmpeg";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const ffprobeInstaller = require("@ffprobe-installer/ffprobe");
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+ffmpeg.setFfprobePath(ffprobeInstaller.path);
 
 let _s3Client: S3Client | null = null;
 function getS3Client(): S3Client {

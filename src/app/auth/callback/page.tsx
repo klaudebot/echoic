@@ -1,38 +1,49 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 
 /**
  * Client-side OAuth callback page.
- * The browser client exchanges the auth code for a session directly,
- * so the tokens are stored in document.cookie where createBrowserClient
- * can find them (unlike server-set cookies which may be httpOnly).
+ *
+ * The Supabase browser client auto-detects the ?code= parameter
+ * (via detectSessionInUrl) and exchanges it for a session.
+ * We just wait for the session to appear, then redirect.
  */
 export default function AuthCallbackPage() {
   const router = useRouter();
+  // Capture `next` immediately before the client strips URL params
+  const nextRef = useRef(
+    typeof window !== "undefined"
+      ? new URL(window.location.href).searchParams.get("next") ?? "/dashboard"
+      : "/dashboard"
+  );
 
   useEffect(() => {
+    const next = nextRef.current;
     const supabase = getSupabaseBrowser();
-    const url = new URL(window.location.href);
-    const code = url.searchParams.get("code");
-    const next = url.searchParams.get("next") ?? "/dashboard";
 
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
-        if (error) {
-          console.error("[auth/callback] exchange failed:", error.message, error);
-          router.replace(`/sign-in?error=${encodeURIComponent(error.message)}`);
-        } else {
-          console.log("[auth/callback] session established for", data.session?.user?.email);
-          router.replace(next);
-        }
-      });
-    } else {
-      console.error("[auth/callback] no code in URL");
-      router.replace("/sign-in?error=no_code");
-    }
+    // Listen for auth state changes — the auto-exchange will fire SIGNED_IN
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+        subscription.unsubscribe();
+        router.replace(next);
+      }
+    });
+
+    // Timeout fallback
+    const timeout = setTimeout(() => {
+      subscription.unsubscribe();
+      router.replace("/sign-in?error=auth_timeout");
+    }, 10000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [router]);
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
+import { saveMeeting, updateMeeting } from "@/lib/meeting-store";
 import {
   Mic,
   Square,
@@ -324,6 +325,56 @@ export default function RecordPage() {
 
       setRecordingId(rid);
       setStatus("done");
+
+      // Save meeting to local store
+      const fileName = `recording-${Date.now()}.webm`;
+      saveMeeting({
+        id: rid,
+        title: `Recording ${new Date().toLocaleDateString()}`,
+        s3Key: `default-account/default-user/${rid}.webm`,
+        fileName,
+        fileSize: blob.size,
+        duration: elapsed,
+        language: 'en',
+        tags: [],
+        notes,
+        createdAt: new Date().toISOString(),
+        status: 'processing',
+        audioAnalysis: null,
+        transcript: null,
+        summary: null,
+        keyPoints: [],
+        actionItems: [],
+        decisions: [],
+      });
+
+      // Trigger processing pipeline (fire and forget)
+      fetch('/api/meetings/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          s3Key: `default-account/default-user/${rid}.webm`,
+          title: `Recording ${new Date().toLocaleDateString()}`,
+        }),
+      }).then(async (res) => {
+        if (res.ok) {
+          const result = await res.json();
+          updateMeeting(rid, {
+            status: result.status === 'silent' ? 'silent' : 'completed',
+            audioAnalysis: result.audioAnalysis,
+            transcript: result.transcript,
+            summary: result.summary,
+            keyPoints: result.keyPoints ?? [],
+            actionItems: result.actionItems ?? [],
+            decisions: result.decisions ?? [],
+            duration: result.transcript?.duration ?? elapsed,
+          });
+        } else {
+          updateMeeting(rid, { status: 'failed' });
+        }
+      }).catch(() => {
+        updateMeeting(rid, { status: 'failed' });
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
       setStatus("done");
@@ -548,9 +599,17 @@ export default function RecordPage() {
             </div>
           )}
           <div className="flex items-center justify-center gap-3">
+            {recordingId && (
+              <AppLink
+                href={`/meetings/${recordingId}`}
+                className="px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+              >
+                View Meeting
+              </AppLink>
+            )}
             <AppLink
               href="/meetings"
-              className="px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+              className="px-4 py-2 border border-brand-violet text-brand-violet rounded-lg text-sm font-medium hover:bg-brand-violet/5 transition-colors"
             >
               View Meetings
             </AppLink>

@@ -1,15 +1,24 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION ?? "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
-  },
-});
+let _s3Client: S3Client | null = null;
 
-const BUCKET = process.env.AWS_S3_BUCKET ?? "";
+function getS3Client(): S3Client {
+  if (!_s3Client) {
+    _s3Client = new S3Client({
+      region: process.env.AWS_REGION ?? "us-east-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
+      },
+    });
+  }
+  return _s3Client;
+}
+
+function getBucket(): string {
+  return process.env.AWS_S3_BUCKET ?? "";
+}
 
 /**
  * Build an S3 object key for a recording.
@@ -33,12 +42,12 @@ export async function getUploadPresignedUrl(
   contentType: string
 ): Promise<string> {
   const command = new PutObjectCommand({
-    Bucket: BUCKET,
+    Bucket: getBucket(),
     Key: key,
     ContentType: contentType,
   });
 
-  return getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  return getSignedUrl(getS3Client(), command, { expiresIn: 3600 });
 }
 
 /**
@@ -47,9 +56,9 @@ export async function getUploadPresignedUrl(
  */
 export async function getDownloadPresignedUrl(key: string): Promise<string> {
   const command = new GetObjectCommand({
-    Bucket: BUCKET,
+    Bucket: getBucket(),
     Key: key,
   });
 
-  return getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  return getSignedUrl(getS3Client(), command, { expiresIn: 3600 });
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openai } from "@/lib/openai";
+import { getOpenAI } from "@/lib/openai";
 
 const SYSTEM_PROMPT = `You are a professional meeting summarization assistant. Given a meeting transcript, produce a structured JSON analysis. Use a professional, concise business voice.
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       ? `Meeting Title: ${meetingTitle}\n\nTranscript:\n${trimmedTranscript}`
       : `Transcript:\n${trimmedTranscript}`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: "gpt-4o",
       temperature: 0.3,
       response_format: { type: "json_object" },

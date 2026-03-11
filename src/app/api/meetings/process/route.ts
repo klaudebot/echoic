@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { openai } from "@/lib/openai";
+import { getOpenAI } from "@/lib/openai";
 import type { Readable } from "stream";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION ?? "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
-  },
-});
+let _s3Client: S3Client | null = null;
+function getS3Client(): S3Client {
+  if (!_s3Client) {
+    _s3Client = new S3Client({
+      region: process.env.AWS_REGION ?? "us-east-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
+      },
+    });
+  }
+  return _s3Client;
+}
 
-const BUCKET = process.env.AWS_S3_BUCKET ?? "";
+function getBucket(): string {
+  return process.env.AWS_S3_BUCKET ?? "";
+}
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const SILENCE_THRESHOLD_PERCENT = 80;
 
@@ -106,10 +114,10 @@ export async function POST(request: Request) {
     }
 
     // Step 1: Download audio from S3
-    const getCommand = new GetObjectCommand({ Bucket: BUCKET, Key: s3Key });
+    const getCommand = new GetObjectCommand({ Bucket: getBucket(), Key: s3Key });
     let s3Response;
     try {
-      s3Response = await s3Client.send(getCommand);
+      s3Response = await getS3Client().send(getCommand);
     } catch (err: unknown) {
       const code = (err as { name?: string }).name;
       if (code === "NoSuchKey") {
@@ -161,7 +169,7 @@ export async function POST(request: Request) {
       type: `audio/${ext === "mp3" ? "mpeg" : ext}`,
     });
 
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await getOpenAI().audio.transcriptions.create({
       file,
       model: "whisper-1",
       response_format: "verbose_json",
@@ -204,7 +212,7 @@ export async function POST(request: Request) {
       ? `Meeting Title: ${title}\n\nTranscript:\n${transcription.text}`
       : `Transcript:\n${transcription.text}`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: "gpt-4o",
       temperature: 0.3,
       response_format: { type: "json_object" },

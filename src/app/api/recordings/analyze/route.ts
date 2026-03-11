@@ -2,15 +2,23 @@ import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import type { Readable } from "stream";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION ?? "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
-  },
-});
+let _s3Client: S3Client | null = null;
+function getS3Client(): S3Client {
+  if (!_s3Client) {
+    _s3Client = new S3Client({
+      region: process.env.AWS_REGION ?? "us-east-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
+      },
+    });
+  }
+  return _s3Client;
+}
 
-const BUCKET = process.env.AWS_S3_BUCKET ?? "";
+function getBucket(): string {
+  return process.env.AWS_S3_BUCKET ?? "";
+}
 
 async function streamToBuffer(stream: Readable): Promise<Buffer> {
   const chunks: Buffer[] = [];
@@ -81,10 +89,10 @@ export async function POST(request: Request) {
     }
 
     // Download from S3
-    const getCommand = new GetObjectCommand({ Bucket: BUCKET, Key: s3Key });
+    const getCommand = new GetObjectCommand({ Bucket: getBucket(), Key: s3Key });
     let s3Response;
     try {
-      s3Response = await s3Client.send(getCommand);
+      s3Response = await getS3Client().send(getCommand);
     } catch (err: unknown) {
       const code = (err as { name?: string }).name;
       if (code === "NoSuchKey") {

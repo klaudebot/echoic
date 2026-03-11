@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
+import { saveMeeting, updateMeeting, type Meeting } from "@/lib/meeting-store";
 import {
   Upload,
   FileAudio,
@@ -186,11 +187,61 @@ export default function UploadPage() {
       setRecordingId(rid);
       setUploading(false);
       setDone(true);
+
+      // Save meeting to local store with processing status
+      saveMeeting({
+        id: rid,
+        title: file.name.replace(/\.[^.]+$/, ''),
+        s3Key: `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
+        fileName: file.name,
+        fileSize: file.size,
+        duration: null,
+        language,
+        tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        notes: '',
+        createdAt: new Date().toISOString(),
+        status: 'processing',
+        audioAnalysis: null,
+        transcript: null,
+        summary: null,
+        keyPoints: [],
+        actionItems: [],
+        decisions: [],
+      });
+
+      // Trigger the processing pipeline
+      fetch('/api/meetings/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          s3Key: `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
+          title: file.name.replace(/\.[^.]+$/, ''),
+          language: language.toLowerCase().slice(0, 2),
+        }),
+      }).then(async (res) => {
+        if (res.ok) {
+          const result = await res.json();
+          updateMeeting(rid, {
+            status: result.status === 'silent' ? 'silent' : 'completed',
+            audioAnalysis: result.audioAnalysis,
+            transcript: result.transcript,
+            summary: result.summary,
+            keyPoints: result.keyPoints ?? [],
+            actionItems: result.actionItems ?? [],
+            decisions: result.decisions ?? [],
+            duration: result.transcript?.duration ?? null,
+          });
+        } else {
+          updateMeeting(rid, { status: 'failed' });
+        }
+      }).catch(() => {
+        updateMeeting(rid, { status: 'failed' });
+      });
     } catch (err) {
       setUploading(false);
       setError(err instanceof Error ? err.message : "Upload failed");
     }
-  }, [file, isDemo]);
+  }, [file, isDemo, language, tags]);
 
   const removeFile = () => {
     if (xhrRef.current) {
@@ -383,7 +434,17 @@ export default function UploadPage() {
           </div>
           <h3 className="font-heading text-lg text-foreground mb-1">Upload Complete</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Your recording is being transcribed. This usually takes 2-5 minutes.
+            Your recording is being processed. You can track progress on the{" "}
+            {recordingId ? (
+              <AppLink href={`/meetings/${recordingId}`} className="text-brand-violet hover:underline">
+                meeting detail page
+              </AppLink>
+            ) : (
+              <AppLink href="/meetings" className="text-brand-violet hover:underline">
+                meetings page
+              </AppLink>
+            )}
+            .
           </p>
           {recordingId && (
             <p className="text-xs text-muted-foreground mb-3 font-mono">
@@ -391,9 +452,17 @@ export default function UploadPage() {
             </p>
           )}
           <div className="flex items-center justify-center gap-3">
+            {recordingId && (
+              <AppLink
+                href={`/meetings/${recordingId}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+              >
+                View Meeting
+              </AppLink>
+            )}
             <AppLink
               href="/meetings"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors"
             >
               View Meetings
             </AppLink>

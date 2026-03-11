@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     ],
   },
   { href: "/library", label: "Library", icon: FolderOpen },
-  { href: "/action-items", label: "Action Items", icon: ListChecks, badge: "9" },
+  { href: "/action-items", label: "Action Items", icon: ListChecks },
   { href: "/decisions", label: "Decision Log", icon: Target },
   { href: "/coach", label: "AI Coach", icon: Sparkles },
   { href: "/clips", label: "Smart Clips", icon: Scissors },

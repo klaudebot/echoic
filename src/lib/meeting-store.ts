@@ -30,7 +30,7 @@ export interface Meeting {
   } | null;
   summary: string | null;
   keyPoints: string[];
-  actionItems: { text: string; assignee: string | null; priority: string }[];
+  actionItems: { text: string; assignee: string | null; priority: string; completed?: boolean }[];
   decisions: { text: string; madeBy: string | null }[];
 }
 

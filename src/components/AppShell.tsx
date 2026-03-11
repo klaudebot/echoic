@@ -121,10 +121,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="px-3 py-3">
-        <button className="w-full flex items-center gap-2 px-3 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors">
+        <Link href={navHref("/meetings/upload")} className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors">
           <Upload className="w-4 h-4" />
           Upload or Record
-        </button>
+        </Link>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 space-y-0.5">

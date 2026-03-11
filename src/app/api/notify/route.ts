@@ -3,16 +3,19 @@ import {
   sendTranscriptReadyEmail,
   sendProcessingFailedEmail,
   sendWelcomeEmail,
+  sendTeamInviteEmail,
+  sendTeamInviteAcceptedEmail,
+  sendPasswordResetEmail,
 } from "@/lib/resend";
 
 /**
  * POST /api/notify — Send email notifications via Resend.
- * Called client-side after key events (transcript ready, processing failed, welcome).
+ * Called client-side after key events (welcome, transcript ready, processing failed, team invite, etc.).
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { type, to, name, meetingTitle, meetingId, summary, actionItemCount, decisionCount, errorMessage } = body;
+    const { type, to, name, meetingTitle, meetingId, summary, actionItemCount, decisionCount, errorMessage, inviterName, inviterEmail, teamName, newMemberName, newMemberEmail, resetToken } = body;
 
     if (!type || !to) {
       return NextResponse.json({ error: "Missing type or to" }, { status: 400 });
@@ -49,6 +52,27 @@ export async function POST(request: Request) {
 
       case "welcome":
         await sendWelcomeEmail(to, name ?? "there");
+        break;
+
+      case "team-invite":
+        await sendTeamInviteEmail(
+          to,
+          inviterName ?? "A teammate",
+          inviterEmail ?? "",
+          teamName
+        );
+        break;
+
+      case "team-invite-accepted":
+        await sendTeamInviteAcceptedEmail(
+          to,
+          newMemberName ?? "Someone",
+          newMemberEmail ?? ""
+        );
+        break;
+
+      case "password-reset":
+        await sendPasswordResetEmail(to, resetToken ?? "");
         break;
 
       default:

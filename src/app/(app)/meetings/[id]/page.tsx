@@ -28,6 +28,7 @@ import {
   FileText,
   History,
   RotateCcw,
+  Pencil,
 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
 
@@ -436,6 +437,70 @@ function VersionHistory({
   );
 }
 
+function EditableTitle({ meeting }: { meeting: Meeting }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(meeting.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  function save(value: string) {
+    const trimmed = value.trim();
+    if (trimmed && trimmed !== meeting.title) {
+      updateMeeting(meeting.id, { title: trimmed });
+    }
+    setEditing(false);
+  }
+
+  function useDateTime() {
+    const dtTitle = meeting.originalTitle ?? `Recording ${formatDate(meeting.createdAt)}`;
+    updateMeeting(meeting.id, { title: dtTitle });
+    setDraft(dtTitle);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="space-y-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={() => save(draft)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") save(draft);
+            if (e.key === "Escape") { setDraft(meeting.title); setEditing(false); }
+          }}
+          className="font-heading text-2xl text-foreground bg-transparent border-b-2 border-brand-violet outline-none w-full py-0.5"
+        />
+        {meeting.originalTitle && meeting.title !== meeting.originalTitle && (
+          <button
+            onClick={useDateTime}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Clock className="w-3 h-3" />
+            Use date/time
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <h1
+      onClick={() => { setDraft(meeting.title); setEditing(true); }}
+      className="font-heading text-2xl text-foreground cursor-pointer hover:text-brand-violet transition-colors group"
+      title="Click to rename"
+    >
+      {meeting.title}
+      <Pencil className="w-3.5 h-3.5 inline ml-2 opacity-0 group-hover:opacity-50 transition-opacity" />
+    </h1>
+  );
+}
+
 function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
@@ -451,7 +516,7 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <h1 className="font-heading text-2xl text-foreground">{meeting.title}</h1>
+            <EditableTitle meeting={meeting} />
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />

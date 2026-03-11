@@ -5,6 +5,7 @@ const SUMMARIZE_SYSTEM_PROMPT = `You are a professional meeting summarization as
 
 Output ONLY valid JSON in this exact format:
 {
+  "suggestedTitle": "Short descriptive title for this meeting (3-8 words)",
   "summary": "2-3 paragraph professional summary of the meeting",
   "keyPoints": ["point 1", "point 2", ...],
   "actionItems": [
@@ -16,6 +17,7 @@ Output ONLY valid JSON in this exact format:
 }
 
 Rules:
+- suggestedTitle: a concise, descriptive title (3-8 words) capturing the meeting's main topic. Examples: "Q1 Budget Planning Review", "Product Launch Strategy Sync", "Engineering Sprint Retrospective". Do NOT use generic titles like "Team Meeting" or "Weekly Sync" unless nothing more specific is discussed.
 - summary: 2-3 paragraphs capturing the purpose, discussion, and outcomes
 - keyPoints: 3-8 concise bullet points of the most important topics discussed
 - actionItems: extract every follow-up task; infer priority from context
@@ -78,6 +80,7 @@ export async function POST(request: Request) {
 
     log("DONE");
     return NextResponse.json({
+      suggestedTitle: typeof parsed.suggestedTitle === "string" ? parsed.suggestedTitle : null,
       summary: parsed.summary ?? null,
       keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : [],
       actionItems: Array.isArray(parsed.actionItems)

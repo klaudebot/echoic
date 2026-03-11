@@ -354,9 +354,11 @@ export default function RecordPage() {
 
       // Save meeting to local store
       const fileName = `recording-${Date.now()}.webm`;
+      const dateTimeTitle = `Recording ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}`;
       saveMeeting({
         id: rid,
-        title: `Recording ${new Date().toLocaleDateString()}`,
+        title: dateTimeTitle,
+        originalTitle: dateTimeTitle,
         s3Key: `default-account/default-user/${rid}.webm`,
         fileName,
         fileSize: uploadFileSize,
@@ -375,14 +377,13 @@ export default function RecordPage() {
       });
 
       // Notify upload complete
-      const meetingTitle = `Recording ${new Date().toLocaleDateString()}`;
-      notifyUploadComplete(meetingTitle, rid);
+      notifyUploadComplete(dateTimeTitle, rid);
 
       // Trigger staged processing pipeline (fire and forget)
       runProcessingPipeline(
         rid,
         `default-account/default-user/${rid}.webm`,
-        meetingTitle,
+        dateTimeTitle,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");

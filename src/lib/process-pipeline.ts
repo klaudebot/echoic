@@ -41,6 +41,7 @@ interface TranscribeResult {
 }
 
 interface SummarizeResult {
+  suggestedTitle: string | null;
   summary: string | null;
   keyPoints: string[];
   actionItems: { text: string; assignee: string | null; priority: string }[];
@@ -229,11 +230,19 @@ export async function runProcessingPipeline(
     }
 
     const sumData: SummarizeResult = await sumRes.json();
-    log(`Summarize done: summary=${sumData.summary?.length ?? 0} chars, keyPoints=${sumData.keyPoints.length}, actionItems=${sumData.actionItems.length}, decisions=${sumData.decisions.length}`);
+    const sugTitle = sumData.suggestedTitle || "(none)";
+    const sumLen = sumData.summary?.length || 0;
+    log(`Summarize done: suggestedTitle="${sugTitle}" summary=${sumLen} chars, keyPoints=${sumData.keyPoints.length}, actionItems=${sumData.actionItems.length}, decisions=${sumData.decisions.length}`);
 
     // ─── Done ───
+    // Auto-rename with AI-generated title if available
+    const aiTitle = sumData.suggestedTitle?.trim();
+    const finalTitle = aiTitle && aiTitle.length > 2 ? aiTitle : title;
+
     const finalUpdates: Partial<Meeting> = {
       status: "completed",
+      title: finalTitle,
+      originalTitle: title, // preserve original date/time title for revert
       transcript,
       summary: sumData.summary,
       keyPoints: sumData.keyPoints,
@@ -247,11 +256,11 @@ export async function runProcessingPipeline(
     };
 
     updateMeeting(meetingId, finalUpdates);
-    log(`PIPELINE COMPLETE — total time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    log(`PIPELINE COMPLETE — title="${finalTitle}" total time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
-    // Notify user
-    notifyTranscriptComplete(title, meetingId);
-    sendEmailNotification("transcript-ready", meetingId, title, sumData.summary, undefined, sumData.actionItems.length, sumData.decisions.length);
+    // Notify user with AI title
+    notifyTranscriptComplete(finalTitle, meetingId);
+    sendEmailNotification("transcript-ready", meetingId, finalTitle, sumData.summary, undefined, sumData.actionItems.length, sumData.decisions.length);
 
     onComplete?.(finalUpdates);
   } catch (err) {

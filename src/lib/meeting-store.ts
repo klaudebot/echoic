@@ -27,6 +27,7 @@ export interface TranscriptVersion {
 export interface Meeting {
   id: string;
   title: string;
+  originalTitle?: string; // date/time-based title preserved for "Use date/time" revert
   s3Key: string;
   fileName: string;
   fileSize: number;

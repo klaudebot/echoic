@@ -213,9 +213,11 @@ export default function UploadPage() {
       setDone(true);
 
       // Save meeting to local store with processing status
+      const dateTimeTitle = `Recording ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}`;
       saveMeeting({
         id: rid,
-        title: file.name.replace(/\.[^.]+$/, ''),
+        title: dateTimeTitle,
+        originalTitle: dateTimeTitle,
         s3Key: `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
         fileName: file.name,
         fileSize: uploadFileSize,
@@ -234,14 +236,13 @@ export default function UploadPage() {
       });
 
       // Notify upload complete
-      const meetingTitle = file.name.replace(/\.[^.]+$/, '');
-      notifyUploadComplete(meetingTitle, rid);
+      notifyUploadComplete(dateTimeTitle, rid);
 
       // Trigger staged processing pipeline (fire and forget)
       runProcessingPipeline(
         rid,
         `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
-        meetingTitle,
+        dateTimeTitle,
         language.toLowerCase().slice(0, 2),
       );
     } catch (err) {

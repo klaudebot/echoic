@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getOpenAI } from "@/lib/openai";
 import type { Readable } from "stream";
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
+import ffmpeg from "fluent-ffmpeg";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 let _s3Client: S3Client | null = null;
 function getS3Client(): S3Client {
@@ -20,7 +28,16 @@ function getS3Client(): S3Client {
 function getBucket(): string {
   return process.env.AWS_S3_BUCKET ?? "";
 }
-const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
+/** Upload limit — we can now handle large files via server-side compression */
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
+/** Whisper API limit */
+const WHISPER_LIMIT = 25 * 1024 * 1024; // 25 MB
+/** We start compressing when the file exceeds this threshold */
+const COMPRESS_THRESHOLD = 24 * 1024 * 1024; // 24 MB
+/** Target chunk size when splitting (leave headroom below Whisper limit) */
+const CHUNK_TARGET = 24 * 1024 * 1024; // 24 MB
+
 const SILENCE_THRESHOLD_PERCENT = 80;
 
 const SUMMARIZE_SYSTEM_PROMPT = `You are a professional meeting summarization assistant. Given a meeting transcript, produce a structured JSON analysis. Use a professional, concise business voice.
@@ -101,8 +118,150 @@ function analyzeAudioLevels(buffer: Buffer): {
   return { isSilent: silencePercent > SILENCE_THRESHOLD_PERCENT, silencePercent, peakDb, recommendation };
 }
 
-// Allow up to 60s for Hobby, 300s for Pro
-export const maxDuration = 60;
+// ---------------------------------------------------------------------------
+// FFmpeg helpers
+// ---------------------------------------------------------------------------
+
+/** Compress an audio buffer to mono MP3 at 64kbps / 16kHz */
+async function compressAudio(
+  inputBuffer: Buffer,
+  inputExt: string
+): Promise<Buffer> {
+  const tmpDir = os.tmpdir();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const inputPath = path.join(tmpDir, `reverbic-in-${id}.${inputExt}`);
+  const outputPath = path.join(tmpDir, `reverbic-out-${id}.mp3`);
+
+  try {
+    await fs.writeFile(inputPath, inputBuffer);
+
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(inputPath)
+        .noVideo()
+        .audioChannels(1)
+        .audioFrequency(16000)
+        .audioBitrate("64k")
+        .format("mp3")
+        .output(outputPath)
+        .on("end", () => resolve())
+        .on("error", (err: Error) => reject(err))
+        .run();
+    });
+
+    return await fs.readFile(outputPath);
+  } finally {
+    await fs.unlink(inputPath).catch(() => {});
+    await fs.unlink(outputPath).catch(() => {});
+  }
+}
+
+/** Get the duration (in seconds) of an audio file on disk */
+async function getAudioDuration(filePath: string): Promise<number> {
+  return new Promise<number>((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) return reject(err);
+      resolve(metadata.format.duration ?? 0);
+    });
+  });
+}
+
+/**
+ * Split a compressed MP3 buffer into chunks that each fit under CHUNK_TARGET.
+ * Uses ffmpeg -ss / -t to extract time-based segments.
+ * Returns an array of { buffer, offsetSeconds } objects.
+ */
+async function splitAudioIntoChunks(
+  compressedBuffer: Buffer
+): Promise<{ buffer: Buffer; offsetSeconds: number }[]> {
+  const tmpDir = os.tmpdir();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const srcPath = path.join(tmpDir, `reverbic-split-src-${id}.mp3`);
+  const chunkPaths: string[] = [];
+
+  try {
+    await fs.writeFile(srcPath, compressedBuffer);
+    const totalDuration = await getAudioDuration(srcPath);
+
+    if (totalDuration <= 0) {
+      return [{ buffer: compressedBuffer, offsetSeconds: 0 }];
+    }
+
+    // Estimate bitrate from file size and duration to calculate chunk duration
+    const bytesPerSecond = compressedBuffer.length / totalDuration;
+    const chunkDurationSec = Math.floor(CHUNK_TARGET / bytesPerSecond);
+    // Ensure at least 30 seconds per chunk
+    const segmentDuration = Math.max(30, chunkDurationSec);
+
+    const chunks: { buffer: Buffer; offsetSeconds: number }[] = [];
+    let offset = 0;
+    let chunkIndex = 0;
+
+    while (offset < totalDuration) {
+      const chunkPath = path.join(
+        tmpDir,
+        `reverbic-chunk-${id}-${chunkIndex}.mp3`
+      );
+      chunkPaths.push(chunkPath);
+
+      const duration = Math.min(segmentDuration, totalDuration - offset);
+
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(srcPath)
+          .setStartTime(offset)
+          .duration(duration)
+          .noVideo()
+          .audioChannels(1)
+          .audioFrequency(16000)
+          .audioBitrate("64k")
+          .format("mp3")
+          .output(chunkPath)
+          .on("end", () => resolve())
+          .on("error", (err: Error) => reject(err))
+          .run();
+      });
+
+      const chunkBuffer = await fs.readFile(chunkPath);
+      chunks.push({ buffer: chunkBuffer, offsetSeconds: offset });
+
+      offset += duration;
+      chunkIndex++;
+    }
+
+    return chunks;
+  } finally {
+    await fs.unlink(srcPath).catch(() => {});
+    for (const p of chunkPaths) {
+      await fs.unlink(p).catch(() => {});
+    }
+  }
+}
+
+/** Transcribe a single buffer with Whisper and return raw result */
+async function transcribeBuffer(
+  buffer: Buffer,
+  filename: string,
+  language?: string
+) {
+  const file = new File([new Uint8Array(buffer)], filename, {
+    type: "audio/mpeg",
+  });
+
+  const transcription = await getOpenAI().audio.transcriptions.create({
+    file,
+    model: "whisper-1",
+    response_format: "verbose_json",
+    ...(language ? { language } : {}),
+  });
+
+  return transcription;
+}
+
+// ---------------------------------------------------------------------------
+// Main handler
+// ---------------------------------------------------------------------------
+
+// Allow up to 300s for large file processing
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {
@@ -144,7 +303,7 @@ export async function POST(request: Request) {
     if (audioBuffer.length > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          error: `File too large (${Math.round(audioBuffer.length / 1024 / 1024)}MB). The AI transcription service supports files up to 25MB. Try compressing your audio or recording in a smaller format like MP3.`,
+          error: `File too large (${Math.round(audioBuffer.length / 1024 / 1024)}MB). Maximum upload size is 500MB.`,
         },
         { status: 413 }
       );
@@ -165,40 +324,137 @@ export async function POST(request: Request) {
       });
     }
 
-    // Step 3: Transcribe with Whisper
+    // Step 3: Prepare audio for Whisper (compress if needed)
     const ext = s3Key.split(".").pop()?.toLowerCase() ?? "webm";
-    const filename = s3Key.split("/").pop() ?? `audio.${ext}`;
-    const file = new File([new Uint8Array(audioBuffer)], filename, {
-      type: `audio/${ext === "mp3" ? "mpeg" : ext}`,
-    });
+    let whisperBuffer: Buffer;
+    let whisperFilename: string;
+    let needsChunking = false;
 
-    const transcription = await getOpenAI().audio.transcriptions.create({
-      file,
-      model: "whisper-1",
-      response_format: "verbose_json",
-      ...(language ? { language } : {}),
-    });
+    if (audioBuffer.length > COMPRESS_THRESHOLD) {
+      // Compress large files with ffmpeg
+      console.log(
+        `Audio file is ${Math.round(audioBuffer.length / 1024 / 1024)}MB — compressing with ffmpeg...`
+      );
+      whisperBuffer = await compressAudio(audioBuffer, ext);
+      whisperFilename = `compressed-${Date.now()}.mp3`;
+      console.log(
+        `Compressed to ${Math.round(whisperBuffer.length / 1024 / 1024)}MB`
+      );
 
-    const segments =
-      (
-        transcription as unknown as {
-          segments?: { start: number; end: number; text: string }[];
+      if (whisperBuffer.length > WHISPER_LIMIT) {
+        needsChunking = true;
+      }
+    } else {
+      // File is small enough — send directly
+      whisperBuffer = audioBuffer;
+      whisperFilename = s3Key.split("/").pop() ?? `audio.${ext}`;
+    }
+
+    // Step 4: Transcribe with Whisper
+    let fullText: string;
+    let allSegments: { start: number; end: number; text: string }[] = [];
+    let detectedLanguage: string | undefined;
+    let totalDuration: number | undefined;
+
+    if (needsChunking) {
+      // Split into chunks and transcribe each separately
+      console.log(
+        "Compressed file still exceeds 25MB — splitting into chunks..."
+      );
+      const chunks = await splitAudioIntoChunks(whisperBuffer);
+      console.log(`Split into ${chunks.length} chunks`);
+
+      const textParts: string[] = [];
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        console.log(
+          `Transcribing chunk ${i + 1}/${chunks.length} (offset: ${chunk.offsetSeconds}s, size: ${Math.round(chunk.buffer.length / 1024 / 1024)}MB)...`
+        );
+
+        const result = await transcribeBuffer(
+          chunk.buffer,
+          `chunk-${i}.mp3`,
+          language
+        );
+
+        textParts.push(result.text);
+
+        // Adjust segment timestamps by the chunk offset
+        const chunkSegments =
+          (
+            result as unknown as {
+              segments?: { start: number; end: number; text: string }[];
+            }
+          ).segments ?? [];
+
+        for (const seg of chunkSegments) {
+          allSegments.push({
+            start: seg.start + chunk.offsetSeconds,
+            end: seg.end + chunk.offsetSeconds,
+            text: seg.text.trim(),
+          });
         }
-      ).segments?.map((seg) => ({
-        start: seg.start,
-        end: seg.end,
-        text: seg.text.trim(),
-      })) ?? [];
+
+        // Use language/duration from first chunk
+        if (i === 0) {
+          detectedLanguage = (result as unknown as { language?: string })
+            .language;
+        }
+
+        // Accumulate total duration
+        const chunkDuration = (result as unknown as { duration?: number })
+          .duration;
+        if (chunkDuration != null) {
+          totalDuration = (totalDuration ?? 0) + chunkDuration;
+        }
+      }
+
+      fullText = textParts.join(" ");
+    } else {
+      // Single transcription
+      const mimeType =
+        whisperFilename.endsWith(".mp3")
+          ? "audio/mpeg"
+          : `audio/${ext === "mp3" ? "mpeg" : ext}`;
+      const file = new File([new Uint8Array(whisperBuffer)], whisperFilename, {
+        type: mimeType,
+      });
+
+      const transcription = await getOpenAI().audio.transcriptions.create({
+        file,
+        model: "whisper-1",
+        response_format: "verbose_json",
+        ...(language ? { language } : {}),
+      });
+
+      fullText = transcription.text;
+      detectedLanguage = (transcription as unknown as { language?: string })
+        .language;
+      totalDuration = (transcription as unknown as { duration?: number })
+        .duration;
+
+      allSegments =
+        (
+          transcription as unknown as {
+            segments?: { start: number; end: number; text: string }[];
+          }
+        ).segments?.map((seg) => ({
+          start: seg.start,
+          end: seg.end,
+          text: seg.text.trim(),
+        })) ?? [];
+    }
 
     const transcript = {
-      text: transcription.text,
-      language: (transcription as unknown as { language?: string }).language,
-      duration: (transcription as unknown as { duration?: number }).duration,
-      segments,
+      text: fullText,
+      language: detectedLanguage,
+      duration: totalDuration,
+      segments: allSegments,
     };
 
-    // Step 4: Summarize with GPT-4o
-    if (!transcription.text || transcription.text.trim().length < 20) {
+    // Step 5: Summarize with GPT-4o
+    if (!fullText || fullText.trim().length < 20) {
       return NextResponse.json({
         status: "completed",
         audioAnalysis,
@@ -212,8 +468,8 @@ export async function POST(request: Request) {
     }
 
     const userPrompt = title
-      ? `Meeting Title: ${title}\n\nTranscript:\n${transcription.text}`
-      : `Transcript:\n${transcription.text}`;
+      ? `Meeting Title: ${title}\n\nTranscript:\n${fullText}`
+      : `Transcript:\n${fullText}`;
 
     const completion = await getOpenAI().chat.completions.create({
       model: "gpt-4o",
@@ -236,7 +492,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Step 5: Return complete result
+    // Step 6: Return complete result
     return NextResponse.json({
       status: "completed",
       audioAnalysis,

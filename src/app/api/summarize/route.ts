@@ -25,6 +25,8 @@ Rules:
 
 const MAX_TRANSCRIPT_LENGTH = 100_000; // ~25k tokens
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

@@ -101,6 +101,9 @@ function analyzeAudioLevels(buffer: Buffer): {
   return { isSilent: silencePercent > SILENCE_THRESHOLD_PERCENT, silencePercent, peakDb, recommendation };
 }
 
+// Allow up to 60s for Hobby, 300s for Pro
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

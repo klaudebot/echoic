@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { AppLink } from "@/components/DemoContext";
-import { getMeeting, updateMeeting, type Meeting } from "@/lib/meeting-store";
+import { getMeeting, updateMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
 import {
   ArrowLeft,
   FileQuestion,
@@ -25,6 +25,8 @@ import {
   RefreshCw,
   Download,
   FileText,
+  History,
+  RotateCcw,
 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
 
@@ -346,7 +348,67 @@ function downloadAsMd(meeting: Meeting) {
 }
 
 // --- Completed meeting view ---
-function CompletedView({ meeting }: { meeting: Meeting }) {
+function VersionHistory({
+  versions,
+  meetingId,
+  onRestore,
+}: {
+  versions: TranscriptVersion[];
+  meetingId: string;
+  onRestore: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (versions.length === 0) return null;
+
+  return (
+    <div className="bg-card border border-border rounded-xl p-5">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 w-full text-left"
+      >
+        <History className="w-4 h-4 text-muted-foreground" />
+        <h2 className="font-heading text-lg text-foreground">Version History</h2>
+        <span className="text-xs text-muted-foreground ml-1">({versions.length} previous)</span>
+        <div className="flex-1" />
+        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="mt-4 space-y-3">
+          {[...versions].reverse().map((v) => (
+            <div key={v.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{v.label}</p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(v.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                  {v.audioAnalysis && ` · Peak: ${v.audioAnalysis.peakDb}dB`}
+                  {v.transcript && ` · ${v.transcript.segments.length} segments`}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  restoreTranscriptVersion(meetingId, v.id);
+                  onRestore();
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-violet bg-brand-violet/10 rounded-lg hover:bg-brand-violet/20 transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Restore
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
 
@@ -374,6 +436,14 @@ function CompletedView({ meeting }: { meeting: Meeting }) {
               <AudioBadge analysis={meeting.audioAnalysis} />
             </div>
           </div>
+          <button
+            onClick={onReprocess}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground border border-border rounded-lg hover:text-foreground hover:bg-muted transition-colors"
+            title="Reprocess audio with latest pipeline (auto-amplify, re-transcribe)"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Reprocess
+          </button>
         </div>
 
         {/* Tags */}
@@ -550,6 +620,15 @@ function CompletedView({ meeting }: { meeting: Meeting }) {
           </p>
         </div>
       )}
+
+      {/* Version History */}
+      {meeting.transcriptVersions && meeting.transcriptVersions.length > 0 && (
+        <VersionHistory
+          versions={meeting.transcriptVersions}
+          meetingId={meeting.id}
+          onRestore={onRestore}
+        />
+      )}
     </div>
   );
 }
@@ -609,6 +688,10 @@ export default function MeetingDetailPage() {
         <FailedState
           errorMessage={meeting.errorMessage}
           onRetry={() => {
+            // Snapshot existing transcript data if any (e.g. silent detection had partial data)
+            if (meeting.transcript) {
+              snapshotTranscriptVersion(id, "Before retry");
+            }
             updateMeeting(id, { status: "processing", errorMessage: undefined });
             setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
             fetch("/api/meetings/process", {
@@ -645,7 +728,53 @@ export default function MeetingDetailPage() {
           }}
         />
       )}
-      {meeting.status === "completed" && <CompletedView meeting={meeting} />}
+      {meeting.status === "completed" && (
+        <CompletedView
+          meeting={meeting}
+          onRestore={loadMeeting}
+          onReprocess={() => {
+            // Snapshot current version before reprocessing
+            const label = meeting.audioAnalysis
+              ? `Transcript (peak: ${meeting.audioAnalysis.peakDb}dB)`
+              : "Previous transcript";
+            snapshotTranscriptVersion(id, label);
+
+            updateMeeting(id, { status: "processing", errorMessage: undefined });
+            setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
+            fetch("/api/meetings/process", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                s3Key: meeting.s3Key,
+                title: meeting.title,
+                language: meeting.language?.toLowerCase().slice(0, 2),
+              }),
+            }).then(async (res) => {
+              if (res.ok) {
+                const result = await res.json();
+                updateMeeting(id, {
+                  status: result.status === "silent" ? "silent" : "completed",
+                  audioAnalysis: result.audioAnalysis,
+                  transcript: result.transcript,
+                  summary: result.summary,
+                  keyPoints: result.keyPoints ?? [],
+                  actionItems: result.actionItems ?? [],
+                  decisions: result.decisions ?? [],
+                  duration: result.transcript?.duration ?? null,
+                  errorMessage: undefined,
+                });
+              } else {
+                const errData = await res.json().catch(() => ({}));
+                updateMeeting(id, { status: "failed", errorMessage: errData.error || `Processing failed (${res.status})` });
+              }
+              loadMeeting();
+            }).catch((err) => {
+              updateMeeting(id, { status: "failed", errorMessage: err instanceof Error ? err.message : "Processing failed" });
+              loadMeeting();
+            });
+          }}
+        />
+      )}
     </div>
   );
 }

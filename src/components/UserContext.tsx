@@ -67,9 +67,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabaseBrowser();
     let initialDone = false;
 
+    // Debug: check what cookies the browser has
+    const sbCookies = document.cookie.split(";").map(c => c.trim()).filter(c => c.startsWith("sb-"));
+    console.log("[UserContext] sb cookies:", sbCookies.length, sbCookies.map(c => c.substring(0, 40)));
+
+    // Also try getSession directly to see what the client finds
+    supabase.auth.getSession().then(({ data, error }) => {
+      console.log("[UserContext] getSession:", data.session?.user?.email ?? "null", error?.message ?? "ok");
+    });
+
     // onAuthStateChange fires INITIAL_SESSION immediately with the current session.
-    // No need for a separate getUser() call.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[UserContext] onAuthStateChange:", event, session?.user?.email ?? "null");
       const authUser = session?.user ?? null;
       try {
         if (authUser) {
@@ -95,6 +104,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Safety: never stay loading forever
     const timeout = setTimeout(() => {
+      console.log("[UserContext] timeout fired, initialDone:", initialDone);
       if (!initialDone) {
         initialDone = true;
         setLoading(false);

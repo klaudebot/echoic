@@ -35,10 +35,12 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Build redirect response and attach auth cookies to it
+      // Build redirect response and attach auth cookies to it.
+      // Force httpOnly: false so the browser client (createBrowserClient) can
+      // read auth tokens from document.cookie.
       const response = NextResponse.redirect(`${origin}${next}`);
       for (const { name, value, options } of cookiesToApply) {
-        response.cookies.set(name, value, options);
+        response.cookies.set(name, value, { ...options, httpOnly: false });
       }
       return response;
     }

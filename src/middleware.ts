@@ -16,13 +16,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Auth callback — don't touch cookies, the client page handles token exchange
+  if (pathname.startsWith("/auth/")) {
+    return NextResponse.next();
+  }
+
   // Public routes — no session needed
   if (
     pathname === "/" ||
     pathname === "/pricing" ||
     pathname === "/about" ||
     pathname.startsWith("/api/") ||
-    pathname.startsWith("/auth/") ||
     pathname.startsWith("/share/")
   ) {
     // Still refresh session cookie if present

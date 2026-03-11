@@ -20,15 +20,17 @@ export default function AuthCallbackPage() {
     const next = url.searchParams.get("next") ?? "/dashboard";
 
     if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
         if (error) {
-          console.error("[auth/callback] exchangeCodeForSession failed:", error.message);
-          router.replace("/sign-in?error=auth_callback_failed");
+          console.error("[auth/callback] exchange failed:", error.message, error);
+          router.replace(`/sign-in?error=${encodeURIComponent(error.message)}`);
         } else {
+          console.log("[auth/callback] session established for", data.session?.user?.email);
           router.replace(next);
         }
       });
     } else {
+      console.error("[auth/callback] no code in URL");
       router.replace("/sign-in?error=no_code");
     }
   }, [router]);

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { AppLink } from "@/components/DemoContext";
-import { getMeetings } from "@/lib/meeting-store";
+import { useMeetings } from "@/hooks/use-meetings";
 import {
   Target,
   Mic,
@@ -39,17 +39,16 @@ function formatDate(iso: string): string {
 }
 
 export default function DecisionsPage() {
-  const [groups, setGroups] = useState<MeetingDecisionGroup[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const { meetings: rawMeetings, loading } = useMeetings();
+  const loaded = !loading;
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [sortNewestFirst, setSortNewestFirst] = useState(true);
 
-  const loadData = useCallback(() => {
-    const meetings = getMeetings();
+  const groups = useMemo(() => {
     const result: MeetingDecisionGroup[] = [];
 
-    for (const m of meetings) {
+    for (const m of rawMeetings) {
       if (m.decisions.length > 0) {
         result.push({
           meetingId: m.id,
@@ -61,13 +60,8 @@ export default function DecisionsPage() {
       }
     }
 
-    setGroups(result);
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+    return result;
+  }, [rawMeetings]);
 
   const toggleGroup = (meetingId: string) => {
     setCollapsedGroups((prev) => {

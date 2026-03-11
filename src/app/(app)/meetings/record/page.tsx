@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
+import { useUser } from "@/components/UserContext";
 import { saveMeeting } from "@/lib/meeting-store";
 import { runProcessingPipeline } from "@/lib/process-pipeline";
 import { notifyUploadComplete } from "@/lib/notifications";
@@ -20,6 +21,7 @@ import {
 export default function RecordPage() {
   const prefix = useBasePrefix();
   const isDemo = prefix === "/demo";
+  const { user } = useUser();
 
   const [status, setStatus] = useState<"idle" | "requesting" | "recording" | "paused" | "compressing" | "uploading" | "done">("idle");
   const [elapsed, setElapsed] = useState(0);
@@ -355,7 +357,7 @@ export default function RecordPage() {
       // Save meeting to local store
       const fileName = `recording-${Date.now()}.webm`;
       const dateTimeTitle = `Recording ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}`;
-      saveMeeting({
+      await saveMeeting({
         id: rid,
         title: dateTimeTitle,
         originalTitle: dateTimeTitle,
@@ -374,16 +376,17 @@ export default function RecordPage() {
         keyPoints: [],
         actionItems: [],
         decisions: [],
-      });
+      }, user!.organizationId!, user!.id);
 
       // Notify upload complete
-      notifyUploadComplete(dateTimeTitle, rid);
+      await notifyUploadComplete(user!.id, dateTimeTitle, rid);
 
       // Trigger staged processing pipeline (fire and forget)
       runProcessingPipeline(
         rid,
         `default-account/default-user/${rid}.webm`,
         dateTimeTitle,
+        user!.id,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");

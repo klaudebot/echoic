@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { AppLink } from "@/components/DemoContext";
-import { getMeetings, updateMeeting, type Meeting } from "@/lib/meeting-store";
+import { updateMeeting, type Meeting } from "@/lib/meeting-store";
+import { useMeetings } from "@/hooks/use-meetings";
 import {
   ListChecks,
   Mic,
@@ -53,63 +54,49 @@ function formatDate(iso: string): string {
 }
 
 export default function ActionItemsPage() {
-  const [groups, setGroups] = useState<MeetingActionGroup[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const { meetings, loading: meetingsLoading, refresh } = useMeetings();
   const [filter, setFilter] = useState<"all" | "open" | "completed">("all");
   const [priorityFilter, setPriorityFilter] = useState<"all" | "high" | "medium" | "low">("all");
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [dragState, setDragState] = useState<{ groupIdx: number; itemIdx: number } | null>(null);
 
-  const loadData = useCallback(() => {
-    const meetings = getMeetings();
-    const result: MeetingActionGroup[] = [];
-
-    for (const m of meetings) {
-      if (m.actionItems.length > 0) {
-        result.push({
-          meetingId: m.id,
-          meetingTitle: m.title,
-          meetingDate: m.createdAt,
-          meetingTags: m.tags,
-          items: m.actionItems.map((item) => ({
-            ...item,
-            completed: (item as ActionItem).completed ?? false,
-          })),
-        });
-      }
+  const groups: MeetingActionGroup[] = [];
+  for (const m of meetings) {
+    if (m.actionItems.length > 0) {
+      groups.push({
+        meetingId: m.id,
+        meetingTitle: m.title,
+        meetingDate: m.createdAt,
+        meetingTags: m.tags,
+        items: m.actionItems.map((item) => ({
+          ...item,
+          completed: (item as ActionItem).completed ?? false,
+        })),
+      });
     }
+  }
 
-    setGroups(result);
-    setLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const loaded = !meetingsLoading;
 
   const toggleItem = useCallback(
-    (meetingId: string, itemIdx: number) => {
-      setGroups((prev) =>
-        prev.map((g) => {
-          if (g.meetingId !== meetingId) return g;
-          const newItems = [...g.items];
-          newItems[itemIdx] = { ...newItems[itemIdx], completed: !newItems[itemIdx].completed };
+    async (meetingId: string, itemIdx: number) => {
+      const group = groups.find((g) => g.meetingId === meetingId);
+      if (!group) return;
+      const newItems = [...group.items];
+      newItems[itemIdx] = { ...newItems[itemIdx], completed: !newItems[itemIdx].completed };
 
-          // Persist to meeting store
-          updateMeeting(meetingId, {
-            actionItems: newItems.map(({ text, assignee, priority, completed }) => ({
-              text,
-              assignee,
-              priority,
-              completed,
-            })) as Meeting["actionItems"],
-          });
-
-          return { ...g, items: newItems };
-        })
-      );
+      // Persist to meeting store
+      await updateMeeting(meetingId, {
+        actionItems: newItems.map(({ text, assignee, priority, completed }) => ({
+          text,
+          assignee,
+          priority,
+          completed,
+        })) as Meeting["actionItems"],
+      });
+      await refresh();
     },
-    []
+    [groups, refresh]
   );
 
   const toggleGroup = (meetingId: string) => {
@@ -130,7 +117,7 @@ export default function ActionItemsPage() {
     e.preventDefault();
   };
 
-  const handleDrop = (groupIdx: number, targetIdx: number) => {
+  const handleDrop = async (groupIdx: number, targetIdx: number) => {
     if (!dragState || dragState.groupIdx !== groupIdx) {
       setDragState(null);
       return;
@@ -142,27 +129,21 @@ export default function ActionItemsPage() {
       return;
     }
 
-    setGroups((prev) => {
-      const newGroups = [...prev];
-      const group = { ...newGroups[groupIdx] };
-      const newItems = [...group.items];
-      const [moved] = newItems.splice(sourceIdx, 1);
-      newItems.splice(targetIdx, 0, moved);
-      group.items = newItems;
-      newGroups[groupIdx] = group;
+    const group = groups[groupIdx];
+    const newItems = [...group.items];
+    const [moved] = newItems.splice(sourceIdx, 1);
+    newItems.splice(targetIdx, 0, moved);
 
-      // Persist reorder
-      updateMeeting(group.meetingId, {
-        actionItems: newItems.map(({ text, assignee, priority, completed }) => ({
-          text,
-          assignee,
-          priority,
-          completed,
-        })) as Meeting["actionItems"],
-      });
-
-      return newGroups;
+    // Persist reorder
+    await updateMeeting(group.meetingId, {
+      actionItems: newItems.map(({ text, assignee, priority, completed }) => ({
+        text,
+        assignee,
+        priority,
+        completed,
+      })) as Meeting["actionItems"],
     });
+    await refresh();
 
     setDragState(null);
   };

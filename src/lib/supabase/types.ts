@@ -129,11 +129,7 @@ export interface Database {
           responded_at?: string | null;
           expires_at?: string;
         };
-        Update: {
-          status?: "pending" | "accepted" | "declined" | "expired";
-          responded_at?: string | null;
-          role?: "admin" | "member" | "viewer";
-        };
+        Update: Partial<Database["public"]["Tables"]["team_invites"]["Insert"]>;
       };
 
       tags: {
@@ -180,6 +176,8 @@ export interface Database {
           peak_db: number | null;
           audio_recommendation: string | null;
           summary: string | null;
+          transcript_text: string | null;
+          processing_pid: string | null;
           notes: string;
           share_token: string;
           is_public: boolean;
@@ -195,6 +193,7 @@ export interface Database {
           status?: "uploading" | "processing" | "completed" | "failed" | "silent";
           processing_step?: "preparing" | "transcribing" | "summarizing" | null;
           processing_progress?: string | null;
+          processing_pid?: string | null;
           error_message?: string | null;
           s3_key?: string | null;
           file_name?: string | null;
@@ -209,6 +208,7 @@ export interface Database {
           peak_db?: number | null;
           audio_recommendation?: string | null;
           summary?: string | null;
+          transcript_text?: string | null;
           notes?: string;
         };
         Update: Partial<Database["public"]["Tables"]["meetings"]["Insert"]>;

@@ -98,10 +98,10 @@ function getSnippet(text: string, query: string, maxLen = 80): string {
   return snippet;
 }
 
-function searchMeetings(query: string): SearchResult[] {
+async function searchMeetings(query: string, orgId: string): Promise<SearchResult[]> {
   if (!query.trim()) return [];
   const q = query.toLowerCase();
-  const meetings = getMeetings();
+  const meetings = await getMeetings(orgId);
   const results: SearchResult[] = [];
 
   for (const m of meetings) {
@@ -197,12 +197,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       setShowDropdown(false);
       return;
     }
-    debounceRef.current = setTimeout(() => {
-      const results = searchMeetings(value);
+    debounceRef.current = setTimeout(async () => {
+      if (!user?.organizationId) return;
+      const results = await searchMeetings(value, user.organizationId);
       setSearchResults(results);
       setShowDropdown(true);
     }, 300);
-  }, []);
+  }, [user]);
 
   // Close dropdown on click outside
   useEffect(() => {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppLink } from "@/components/DemoContext";
-import { getMeetings, type Meeting } from "@/lib/meeting-store";
+import { type Meeting } from "@/lib/meeting-store";
+import { useMeetings } from "@/hooks/use-meetings";
 import {
   FolderOpen,
   Upload,
@@ -68,14 +69,9 @@ function StatusBadge({ status }: { status: Meeting["status"] }) {
 }
 
 export default function LibraryPage() {
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const { meetings, loading } = useMeetings();
+  const loaded = !loading;
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    setMeetings(getMeetings());
-    setLoaded(true);
-  }, []);
 
   const filtered = search.trim()
     ? meetings.filter(

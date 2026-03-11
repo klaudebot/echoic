@@ -1,16 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useBasePrefix } from "@/components/DemoContext";
-import {
-  getNotifications,
-  getUnreadCount,
-  markAsRead,
-  markAllAsRead,
-  clearAllNotifications,
-  type AppNotification,
-} from "@/lib/notifications";
+import { useNotifications } from "@/hooks/use-notifications";
+import type { AppNotification } from "@/lib/notifications";
 import {
   Bell,
   CheckCircle2,
@@ -55,31 +49,17 @@ function timeAgo(dateStr: string): string {
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const prefix = useBasePrefix();
 
-  const refresh = useCallback(() => {
-    setNotifications(getNotifications());
-    setUnreadCount(getUnreadCount());
-  }, []);
-
-  // Load on mount + listen for changes
-  useEffect(() => {
-    refresh();
-
-    const handler = () => refresh();
-    window.addEventListener("reverbic-notification", handler);
-    // Also poll every 5s for cross-tab sync
-    const interval = setInterval(refresh, 5000);
-
-    return () => {
-      window.removeEventListener("reverbic-notification", handler);
-      clearInterval(interval);
-    };
-  }, [refresh]);
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    clearAll,
+  } = useNotifications();
 
   // Close on outside click
   useEffect(() => {
@@ -103,23 +83,12 @@ export function NotificationCenter() {
     return () => document.removeEventListener("keydown", handleKey);
   }, [open]);
 
-  const handleClick = (n: AppNotification) => {
-    markAsRead(n.id);
-    refresh();
+  const handleClick = async (n: AppNotification) => {
+    await markAsRead(n.id);
     if (n.meetingId) {
       setOpen(false);
       router.push(`${prefix}/meetings/${n.meetingId}`);
     }
-  };
-
-  const handleMarkAllRead = () => {
-    markAllAsRead();
-    refresh();
-  };
-
-  const handleClearAll = () => {
-    clearAllNotifications();
-    refresh();
   };
 
   return (
@@ -144,7 +113,7 @@ export function NotificationCenter() {
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (
                 <button
-                  onClick={handleMarkAllRead}
+                  onClick={markAllAsRead}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
                   title="Mark all as read"
                 >
@@ -153,7 +122,7 @@ export function NotificationCenter() {
               )}
               {notifications.length > 0 && (
                 <button
-                  onClick={handleClearAll}
+                  onClick={clearAll}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
                   title="Clear all"
                 >

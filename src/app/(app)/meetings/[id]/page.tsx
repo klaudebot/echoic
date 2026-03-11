@@ -3,7 +3,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { AppLink } from "@/components/DemoContext";
-import { getMeeting, updateMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
+import { updateMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
+import { useMeeting } from "@/hooks/use-meetings";
+import { useUser } from "@/components/UserContext";
 import { runProcessingPipeline, isPipelineOrphaned } from "@/lib/process-pipeline";
 import {
   ArrowLeft,
@@ -420,8 +422,8 @@ function VersionHistory({
                 </p>
               </div>
               <button
-                onClick={() => {
-                  restoreTranscriptVersion(meetingId, v.id);
+                onClick={async () => {
+                  await restoreTranscriptVersion(meetingId, v.id);
                   onRestore();
                 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-violet bg-brand-violet/10 rounded-lg hover:bg-brand-violet/20 transition-colors"
@@ -446,17 +448,17 @@ function EditableTitle({ meeting }: { meeting: Meeting }) {
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
-  function save(value: string) {
+  async function save(value: string) {
     const trimmed = value.trim();
     if (trimmed && trimmed !== meeting.title) {
-      updateMeeting(meeting.id, { title: trimmed });
+      await updateMeeting(meeting.id, { title: trimmed });
     }
     setEditing(false);
   }
 
-  function useDateTime() {
+  async function useDateTime() {
     const dtTitle = meeting.originalTitle ?? `Recording ${formatDate(meeting.createdAt)}`;
-    updateMeeting(meeting.id, { title: dtTitle });
+    await updateMeeting(meeting.id, { title: dtTitle });
     setDraft(dtTitle);
     setEditing(false);
   }
@@ -730,50 +732,43 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
 export default function MeetingDetailPage() {
   const params = useParams();
   const id = params.id as string;
-  const [meeting, setMeeting] = useState<Meeting | null | undefined>(undefined);
+  const { meeting, loading, refresh, setMeeting } = useMeeting(id);
+  const { user } = useUser();
   const resumedRef = useRef(false);
-
-  const loadMeeting = useCallback(() => {
-    const m = getMeeting(id);
-    setMeeting(m);
-    return m;
-  }, [id]);
-
-  // Initial load
-  useEffect(() => {
-    loadMeeting();
-  }, [loadMeeting]);
 
   // Auto-resume orphaned pipeline (e.g. after page refresh)
   useEffect(() => {
     if (!meeting || meeting.status !== "processing") return;
     if (resumedRef.current) return;
 
-    // Check if this pipeline is orphaned (no tab is running it)
-    if (isPipelineOrphaned(id)) {
-      resumedRef.current = true;
-      console.log(`[detail] Resuming orphaned pipeline for ${id.slice(0, 8)}...`);
-      runProcessingPipeline(
-        id,
-        meeting.s3Key,
-        meeting.title,
-        meeting.language?.toLowerCase().slice(0, 2),
-        { onStep: () => loadMeeting(), onComplete: () => loadMeeting(), onError: () => loadMeeting() }
-      );
-    }
-  }, [meeting, id, loadMeeting]);
+    (async () => {
+      // Check if this pipeline is orphaned (no tab is running it)
+      if (await isPipelineOrphaned(id)) {
+        resumedRef.current = true;
+        console.log(`[detail] Resuming orphaned pipeline for ${id.slice(0, 8)}...`);
+        runProcessingPipeline(
+          id,
+          meeting.s3Key,
+          meeting.title,
+          user!.id,
+          meeting.language?.toLowerCase().slice(0, 2),
+          { onStep: () => refresh(), onComplete: () => refresh(), onError: () => refresh() }
+        );
+      }
+    })();
+  }, [meeting, id, refresh, user]);
 
   // Auto-poll when processing
   useEffect(() => {
     if (meeting?.status !== "processing") return;
     const interval = setInterval(() => {
-      loadMeeting();
+      refresh();
     }, 2000);
     return () => clearInterval(interval);
-  }, [meeting?.status, loadMeeting]);
+  }, [meeting?.status, refresh]);
 
   // Loading
-  if (meeting === undefined) {
+  if (loading) {
     return null;
   }
 
@@ -800,18 +795,19 @@ export default function MeetingDetailPage() {
       {meeting.status === "failed" && (
         <FailedState
           errorMessage={meeting.errorMessage}
-          onRetry={() => {
+          onRetry={async () => {
             if (meeting.transcript) {
-              snapshotTranscriptVersion(id, "Before retry");
+              await snapshotTranscriptVersion(id, "Before retry");
             }
-            updateMeeting(id, { status: "processing", errorMessage: undefined });
+            await updateMeeting(id, { status: "processing", errorMessage: undefined });
             setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
             runProcessingPipeline(
               id,
               meeting.s3Key,
               meeting.title,
+              user!.id,
               meeting.language?.toLowerCase().slice(0, 2),
-              { onStep: () => loadMeeting(), onComplete: () => loadMeeting(), onError: () => loadMeeting() }
+              { onStep: () => refresh(), onComplete: () => refresh(), onError: () => refresh() }
             );
           }}
         />
@@ -819,21 +815,22 @@ export default function MeetingDetailPage() {
       {meeting.status === "completed" && (
         <CompletedView
           meeting={meeting}
-          onRestore={loadMeeting}
-          onReprocess={() => {
+          onRestore={refresh}
+          onReprocess={async () => {
             const label = meeting.audioAnalysis
               ? `Transcript (peak: ${meeting.audioAnalysis.peakDb}dB)`
               : "Previous transcript";
-            snapshotTranscriptVersion(id, label);
+            await snapshotTranscriptVersion(id, label);
 
-            updateMeeting(id, { status: "processing", errorMessage: undefined });
+            await updateMeeting(id, { status: "processing", errorMessage: undefined });
             setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
             runProcessingPipeline(
               id,
               meeting.s3Key,
               meeting.title,
+              user!.id,
               meeting.language?.toLowerCase().slice(0, 2),
-              { onStep: () => loadMeeting(), onComplete: () => loadMeeting(), onError: () => loadMeeting() }
+              { onStep: () => refresh(), onComplete: () => refresh(), onError: () => refresh() }
             );
           }}
         />

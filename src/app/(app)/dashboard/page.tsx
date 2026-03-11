@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { AppLink } from "@/components/DemoContext";
 import { useUser } from "@/components/UserContext";
-import { getMeetings, type Meeting } from "@/lib/meeting-store";
+import { type Meeting } from "@/lib/meeting-store";
+import { useMeetings } from "@/hooks/use-meetings";
 import {
   Upload,
   Mic,
@@ -145,22 +146,8 @@ function statusLabel(status: Meeting["status"]): { text: string; className: stri
 export default function DashboardPage() {
   const { user } = useUser();
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setMeetings(getMeetings());
-  }, []);
-
-  // Re-read meetings when window regains focus (user may have uploaded in another tab)
-  useEffect(() => {
-    function onFocus() {
-      setMeetings(getMeetings());
-    }
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, []);
+  const { meetings, loading } = useMeetings();
+  const mounted = !loading;
 
   const stats = useMemo(() => computeStats(meetings), [meetings]);
 

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useUser } from "@/components/UserContext";
+import { getSupabaseBrowser } from "@/lib/supabase/client";
 import {
   Users,
   Mail,
@@ -13,61 +15,16 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-// ─── Team member store (localStorage) ───
+// ─── Types ───
 
 interface TeamMember {
   id: string;
   email: string;
   name?: string;
-  status: "pending" | "accepted" | "declined";
+  role: string;
+  status: "pending" | "accepted" | "declined" | "expired";
   invitedAt: string;
   respondedAt?: string;
-}
-
-const TEAM_STORAGE_KEY = "reverbic_team";
-
-function getTeamMembers(): TeamMember[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(TEAM_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as TeamMember[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveTeamMembers(members: TeamMember[]): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(members));
-}
-
-function addTeamMember(email: string): TeamMember {
-  const members = getTeamMembers();
-  const member: TeamMember = {
-    id: `tm-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-    email: email.toLowerCase().trim(),
-    status: "pending",
-    invitedAt: new Date().toISOString(),
-  };
-  members.push(member);
-  saveTeamMembers(members);
-  return member;
-}
-
-function removeTeamMember(id: string): void {
-  const members = getTeamMembers().filter((m) => m.id !== id);
-  saveTeamMembers(members);
-}
-
-function resendInvite(id: string): void {
-  const members = getTeamMembers();
-  const idx = members.findIndex((m) => m.id === id);
-  if (idx >= 0) {
-    members[idx].invitedAt = new Date().toISOString();
-    members[idx].status = "pending";
-    members[idx].respondedAt = undefined;
-    saveTeamMembers(members);
-  }
 }
 
 // ─── Status badge ───
@@ -92,6 +49,12 @@ function StatusBadge({ status }: { status: TeamMember["status"] }) {
           <XCircle className="w-3 h-3" /> Declined
         </span>
       );
+    case "expired":
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-muted-foreground/10 text-muted-foreground">
+          <Clock className="w-3 h-3" /> Expired
+        </span>
+      );
   }
 }
 
@@ -109,6 +72,7 @@ function timeAgo(iso: string): string {
 // ─── Page ───
 
 export default function TeamPage() {
+  const { user } = useUser();
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteSent, setInviteSent] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -116,15 +80,69 @@ export default function TeamPage() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  const loadMembers = useCallback(() => {
-    setMembers(getTeamMembers());
-  }, []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sb = getSupabaseBrowser() as any;
+
+  const loadMembers = useCallback(async () => {
+    if (!user?.organizationId) return;
+
+    const { data: orgMembers } = await sb
+      .from("organization_members")
+      .select("id, user_id, role, joined_at")
+      .eq("organization_id", user.organizationId)
+      .neq("user_id", user.id) as { data: { id: string; user_id: string; role: string; joined_at: string }[] | null };
+
+    const { data: invites } = await sb
+      .from("team_invites")
+      .select("*")
+      .eq("organization_id", user.organizationId)
+      .in("status", ["pending", "declined", "expired"]) as { data: { id: string; email: string; role: string; status: string; invited_at: string; responded_at: string | null }[] | null };
+
+    const memberList: TeamMember[] = [];
+
+    // Add org members (accepted) — fetch profiles separately
+    if (orgMembers && orgMembers.length > 0) {
+      const userIds = orgMembers.map((m) => m.user_id);
+      const { data: profiles } = await sb
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", userIds) as { data: { id: string; email: string; full_name: string | null }[] | null };
+      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+      for (const m of orgMembers) {
+        const profile = profileMap.get(m.user_id);
+        memberList.push({
+          id: m.id,
+          email: profile?.email || "",
+          name: profile?.full_name || undefined,
+          role: m.role,
+          status: "accepted",
+          invitedAt: m.joined_at,
+        });
+      }
+    }
+
+    // Add pending/declined invites
+    if (invites) {
+      for (const inv of invites) {
+        memberList.push({
+          id: inv.id,
+          email: inv.email,
+          role: inv.role,
+          status: inv.status as TeamMember["status"],
+          invitedAt: inv.invited_at,
+          respondedAt: inv.responded_at || undefined,
+        });
+      }
+    }
+
+    setMembers(memberList);
+  }, [user?.organizationId, user?.id]);
 
   useEffect(() => {
     loadMembers();
   }, [loadMembers]);
 
-  // Validate email has a proper TLD (e.g. .com, .io, .co.uk)
   function isValidEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
   }
@@ -132,11 +150,10 @@ export default function TeamPage() {
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
     const email = inviteEmail.trim().toLowerCase();
-    if (!email || inviteLoading) return;
+    if (!email || inviteLoading || !user?.organizationId) return;
 
     setInviteError(null);
 
-    // Validate email format with TLD
     if (!isValidEmail(email)) {
       setInviteError("Please enter a valid email address (e.g. name@company.com)");
       return;
@@ -150,44 +167,42 @@ export default function TeamPage() {
 
     setInviteLoading(true);
 
-    // Get current user info from localStorage
-    let inviterName = "A teammate";
-    let inviterEmail = "";
-    try {
-      const stored = localStorage.getItem("reverbic_user");
-      if (stored) {
-        const user = JSON.parse(stored);
-        inviterName = user.name || inviterName;
-        inviterEmail = user.email || "";
-      }
-    } catch {}
+    const token = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Add to local store
-    addTeamMember(email);
-    loadMembers();
+    const { error } = await sb.from("team_invites").insert({
+      organization_id: user.organizationId,
+      invited_by: user.id,
+      email,
+      role: "member",
+      status: "pending",
+      token,
+      expires_at: expiresAt,
+    });
 
-    // Send the invite email
+    if (error) {
+      setInviteError("Failed to create invite. Please try again.");
+      setInviteLoading(false);
+      return;
+    }
+
+    // Send invite email
     try {
-      const res = await fetch("/api/notify", {
+      await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: "team-invite",
           to: email,
-          inviterName,
-          inviterEmail,
+          inviterName: user.name,
+          inviterEmail: user.email,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        console.error("[team] Invite email failed:", data);
-      } else {
-        console.log("[team] Invite email result:", data);
-      }
     } catch (err) {
       console.error("[team] Invite email error:", err);
     }
 
+    await loadMembers();
     setInviteSent(true);
     setInviteEmail("");
     setInviteLoading(false);
@@ -196,20 +211,18 @@ export default function TeamPage() {
 
   async function handleResend(member: TeamMember) {
     setOpenMenu(null);
-    resendInvite(member.id);
-    loadMembers();
+    if (!user) return;
 
-    let inviterName = "A teammate";
-    let inviterEmail = "";
-    try {
-      const stored = localStorage.getItem("reverbic_user");
-      if (stored) {
-        const user = JSON.parse(stored);
-        inviterName = user.name || inviterName;
-        inviterEmail = user.email || "";
-      }
-    } catch {}
+    await sb.from("team_invites")
+      .update({
+        status: "pending",
+        invited_at: new Date().toISOString(),
+        responded_at: null,
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      .eq("id", member.id);
 
+    // Re-send email
     try {
       await fetch("/api/notify", {
         method: "POST",
@@ -217,17 +230,23 @@ export default function TeamPage() {
         body: JSON.stringify({
           type: "team-invite",
           to: member.email,
-          inviterName,
-          inviterEmail,
+          inviterName: user.name,
+          inviterEmail: user.email,
         }),
       });
     } catch {}
+
+    await loadMembers();
   }
 
-  function handleRemove(id: string) {
+  async function handleRemove(id: string) {
     setOpenMenu(null);
-    removeTeamMember(id);
-    loadMembers();
+
+    // Try deleting from invites first, then org members
+    await sb.from("team_invites").delete().eq("id", id);
+    await sb.from("organization_members").delete().eq("id", id);
+
+    await loadMembers();
   }
 
   const pendingCount = members.filter((m) => m.status === "pending").length;

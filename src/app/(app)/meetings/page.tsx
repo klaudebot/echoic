@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AppLink } from "@/components/DemoContext";
-import { getMeetings, type Meeting } from "@/lib/meeting-store";
+import { type Meeting } from "@/lib/meeting-store";
+import { useMeetings } from "@/hooks/use-meetings";
 import {
   Video,
   Upload,
@@ -151,13 +151,8 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
 }
 
 export default function MeetingsPage() {
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setMeetings(getMeetings());
-    setLoaded(true);
-  }, []);
+  const { meetings, loading } = useMeetings();
+  const loaded = !loading;
 
   return (
     <div className="space-y-6">

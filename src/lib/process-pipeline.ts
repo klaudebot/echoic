@@ -1,12 +1,7 @@
 /**
  * Client-side orchestrator for the staged processing pipeline.
  * Calls prepare → transcribe (per chunk) → summarize in sequence,
- * updating the meeting store after each step.
- * Each API call is small enough to fit within serverless timeouts.
- *
- * Uses a `processingPid` on the meeting to track ownership.
- * If the page is refreshed, the pid becomes stale and another
- * instance can adopt the pipeline.
+ * updating the Supabase meeting store after each step.
  */
 
 import { getMeeting, updateMeeting, type Meeting } from "./meeting-store";
@@ -61,26 +56,23 @@ function generatePid(): string {
 
 /**
  * Check if a meeting's pipeline is orphaned (no active tab owns it).
- * Returns true if the meeting is "processing" but no tab is running its pipeline.
  */
-export function isPipelineOrphaned(meetingId: string): boolean {
-  const m = getMeeting(meetingId);
+export async function isPipelineOrphaned(meetingId: string): Promise<boolean> {
+  const m = await getMeeting(meetingId);
   if (!m || m.status !== "processing") return false;
-  // If this tab owns it, it's not orphaned
   if (m.processingPid && activePids.has(m.processingPid)) return false;
-  // No owner → orphaned
   return true;
 }
 
 /**
  * Run the full processing pipeline for a meeting.
- * Updates localStorage meeting store at each step.
- * Safe to call on refresh — will claim ownership and restart.
+ * Updates Supabase at each step. Safe to call on refresh.
  */
 export async function runProcessingPipeline(
   meetingId: string,
   s3Key: string,
   title: string,
+  userId: string,
   language?: string,
   callbacks?: PipelineCallbacks
 ): Promise<void> {
@@ -89,14 +81,12 @@ export async function runProcessingPipeline(
   const t0 = Date.now();
   const log = (msg: string) => console.log(`[pipeline:${meetingId.slice(0, 8)}] ${msg} (+${Date.now() - t0}ms)`);
 
-  // Register this pipeline run
   activePids.add(pid);
 
   try {
     log(`START pid=${pid} s3Key=${s3Key} title="${title}"`);
 
-    // Claim ownership
-    updateMeeting(meetingId, {
+    await updateMeeting(meetingId, {
       status: "processing",
       processingPid: pid,
       processingStep: "preparing",
@@ -124,27 +114,26 @@ export async function runProcessingPipeline(
 
     if (prepData.status === "silent") {
       log("Recording is silent — aborting pipeline");
-      updateMeeting(meetingId, {
+      await updateMeeting(meetingId, {
         status: "silent",
         audioAnalysis: prepData.audioAnalysis,
         processingStep: undefined,
         processingProgress: undefined,
         processingPid: undefined,
       });
-      notifySilentRecording(title, meetingId);
-      sendEmailNotification("processing-failed", meetingId, title, undefined, "Recording appears to be mostly silence.");
+      await notifySilentRecording(userId, title, meetingId);
+      sendEmailNotification("processing-failed", meetingId, title, userId, undefined, "Recording appears to be mostly silence.");
       onComplete?.({ status: "silent", audioAnalysis: prepData.audioAnalysis });
       return;
     }
 
-    // Save audio analysis immediately
-    updateMeeting(meetingId, {
+    await updateMeeting(meetingId, {
       audioAnalysis: prepData.audioAnalysis,
       processingStep: "transcribing",
       processingProgress: `Transcribing${prepData.chunks.length > 1 ? ` (0/${prepData.chunks.length} chunks)` : ""}...`,
     });
 
-    // ─── Stage 2: Transcribe (per chunk) ───
+    // ─── Stage 2: Transcribe ───
     log(`Stage 2: Transcribe — ${prepData.chunks.length} chunk(s)`);
     onStep?.("transcribing", `Transcribing ${prepData.chunks.length} chunk(s)...`);
 
@@ -161,7 +150,7 @@ export async function runProcessingPipeline(
 
       log(`Transcribing chunk ${i + 1}/${prepData.chunks.length}: s3Key=${chunk.s3Key} startTime=${chunk.startTime}`);
       onStep?.("transcribing", progress);
-      updateMeeting(meetingId, { processingProgress: progress });
+      await updateMeeting(meetingId, { processingProgress: progress });
 
       const txRes = await fetch("/api/meetings/process/transcribe", {
         method: "POST",
@@ -187,8 +176,6 @@ export async function runProcessingPipeline(
       if (i === 0 && txData.language) {
         detectedLanguage = txData.language;
       }
-
-      // Accumulate duration
       if (txData.duration != null) {
         if (i === 0) totalDuration = txData.duration;
         else totalDuration = Math.max(totalDuration, chunk.startTime + (txData.duration ?? 0));
@@ -206,7 +193,7 @@ export async function runProcessingPipeline(
     log(`All chunks transcribed: ${allSegments.length} total segments, ${fullText.length} chars, duration=${totalDuration.toFixed(1)}s`);
 
     // Save transcript immediately
-    updateMeeting(meetingId, {
+    await updateMeeting(meetingId, {
       transcript,
       duration: totalDuration,
       processingStep: "summarizing",
@@ -235,14 +222,13 @@ export async function runProcessingPipeline(
     log(`Summarize done: suggestedTitle="${sugTitle}" summary=${sumLen} chars, keyPoints=${sumData.keyPoints.length}, actionItems=${sumData.actionItems.length}, decisions=${sumData.decisions.length}`);
 
     // ─── Done ───
-    // Auto-rename with AI-generated title if available
     const aiTitle = sumData.suggestedTitle?.trim();
     const finalTitle = aiTitle && aiTitle.length > 2 ? aiTitle : title;
 
     const finalUpdates: Partial<Meeting> = {
       status: "completed",
       title: finalTitle,
-      originalTitle: title, // preserve original date/time title for revert
+      originalTitle: title,
       transcript,
       summary: sumData.summary,
       keyPoints: sumData.keyPoints,
@@ -255,12 +241,11 @@ export async function runProcessingPipeline(
       errorMessage: undefined,
     };
 
-    updateMeeting(meetingId, finalUpdates);
+    await updateMeeting(meetingId, finalUpdates);
     log(`PIPELINE COMPLETE — title="${finalTitle}" total time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
-    // Notify user with AI title
-    notifyTranscriptComplete(finalTitle, meetingId);
-    sendEmailNotification("transcript-ready", meetingId, finalTitle, sumData.summary, undefined, sumData.actionItems.length, sumData.decisions.length);
+    await notifyTranscriptComplete(userId, finalTitle, meetingId);
+    sendEmailNotification("transcript-ready", meetingId, finalTitle, userId, sumData.summary, undefined, sumData.actionItems.length, sumData.decisions.length);
 
     onComplete?.(finalUpdates);
   } catch (err) {
@@ -268,7 +253,7 @@ export async function runProcessingPipeline(
     const message = err instanceof Error ? err.message : "Processing failed";
     log(`PIPELINE FAILED at stage=${step}: ${message}`);
 
-    updateMeeting(meetingId, {
+    await updateMeeting(meetingId, {
       status: "failed",
       errorMessage: message,
       processingStep: undefined,
@@ -276,9 +261,8 @@ export async function runProcessingPipeline(
       processingPid: undefined,
     });
 
-    // Notify user
-    notifyProcessingFailed(title, meetingId, message);
-    sendEmailNotification("processing-failed", meetingId, title, undefined, message);
+    await notifyProcessingFailed(userId, title, meetingId, message);
+    sendEmailNotification("processing-failed", meetingId, title, userId, undefined, message);
 
     onError?.(step, message);
   } finally {
@@ -300,35 +284,31 @@ function sendEmailNotification(
   type: "transcript-ready" | "processing-failed",
   meetingId: string,
   meetingTitle: string,
+  userId: string,
   summary?: string | null,
   errorMessage?: string,
   actionItemCount?: number,
   decisionCount?: number
 ): void {
-  // Get user email from localStorage
-  try {
-    const stored = localStorage.getItem("reverbic_user");
-    if (!stored) return;
-    const user = JSON.parse(stored);
-    if (!user.email) return;
-
-    fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type,
-        to: user.email,
-        meetingTitle,
-        meetingId,
-        summary,
-        errorMessage,
-        actionItemCount,
-        decisionCount,
-      }),
-    }).catch(() => {
-      // Email is best-effort — don't break the pipeline
+  // Get user email from Supabase auth
+  import("@/lib/supabase/client").then(({ getSupabaseBrowser }) => {
+    const supabase = getSupabaseBrowser();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user?.email) return;
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          to: user.email,
+          meetingTitle,
+          meetingId,
+          summary,
+          errorMessage,
+          actionItemCount,
+          decisionCount,
+        }),
+      }).catch(() => {});
     });
-  } catch {
-    // Ignore localStorage errors
-  }
+  }).catch(() => {});
 }

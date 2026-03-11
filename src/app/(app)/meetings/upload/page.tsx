@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
+import { useUser } from "@/components/UserContext";
 import { saveMeeting, type Meeting } from "@/lib/meeting-store";
 import { runProcessingPipeline } from "@/lib/process-pipeline";
 import { notifyUploadComplete } from "@/lib/notifications";
@@ -52,6 +53,7 @@ const languages = [
 export default function UploadPage() {
   const prefix = useBasePrefix();
   const isDemo = prefix === "/demo";
+  const { user } = useUser();
 
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -214,7 +216,7 @@ export default function UploadPage() {
 
       // Save meeting to local store with processing status
       const dateTimeTitle = `Recording ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}`;
-      saveMeeting({
+      await saveMeeting({
         id: rid,
         title: dateTimeTitle,
         originalTitle: dateTimeTitle,
@@ -233,16 +235,17 @@ export default function UploadPage() {
         keyPoints: [],
         actionItems: [],
         decisions: [],
-      });
+      }, user!.organizationId!, user!.id);
 
       // Notify upload complete
-      notifyUploadComplete(dateTimeTitle, rid);
+      await notifyUploadComplete(user!.id, dateTimeTitle, rid);
 
       // Trigger staged processing pipeline (fire and forget)
       runProcessingPipeline(
         rid,
         `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
         dateTimeTitle,
+        user!.id,
         language.toLowerCase().slice(0, 2),
       );
     } catch (err) {

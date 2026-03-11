@@ -14,6 +14,7 @@ export interface Meeting {
   notes: string;
   createdAt: string;
   status: "uploading" | "processing" | "completed" | "failed" | "silent";
+  errorMessage?: string;
   // Processing results
   audioAnalysis: {
     isSilent: boolean;

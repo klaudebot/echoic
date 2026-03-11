@@ -232,10 +232,11 @@ export default function UploadPage() {
             duration: result.transcript?.duration ?? null,
           });
         } else {
-          updateMeeting(rid, { status: 'failed' });
+          const errData = await res.json().catch(() => ({}));
+          updateMeeting(rid, { status: 'failed', errorMessage: errData.error || `Processing failed (${res.status})` });
         }
-      }).catch(() => {
-        updateMeeting(rid, { status: 'failed' });
+      }).catch((err) => {
+        updateMeeting(rid, { status: 'failed', errorMessage: err instanceof Error ? err.message : 'Processing failed' });
       });
     } catch (err) {
       setUploading(false);

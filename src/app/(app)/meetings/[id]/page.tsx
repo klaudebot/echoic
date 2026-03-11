@@ -119,7 +119,7 @@ function SilentState({ recommendation }: { recommendation: string }) {
 }
 
 // --- Failed state ---
-function FailedState() {
+function FailedState({ errorMessage }: { errorMessage?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="w-16 h-16 rounded-2xl bg-brand-rose/10 flex items-center justify-center mb-5">
@@ -127,7 +127,7 @@ function FailedState() {
       </div>
       <h2 className="font-heading text-2xl text-foreground mb-2">Processing Failed</h2>
       <p className="text-muted-foreground text-sm max-w-md">
-        Something went wrong while processing this recording. Please try uploading it again.
+        {errorMessage || "Something went wrong while processing this recording. Please try uploading it again."}
       </p>
     </div>
   );
@@ -376,7 +376,7 @@ export default function MeetingDetailPage() {
       {meeting.status === "silent" && (
         <SilentState recommendation={meeting.audioAnalysis?.recommendation ?? "Try re-recording with a better microphone or in a quieter environment."} />
       )}
-      {meeting.status === "failed" && <FailedState />}
+      {meeting.status === "failed" && <FailedState errorMessage={meeting.errorMessage} />}
       {meeting.status === "completed" && <CompletedView meeting={meeting} />}
     </div>
   );

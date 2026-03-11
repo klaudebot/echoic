@@ -144,7 +144,7 @@ export async function POST(request: Request) {
     if (audioBuffer.length > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
-          error: `File too large (${Math.round(audioBuffer.length / 1024 / 1024)}MB). Maximum supported size is 25MB.`,
+          error: `File too large (${Math.round(audioBuffer.length / 1024 / 1024)}MB). The AI transcription service supports files up to 25MB. Try compressing your audio or recording in a smaller format like MP3.`,
         },
         { status: 413 }
       );

@@ -65,51 +65,34 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const supabase = getSupabaseBrowser();
-    let initialDone = false;
 
-    // Debug: check what cookies the browser has
-    const sbCookies = document.cookie.split(";").map(c => c.trim()).filter(c => c.startsWith("sb-"));
-    console.log("[UserContext] sb cookies:", sbCookies.length, sbCookies.map(c => c.substring(0, 40)));
-
-    // Also try getSession directly to see what the client finds
-    supabase.auth.getSession().then(({ data, error }) => {
-      console.log("[UserContext] getSession:", data.session?.user?.email ?? "null", error?.message ?? "ok");
-    });
-
-    // onAuthStateChange fires INITIAL_SESSION immediately with the current session.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("[UserContext] onAuthStateChange:", event, session?.user?.email ?? "null");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const authUser = session?.user ?? null;
-      try {
-        if (authUser) {
-          await loadProfile(authUser);
-        } else {
-          setSupabaseUser(null);
-          setUserState(null);
-        }
-      } catch (e) {
-        console.error("[UserContext] auth state change failed:", e);
+
+      if (authUser) {
+        // Immediately set user from auth data so AuthGuard unblocks.
+        // Don't await the org query — it runs in the background.
+        setSupabaseUser(authUser);
+        setUserState((prev) => ({
+          id: authUser.id,
+          name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+          email: authUser.email || "",
+          avatarUrl: authUser.user_metadata?.avatar_url,
+          organizationId: prev?.id === authUser.id ? prev.organizationId : null,
+        }));
+        setLoading(false);
+
+        // Load full profile (org membership) in the background
+        loadProfile(authUser);
+      } else {
         setSupabaseUser(null);
         setUserState(null);
-      }
-      if (!initialDone) {
-        initialDone = true;
-        setLoading(false);
-      }
-      // For subsequent events (sign-in, sign-out, token refresh) also update loading
-      if (event !== "INITIAL_SESSION") {
         setLoading(false);
       }
     });
 
-    // Safety: never stay loading forever
-    const timeout = setTimeout(() => {
-      console.log("[UserContext] timeout fired, initialDone:", initialDone);
-      if (!initialDone) {
-        initialDone = true;
-        setLoading(false);
-      }
-    }, 5000);
+    // Safety timeout — if onAuthStateChange never fires
+    const timeout = setTimeout(() => setLoading(false), 5000);
 
     return () => {
       subscription.unsubscribe();

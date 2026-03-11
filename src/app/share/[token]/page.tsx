@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   ExternalLink,
 } from "lucide-react";
+import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
 
 interface SharedContent {
   title: string;
@@ -130,20 +131,34 @@ export default function SharedMeetingPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-heading text-3xl text-foreground mb-3">
-            {content.title}
-          </h1>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              {formatDate(meeting.createdAt)}
-            </span>
-            {meeting.duration && (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                {formatDuration(meeting.duration)}
-              </span>
-            )}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="font-heading text-3xl text-foreground mb-3">
+                {content.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {formatDate(meeting.createdAt)}
+                </span>
+                {meeting.duration && (
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    {formatDuration(meeting.duration)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <CopyForAI
+              context={{
+                title: content.title,
+                date: formatDate(meeting.createdAt),
+                summary: content.summary,
+                keyPoints: content.keyPoints,
+                actionItems: content.actionItems,
+                decisions: content.decisions,
+              }}
+            />
           </div>
         </div>
 

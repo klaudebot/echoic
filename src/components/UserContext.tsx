@@ -67,15 +67,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabaseBrowser();
 
     // Get initial session
-    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
+    supabase.auth.getUser().then(async ({ data: { user: authUser }, error }) => {
+      console.log("[UserContext] getUser:", authUser?.email ?? "null", error?.message ?? "ok");
       try {
         if (authUser) {
           await loadProfile(authUser);
+          console.log("[UserContext] profile loaded");
         }
       } catch (e) {
         console.error("[UserContext] loadProfile failed:", e);
       }
       setLoading(false);
+      console.log("[UserContext] loading set to false");
     });
 
     // Listen for auth state changes

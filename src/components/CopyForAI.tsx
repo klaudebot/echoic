@@ -6,15 +6,14 @@ import {
   Copy,
   Check,
   ChevronDown,
-  Code,
   Mail,
   FileText,
   MessageSquare,
-  ListTodo,
   Loader2,
   Clipboard,
   Briefcase,
   Terminal,
+  RefreshCw,
 } from "lucide-react";
 
 // ─── Format presets ───
@@ -215,6 +214,22 @@ const presets: FormatPreset[] = [
   },
 ];
 
+// ─── Cache ───
+
+const COOLDOWN_MS = 60_000; // 1 minute between regenerations
+
+interface CacheEntry {
+  text: string;
+  generatedAt: number;
+}
+
+// Keyed by `${contextTitle}::${presetId}` — survives re-renders but not page navigations
+const formatCache = new Map<string, CacheEntry>();
+
+function cacheKey(contextTitle: string, presetId: string): string {
+  return `${contextTitle}::${presetId}`;
+}
+
 // ─── Component ───
 
 export default function CopyForAI({ context }: { context: MeetingContext }) {
@@ -222,7 +237,27 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
   const [copied, setCopied] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ id: string; text: string } | null>(null);
+  const [cooldowns, setCooldowns] = useState<Map<string, number>>(new Map());
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Tick cooldown timers every second while menu is open
+  useEffect(() => {
+    if (!open) return;
+    const interval = setInterval(() => {
+      setCooldowns(new Map(
+        Array.from(formatCache.entries())
+          .map(([key, entry]) => [key, Math.max(0, COOLDOWN_MS - (Date.now() - entry.generatedAt))] as [string, number])
+          .filter(([, remaining]) => remaining > 0)
+      ));
+    }, 1000);
+    // Set immediately on open
+    setCooldowns(new Map(
+      Array.from(formatCache.entries())
+        .map(([key, entry]) => [key, Math.max(0, COOLDOWN_MS - (Date.now() - entry.generatedAt))] as [string, number])
+        .filter(([, remaining]) => remaining > 0)
+    ));
+    return () => clearInterval(interval);
+  }, [open]);
 
   // Close on outside click
   useEffect(() => {
@@ -242,13 +277,34 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
     setTimeout(() => setCopied(null), 2000);
   }, []);
 
-  async function handlePresetClick(preset: FormatPreset) {
+  async function handlePresetClick(preset: FormatPreset, forceRefresh = false) {
     if (!preset.needsAI) {
       // Direct copy, no AI needed
       const text = preset.buildPrompt(context);
       await copyToClipboard(text, preset.id);
       setOpen(false);
       return;
+    }
+
+    const key = cacheKey(context.title, preset.id);
+    const cached = formatCache.get(key);
+
+    // Serve from cache if available and not forcing refresh
+    if (cached && !forceRefresh) {
+      setPreview({ id: preset.id, text: cached.text });
+      setOpen(false);
+      return;
+    }
+
+    // If forcing refresh, check cooldown
+    if (forceRefresh && cached) {
+      const elapsed = Date.now() - cached.generatedAt;
+      if (elapsed < COOLDOWN_MS) {
+        // Still on cooldown — just show the cached version
+        setPreview({ id: preset.id, text: cached.text });
+        setOpen(false);
+        return;
+      }
     }
 
     // AI-powered: generate the formatted text
@@ -263,6 +319,9 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
 
       if (!response.ok) throw new Error("Format request failed");
       const { text } = await response.json();
+
+      // Cache the result
+      formatCache.set(key, { text, generatedAt: Date.now() });
 
       setPreview({ id: preset.id, text });
       setOpen(false);
@@ -304,6 +363,8 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
                   const Icon = preset.icon;
                   const isLoading = loading === preset.id;
                   const isCopied = copied === preset.id;
+                  const key = cacheKey(context.title, preset.id);
+                  const isCached = preset.needsAI && formatCache.has(key);
 
                   return (
                     <button
@@ -331,9 +392,14 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
                               AI
                             </span>
                           )}
+                          {isCached && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-brand-emerald/10 text-brand-emerald leading-none">
+                              Cached
+                            </span>
+                          )}
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
-                          {preset.description}
+                          {isCached ? "Click to view cached result" : preset.description}
                         </p>
                       </div>
                     </button>
@@ -364,6 +430,18 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <RegenerateButton
+                  presetId={preview.id}
+                  contextTitle={context.title}
+                  loading={loading}
+                  onRegenerate={() => {
+                    const preset = presets.find((p) => p.id === preview.id);
+                    if (preset) {
+                      setPreview(null);
+                      handlePresetClick(preset, true);
+                    }
+                  }}
+                />
                 <button
                   onClick={async () => {
                     await copyToClipboard(preview.text, "preview");
@@ -408,5 +486,51 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
         </>
       )}
     </>
+  );
+}
+
+// ─── Regenerate button with live countdown ───
+
+function RegenerateButton({
+  presetId,
+  contextTitle,
+  loading,
+  onRegenerate,
+}: {
+  presetId: string;
+  contextTitle: string;
+  loading: string | null;
+  onRegenerate: () => void;
+}) {
+  const [remaining, setRemaining] = useState(0);
+
+  useEffect(() => {
+    function calc() {
+      const cached = formatCache.get(cacheKey(contextTitle, presetId));
+      if (!cached) return 0;
+      return Math.max(0, Math.ceil((COOLDOWN_MS - (Date.now() - cached.generatedAt)) / 1000));
+    }
+    setRemaining(calc());
+    const interval = setInterval(() => setRemaining(calc()), 1000);
+    return () => clearInterval(interval);
+  }, [presetId, contextTitle]);
+
+  const isLoading = loading === presetId;
+  const onCooldown = remaining > 0;
+
+  return (
+    <button
+      onClick={onRegenerate}
+      disabled={isLoading || onCooldown}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      title={onCooldown ? `Available in ${remaining}s` : "Generate a new version"}
+    >
+      {isLoading ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      ) : (
+        <RefreshCw className="w-3.5 h-3.5" />
+      )}
+      {onCooldown ? `${remaining}s` : "Regenerate"}
+    </button>
   );
 }

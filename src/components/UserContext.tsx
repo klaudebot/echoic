@@ -65,24 +65,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const supabase = getSupabaseBrowser();
+    let initialDone = false;
 
-    // Get initial session
-    supabase.auth.getUser().then(async ({ data: { user: authUser }, error }) => {
-      console.log("[UserContext] getUser:", authUser?.email ?? "null", error?.message ?? "ok");
-      try {
-        if (authUser) {
-          await loadProfile(authUser);
-          console.log("[UserContext] profile loaded");
-        }
-      } catch (e) {
-        console.error("[UserContext] loadProfile failed:", e);
-      }
-      setLoading(false);
-      console.log("[UserContext] loading set to false");
-    });
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // onAuthStateChange fires INITIAL_SESSION immediately with the current session.
+    // No need for a separate getUser() call.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const authUser = session?.user ?? null;
       try {
         if (authUser) {
@@ -92,12 +79,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           setUserState(null);
         }
       } catch (e) {
-        console.error("[UserContext] onAuthStateChange failed:", e);
+        console.error("[UserContext] auth state change failed:", e);
+        setSupabaseUser(null);
+        setUserState(null);
       }
-      setLoading(false);
+      if (!initialDone) {
+        initialDone = true;
+        setLoading(false);
+      }
+      // For subsequent events (sign-in, sign-out, token refresh) also update loading
+      if (event !== "INITIAL_SESSION") {
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Safety: never stay loading forever
+    const timeout = setTimeout(() => {
+      if (!initialDone) {
+        initialDone = true;
+        setLoading(false);
+      }
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [loadProfile]);
 
   const setUser = useCallback((profile: UserProfile) => {

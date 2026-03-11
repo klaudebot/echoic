@@ -22,6 +22,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/pricing" ||
     pathname === "/about" ||
     pathname.startsWith("/api/") ||
+    pathname.startsWith("/auth/") ||
     pathname.startsWith("/share/")
   ) {
     // Still refresh session cookie if present

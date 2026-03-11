@@ -38,6 +38,7 @@ export interface Meeting {
   status: "uploading" | "processing" | "completed" | "failed" | "silent";
   processingStep?: "preparing" | "transcribing" | "summarizing";
   processingProgress?: string; // e.g. "Transcribing chunk 2/5"
+  processingPid?: string; // unique ID for the active pipeline run — cleared on completion/error
   errorMessage?: string;
   // Processing results (current version)
   audioAnalysis: {

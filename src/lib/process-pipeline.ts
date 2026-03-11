@@ -3,9 +3,16 @@
  * Calls prepare → transcribe (per chunk) → summarize in sequence,
  * updating the meeting store after each step.
  * Each API call is small enough to fit within serverless timeouts.
+ *
+ * Uses a `processingPid` on the meeting to track ownership.
+ * If the page is refreshed, the pid becomes stale and another
+ * instance can adopt the pipeline.
  */
 
-import { updateMeeting, type Meeting } from "./meeting-store";
+import { getMeeting, updateMeeting, type Meeting } from "./meeting-store";
+
+/** Active pipeline IDs in this browser tab */
+const activePids = new Set<string>();
 
 interface ChunkInfo {
   s3Key: string;
@@ -42,9 +49,27 @@ export interface PipelineCallbacks {
   onError?: (step: string, error: string) => void;
 }
 
+function generatePid(): string {
+  return `pid-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+/**
+ * Check if a meeting's pipeline is orphaned (no active tab owns it).
+ * Returns true if the meeting is "processing" but no tab is running its pipeline.
+ */
+export function isPipelineOrphaned(meetingId: string): boolean {
+  const m = getMeeting(meetingId);
+  if (!m || m.status !== "processing") return false;
+  // If this tab owns it, it's not orphaned
+  if (m.processingPid && activePids.has(m.processingPid)) return false;
+  // No owner → orphaned
+  return true;
+}
+
 /**
  * Run the full processing pipeline for a meeting.
  * Updates localStorage meeting store at each step.
+ * Safe to call on refresh — will claim ownership and restart.
  */
 export async function runProcessingPipeline(
   meetingId: string,
@@ -54,20 +79,27 @@ export async function runProcessingPipeline(
   callbacks?: PipelineCallbacks
 ): Promise<void> {
   const { onStep, onComplete, onError } = callbacks ?? {};
+  const pid = generatePid();
   const t0 = Date.now();
   const log = (msg: string) => console.log(`[pipeline:${meetingId.slice(0, 8)}] ${msg} (+${Date.now() - t0}ms)`);
 
+  // Register this pipeline run
+  activePids.add(pid);
+
   try {
-    log(`START s3Key=${s3Key} title="${title}"`);
+    log(`START pid=${pid} s3Key=${s3Key} title="${title}"`);
+
+    // Claim ownership
+    updateMeeting(meetingId, {
+      status: "processing",
+      processingPid: pid,
+      processingStep: "preparing",
+      processingProgress: "Analyzing and compressing audio...",
+    });
 
     // ─── Stage 1: Prepare ───
     log("Stage 1: Prepare — analyzing and compressing audio");
     onStep?.("preparing", "Analyzing and compressing audio...");
-    updateMeeting(meetingId, {
-      status: "processing",
-      processingStep: "preparing",
-      processingProgress: "Analyzing and compressing audio...",
-    });
 
     const prepRes = await fetch("/api/meetings/process/prepare", {
       method: "POST",
@@ -91,6 +123,7 @@ export async function runProcessingPipeline(
         audioAnalysis: prepData.audioAnalysis,
         processingStep: undefined,
         processingProgress: undefined,
+        processingPid: undefined,
       });
       onComplete?.({ status: "silent", audioAnalysis: prepData.audioAnalysis });
       return;
@@ -202,6 +235,7 @@ export async function runProcessingPipeline(
       duration: totalDuration,
       processingStep: undefined,
       processingProgress: undefined,
+      processingPid: undefined,
       errorMessage: undefined,
     };
 
@@ -218,9 +252,12 @@ export async function runProcessingPipeline(
       errorMessage: message,
       processingStep: undefined,
       processingProgress: undefined,
+      processingPid: undefined,
     });
 
     onError?.(step, message);
+  } finally {
+    activePids.delete(pid);
   }
 }
 

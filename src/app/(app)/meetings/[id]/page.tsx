@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import { AppLink } from "@/components/DemoContext";
 import { getMeeting, updateMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
-import { runProcessingPipeline } from "@/lib/process-pipeline";
+import { runProcessingPipeline, isPipelineOrphaned } from "@/lib/process-pipeline";
 import {
   ArrowLeft,
   FileQuestion,
@@ -666,6 +666,7 @@ export default function MeetingDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const [meeting, setMeeting] = useState<Meeting | null | undefined>(undefined);
+  const resumedRef = useRef(false);
 
   const loadMeeting = useCallback(() => {
     const m = getMeeting(id);
@@ -678,12 +679,31 @@ export default function MeetingDetailPage() {
     loadMeeting();
   }, [loadMeeting]);
 
+  // Auto-resume orphaned pipeline (e.g. after page refresh)
+  useEffect(() => {
+    if (!meeting || meeting.status !== "processing") return;
+    if (resumedRef.current) return;
+
+    // Check if this pipeline is orphaned (no tab is running it)
+    if (isPipelineOrphaned(id)) {
+      resumedRef.current = true;
+      console.log(`[detail] Resuming orphaned pipeline for ${id.slice(0, 8)}...`);
+      runProcessingPipeline(
+        id,
+        meeting.s3Key,
+        meeting.title,
+        meeting.language?.toLowerCase().slice(0, 2),
+        { onStep: () => loadMeeting(), onComplete: () => loadMeeting(), onError: () => loadMeeting() }
+      );
+    }
+  }, [meeting, id, loadMeeting]);
+
   // Auto-poll when processing
   useEffect(() => {
     if (meeting?.status !== "processing") return;
     const interval = setInterval(() => {
       loadMeeting();
-    }, 3000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [meeting?.status, loadMeeting]);
 

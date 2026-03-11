@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { useUser } from "@/components/UserContext";
 import { getMeetings, type Meeting } from "@/lib/meeting-store";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import {
   LayoutDashboard,
   Mic,
@@ -18,7 +19,6 @@ import {
   Plug,
   Settings,
   Search,
-  Bell,
   Sun,
   Moon,
   Menu,
@@ -527,10 +527,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 {mounted && resolvedTheme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              <button className="relative text-muted-foreground hover:text-foreground transition-colors p-1.5">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-brand-rose rounded-full" />
-              </button>
+              <NotificationCenter />
               {isDemo && (
                 <span className="text-xs bg-brand-violet/10 text-brand-violet px-2 py-1 rounded-lg font-medium">DEMO</span>
               )}

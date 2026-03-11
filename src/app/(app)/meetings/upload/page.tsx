@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
 import { saveMeeting, type Meeting } from "@/lib/meeting-store";
 import { runProcessingPipeline } from "@/lib/process-pipeline";
+import { notifyUploadComplete } from "@/lib/notifications";
 import { compressAudioFile } from "@/lib/audio-compress";
 import {
   Upload,
@@ -232,11 +233,15 @@ export default function UploadPage() {
         decisions: [],
       });
 
+      // Notify upload complete
+      const meetingTitle = file.name.replace(/\.[^.]+$/, '');
+      notifyUploadComplete(meetingTitle, rid);
+
       // Trigger staged processing pipeline (fire and forget)
       runProcessingPipeline(
         rid,
         `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
-        file.name.replace(/\.[^.]+$/, ''),
+        meetingTitle,
         language.toLowerCase().slice(0, 2),
       );
     } catch (err) {

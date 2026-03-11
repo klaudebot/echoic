@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
 import { saveMeeting } from "@/lib/meeting-store";
 import { runProcessingPipeline } from "@/lib/process-pipeline";
+import { notifyUploadComplete } from "@/lib/notifications";
 import { compressAudioFile } from "@/lib/audio-compress";
 import {
   Mic,
@@ -373,11 +374,15 @@ export default function RecordPage() {
         decisions: [],
       });
 
+      // Notify upload complete
+      const meetingTitle = `Recording ${new Date().toLocaleDateString()}`;
+      notifyUploadComplete(meetingTitle, rid);
+
       // Trigger staged processing pipeline (fire and forget)
       runProcessingPipeline(
         rid,
         `default-account/default-user/${rid}.webm`,
-        `Recording ${new Date().toLocaleDateString()}`,
+        meetingTitle,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");

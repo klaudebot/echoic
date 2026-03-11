@@ -10,6 +10,11 @@
  */
 
 import { getMeeting, updateMeeting, type Meeting } from "./meeting-store";
+import {
+  notifyTranscriptComplete,
+  notifyProcessingFailed,
+  notifySilentRecording,
+} from "./notifications";
 
 /** Active pipeline IDs in this browser tab */
 const activePids = new Set<string>();
@@ -125,6 +130,8 @@ export async function runProcessingPipeline(
         processingProgress: undefined,
         processingPid: undefined,
       });
+      notifySilentRecording(title, meetingId);
+      sendEmailNotification("processing-failed", meetingId, title, undefined, "Recording appears to be mostly silence.");
       onComplete?.({ status: "silent", audioAnalysis: prepData.audioAnalysis });
       return;
     }
@@ -241,6 +248,11 @@ export async function runProcessingPipeline(
 
     updateMeeting(meetingId, finalUpdates);
     log(`PIPELINE COMPLETE — total time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+
+    // Notify user
+    notifyTranscriptComplete(title, meetingId);
+    sendEmailNotification("transcript-ready", meetingId, title, sumData.summary, undefined, sumData.actionItems.length, sumData.decisions.length);
+
     onComplete?.(finalUpdates);
   } catch (err) {
     const step = err instanceof StageError ? err.stage : "unknown";
@@ -255,6 +267,10 @@ export async function runProcessingPipeline(
       processingPid: undefined,
     });
 
+    // Notify user
+    notifyProcessingFailed(title, meetingId, message);
+    sendEmailNotification("processing-failed", meetingId, title, undefined, message);
+
     onError?.(step, message);
   } finally {
     activePids.delete(pid);
@@ -267,5 +283,43 @@ class StageError extends Error {
     super(message);
     this.stage = stage;
     this.name = "StageError";
+  }
+}
+
+/** Fire-and-forget email notification via the /api/notify route */
+function sendEmailNotification(
+  type: "transcript-ready" | "processing-failed",
+  meetingId: string,
+  meetingTitle: string,
+  summary?: string | null,
+  errorMessage?: string,
+  actionItemCount?: number,
+  decisionCount?: number
+): void {
+  // Get user email from localStorage
+  try {
+    const stored = localStorage.getItem("reverbic_user");
+    if (!stored) return;
+    const user = JSON.parse(stored);
+    if (!user.email) return;
+
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type,
+        to: user.email,
+        meetingTitle,
+        meetingId,
+        summary,
+        errorMessage,
+        actionItemCount,
+        decisionCount,
+      }),
+    }).catch(() => {
+      // Email is best-effort — don't break the pipeline
+    });
+  } catch {
+    // Ignore localStorage errors
   }
 }

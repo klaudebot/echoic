@@ -36,6 +36,12 @@ export default function SignUpPage() {
     try {
       localStorage.setItem("reverbic_user", JSON.stringify({ name, email }));
     } catch {}
+    // Send welcome email (fire and forget)
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "welcome", to: email, name }),
+    }).catch(() => {});
     // TODO: Wire Supabase Auth
     setTimeout(() => router.push("/dashboard"), 1000);
   };

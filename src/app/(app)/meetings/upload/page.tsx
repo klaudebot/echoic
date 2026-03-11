@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { AppLink } from "@/components/DemoContext";
+import { useState, useCallback, useRef } from "react";
+import { AppLink, useBasePrefix } from "@/components/DemoContext";
 import {
   Upload,
   FileAudio,
@@ -12,6 +12,7 @@ import {
   Languages,
   Users,
   Tag,
+  AlertCircle,
 } from "lucide-react";
 
 const supportedFormats = [
@@ -21,70 +22,187 @@ const supportedFormats = [
   { ext: ".ogg", label: "OGG Audio" },
   { ext: ".mp4", label: "MP4 Video" },
   { ext: ".webm", label: "WebM Video" },
-  { ext: ".mov", label: "MOV Video" },
 ];
+
+const ACCEPTED_TYPES = new Set([
+  "audio/webm",
+  "video/webm",
+  "video/mp4",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/m4a",
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/ogg",
+  "video/ogg",
+]);
+
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
 
 const languages = [
   "English", "Spanish", "French", "German", "Portuguese", "Japanese", "Korean", "Chinese (Mandarin)",
 ];
 
 export default function UploadPage() {
+  const prefix = useBasePrefix();
+  const isDemo = prefix === "/demo";
+
   const [dragActive, setDragActive] = useState(false);
-  const [file, setFile] = useState<{ name: string; size: number; type: string } | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [recordingId, setRecordingId] = useState<string | null>(null);
   const [language, setLanguage] = useState("English");
   const [speakerCount, setSpeakerCount] = useState("auto");
   const [tags, setTags] = useState("");
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
+
+  const validateFile = useCallback((f: File): string | null => {
+    if (f.size > MAX_FILE_SIZE) {
+      return `File too large (${(f.size / 1_000_000).toFixed(1)} MB). Maximum is 500 MB.`;
+    }
+    if (!ACCEPTED_TYPES.has(f.type) && !f.name.match(/\.(mp3|wav|m4a|ogg|mp4|webm)$/i)) {
+      return "Unsupported file type. Please upload an audio or video file.";
+    }
+    return null;
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
+    setError(null);
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      setFile({ name: droppedFile.name, size: droppedFile.size, type: droppedFile.type });
+      const validationError = validateFile(droppedFile);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+      setFile(droppedFile);
     }
-  }, []);
+  }, [validateFile]);
 
   const handleFileSelect = useCallback(() => {
-    // In production, this would open a file picker
-    // For now, simulate with a placeholder
+    setError(null);
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "audio/*,video/*";
+    input.accept = "audio/*,video/*,.mp3,.wav,.m4a,.ogg,.mp4,.webm";
     input.onchange = (e) => {
       const target = e.target as HTMLInputElement;
       const selectedFile = target.files?.[0];
       if (selectedFile) {
-        setFile({ name: selectedFile.name, size: selectedFile.size, type: selectedFile.type });
+        const validationError = validateFile(selectedFile);
+        if (validationError) {
+          setError(validationError);
+          return;
+        }
+        setFile(selectedFile);
       }
     };
     input.click();
-  }, []);
+  }, [validateFile]);
 
-  const startUpload = useCallback(() => {
+  const startUpload = useCallback(async () => {
     if (!file) return;
+
+    // Demo mode: simulate upload
+    if (isDemo) {
+      setUploading(true);
+      setProgress(0);
+      setError(null);
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            setUploading(false);
+            setDone(true);
+            setRecordingId("demo-recording-id");
+            return 100;
+          }
+          return prev + 2;
+        });
+      }, 60);
+      return;
+    }
+
+    // Real upload flow
     setUploading(true);
     setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setUploading(false);
-          setDone(true);
-          return 100;
-        }
-        return prev + 2;
+    setError(null);
+
+    try {
+      // Step 1: Get presigned URL
+      const contentType = file.type || "audio/webm";
+      const res = await fetch("/api/recordings/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType,
+          accountId: "default-account",
+          userId: "default-user",
+        }),
       });
-    }, 60);
-  }, [file]);
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to get upload URL");
+      }
+
+      const { uploadUrl, recordingId: rid } = await res.json();
+
+      // Step 2: Upload directly to S3 with progress tracking
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhrRef.current = xhr;
+
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            setProgress(pct);
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener("error", () => reject(new Error("Upload failed")));
+        xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
+
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.send(file);
+      });
+
+      setRecordingId(rid);
+      setUploading(false);
+      setDone(true);
+    } catch (err) {
+      setUploading(false);
+      setError(err instanceof Error ? err.message : "Upload failed");
+    }
+  }, [file, isDemo]);
 
   const removeFile = () => {
+    if (xhrRef.current) {
+      xhrRef.current.abort();
+      xhrRef.current = null;
+    }
     setFile(null);
     setProgress(0);
     setDone(false);
     setUploading(false);
+    setError(null);
+    setRecordingId(null);
   };
 
   return (
@@ -99,6 +217,17 @@ export default function UploadPage() {
           Upload an audio or video file to transcribe and analyze
         </p>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="flex items-start gap-3 bg-brand-rose/5 border border-brand-rose/20 rounded-xl p-4">
+          <AlertCircle className="w-5 h-5 text-brand-rose shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-brand-rose">Upload Error</p>
+            <p className="text-sm text-brand-rose/80 mt-0.5">{error}</p>
+          </div>
+        </div>
+      )}
 
       {/* Drop zone */}
       <div
@@ -256,12 +385,25 @@ export default function UploadPage() {
           <p className="text-sm text-muted-foreground mb-4">
             Your recording is being transcribed. This usually takes 2-5 minutes.
           </p>
-          <AppLink
-            href="/meetings"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
-          >
-            View Meetings
-          </AppLink>
+          {recordingId && (
+            <p className="text-xs text-muted-foreground mb-3 font-mono">
+              Recording ID: {recordingId}
+            </p>
+          )}
+          <div className="flex items-center justify-center gap-3">
+            <AppLink
+              href="/meetings"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+            >
+              View Meetings
+            </AppLink>
+            <button
+              onClick={removeFile}
+              className="px-4 py-2 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+            >
+              Upload Another
+            </button>
+          </div>
         </div>
       )}
     </div>

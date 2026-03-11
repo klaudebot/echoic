@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { AppLink } from "@/components/DemoContext";
-import { getMeeting, type Meeting } from "@/lib/meeting-store";
+import { getMeeting, updateMeeting, type Meeting } from "@/lib/meeting-store";
 import {
   ArrowLeft,
   FileQuestion,
@@ -22,6 +22,7 @@ import {
   Lightbulb,
   Gavel,
   StickyNote,
+  RefreshCw,
 } from "lucide-react";
 
 function formatDuration(seconds: number | null): string {
@@ -119,7 +120,7 @@ function SilentState({ recommendation }: { recommendation: string }) {
 }
 
 // --- Failed state ---
-function FailedState({ errorMessage }: { errorMessage?: string }) {
+function FailedState({ errorMessage, onRetry }: { errorMessage?: string; onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="w-16 h-16 rounded-2xl bg-brand-rose/10 flex items-center justify-center mb-5">
@@ -129,6 +130,22 @@ function FailedState({ errorMessage }: { errorMessage?: string }) {
       <p className="text-muted-foreground text-sm max-w-md">
         {errorMessage || "Something went wrong while processing this recording. Please try uploading it again."}
       </p>
+      <div className="flex items-center gap-3 mt-6">
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" /> Try Again
+          </button>
+        )}
+        <AppLink
+          href="/meetings/upload"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+        >
+          Upload New File
+        </AppLink>
+      </div>
     </div>
   );
 }
@@ -376,7 +393,46 @@ export default function MeetingDetailPage() {
       {meeting.status === "silent" && (
         <SilentState recommendation={meeting.audioAnalysis?.recommendation ?? "Try re-recording with a better microphone or in a quieter environment."} />
       )}
-      {meeting.status === "failed" && <FailedState errorMessage={meeting.errorMessage} />}
+      {meeting.status === "failed" && (
+        <FailedState
+          errorMessage={meeting.errorMessage}
+          onRetry={() => {
+            updateMeeting(id, { status: "processing", errorMessage: undefined });
+            setMeeting({ ...meeting, status: "processing", errorMessage: undefined });
+            fetch("/api/meetings/process", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                s3Key: meeting.s3Key,
+                title: meeting.title,
+                language: meeting.language?.toLowerCase().slice(0, 2),
+              }),
+            }).then(async (res) => {
+              if (res.ok) {
+                const result = await res.json();
+                updateMeeting(id, {
+                  status: result.status === "silent" ? "silent" : "completed",
+                  audioAnalysis: result.audioAnalysis,
+                  transcript: result.transcript,
+                  summary: result.summary,
+                  keyPoints: result.keyPoints ?? [],
+                  actionItems: result.actionItems ?? [],
+                  decisions: result.decisions ?? [],
+                  duration: result.transcript?.duration ?? null,
+                  errorMessage: undefined,
+                });
+              } else {
+                const errData = await res.json().catch(() => ({}));
+                updateMeeting(id, { status: "failed", errorMessage: errData.error || `Processing failed (${res.status})` });
+              }
+              loadMeeting();
+            }).catch((err) => {
+              updateMeeting(id, { status: "failed", errorMessage: err instanceof Error ? err.message : "Processing failed" });
+              loadMeeting();
+            });
+          }}
+        />
+      )}
       {meeting.status === "completed" && <CompletedView meeting={meeting} />}
     </div>
   );

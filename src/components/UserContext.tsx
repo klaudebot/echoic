@@ -39,13 +39,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabaseBrowser();
 
     // Fetch user's organization membership
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: membership } = await (supabase as any)
-      .from("organization_members")
-      .select("organization_id")
-      .eq("user_id", authUser.id)
-      .limit(1)
-      .single() as { data: { organization_id: string } | null };
+    let orgId: string | null = null;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: membership } = await (supabase as any)
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", authUser.id)
+        .limit(1)
+        .single();
+      orgId = membership?.organization_id ?? null;
+    } catch {
+      // No org membership yet — user was just created or trigger failed
+    }
 
     setSupabaseUser(authUser);
     setUserState({
@@ -53,7 +59,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
       email: authUser.email || "",
       avatarUrl: authUser.user_metadata?.avatar_url,
-      organizationId: membership?.organization_id ?? null,
+      organizationId: orgId,
     });
   }, []);
 
@@ -62,8 +68,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Get initial session
     supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
-      if (authUser) {
-        await loadProfile(authUser);
+      try {
+        if (authUser) {
+          await loadProfile(authUser);
+        }
+      } catch (e) {
+        console.error("[UserContext] loadProfile failed:", e);
       }
       setLoading(false);
     });
@@ -71,11 +81,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const authUser = session?.user ?? null;
-      if (authUser) {
-        await loadProfile(authUser);
-      } else {
-        setSupabaseUser(null);
-        setUserState(null);
+      try {
+        if (authUser) {
+          await loadProfile(authUser);
+        } else {
+          setSupabaseUser(null);
+          setUserState(null);
+        }
+      } catch (e) {
+        console.error("[UserContext] onAuthStateChange failed:", e);
       }
       setLoading(false);
     });

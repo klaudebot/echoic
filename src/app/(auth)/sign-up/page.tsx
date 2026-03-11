@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -11,6 +11,14 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+
+  // Redirect if already signed in
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("reverbic_user");
+      if (stored) router.replace("/dashboard");
+    } catch {}
+  }, [router]);
 
   const passwordStrength = (() => {
     if (password.length === 0) return { label: "", width: "0%", color: "" };

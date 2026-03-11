@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -11,10 +11,24 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
+  // Redirect if already signed in
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("reverbic_user");
+      if (stored) router.replace("/dashboard");
+    } catch {}
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Wire Supabase Auth — for now redirect to demo
+    // Persist user profile to localStorage for the app shell
+    try {
+      // For sign-in, we use the email as the name until we have a real user DB
+      const name = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      localStorage.setItem("reverbic_user", JSON.stringify({ name, email }));
+    } catch {}
+    // TODO: Wire Supabase Auth
     setTimeout(() => router.push("/dashboard"), 1000);
   };
 

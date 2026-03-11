@@ -408,7 +408,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => {
                 clearUser();
-                router.push("/");
+                router.replace("/sign-in");
               }}
               className="text-muted-foreground hover:text-foreground transition-colors p-1"
               title="Sign out"

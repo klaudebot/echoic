@@ -397,6 +397,7 @@ function CompletedView({ meeting }: { meeting: Meeting }) {
         <AudioPlayer
           meetingId={meeting.id}
           s3Key={meeting.s3Key}
+          knownDuration={meeting.transcript?.duration ?? meeting.duration}
           seekToTime={seekToTime}
         />
       )}

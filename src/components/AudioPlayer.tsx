@@ -14,6 +14,8 @@ import {
 interface AudioPlayerProps {
   meetingId: string;
   s3Key: string;
+  /** Fallback duration (seconds) when the browser can't determine it from metadata */
+  knownDuration?: number | null;
   onTimeUpdate?: (currentTime: number) => void;
   seekToTime?: number | null;
 }
@@ -34,6 +36,7 @@ function formatTime(seconds: number): string {
 export default function AudioPlayer({
   meetingId,
   s3Key,
+  knownDuration,
   onTimeUpdate,
   seekToTime,
 }: AudioPlayerProps) {
@@ -98,14 +101,34 @@ export default function AudioPlayer({
     audio.playbackRate = playbackRate;
     audioRef.current = audio;
 
+    const trySetDuration = () => {
+      const d = audio.duration;
+      if (isFinite(d) && d > 0) {
+        setDuration(d);
+      } else if (knownDuration && knownDuration > 0) {
+        setDuration(knownDuration);
+      }
+    };
+
     const onLoadedMetadata = () => {
-      setDuration(audio.duration);
+      trySetDuration();
+      setLoading(false);
+    };
+
+    const onDurationChange = () => {
+      trySetDuration();
+    };
+
+    const onCanPlay = () => {
+      trySetDuration();
       setLoading(false);
     };
 
     const onEnded = () => {
       setIsPlaying(false);
-      setCurrentTime(audio.duration);
+      // Use known duration or current position as end time
+      const d = audio.duration;
+      setCurrentTime(isFinite(d) && d > 0 ? d : (knownDuration ?? currentTime));
     };
 
     const onError = () => {
@@ -119,13 +142,22 @@ export default function AudioPlayer({
       }
     };
 
+    // If we have a known duration, set it immediately as fallback
+    if (knownDuration && knownDuration > 0) {
+      setDuration(knownDuration);
+    }
+
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
+    audio.addEventListener("durationchange", onDurationChange);
+    audio.addEventListener("canplay", onCanPlay);
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("error", onError);
     audio.addEventListener("progress", onProgress);
 
     return () => {
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+      audio.removeEventListener("durationchange", onDurationChange);
+      audio.removeEventListener("canplay", onCanPlay);
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
       audio.removeEventListener("progress", onProgress);

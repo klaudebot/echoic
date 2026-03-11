@@ -125,6 +125,49 @@ function analyzeAudioLevels(buffer: Buffer): {
 // FFmpeg helpers
 // ---------------------------------------------------------------------------
 
+/** Amplify audio volume using ffmpeg. Boosts by `gainDb` decibels. */
+async function amplifyAudio(
+  inputBuffer: Buffer,
+  inputExt: string,
+  gainDb: number
+): Promise<Buffer> {
+  const tmpDir = os.tmpdir();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const inputPath = path.join(tmpDir, `reverbic-amp-in-${id}.${inputExt}`);
+  const outputPath = path.join(tmpDir, `reverbic-amp-out-${id}.${inputExt}`);
+
+  try {
+    await fs.writeFile(inputPath, inputBuffer);
+
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(inputPath)
+        .noVideo()
+        .audioFilters(`volume=${gainDb}dB`)
+        .audioCodec("copy") // try copy first
+        .format(inputExt === "webm" ? "webm" : inputExt === "m4a" ? "ipod" : inputExt)
+        .output(outputPath)
+        .on("end", () => resolve())
+        .on("error", () => {
+          // Copy codec may fail — re-encode instead
+          ffmpeg(inputPath)
+            .noVideo()
+            .audioFilters(`volume=${gainDb}dB`)
+            .format(inputExt === "webm" ? "webm" : inputExt === "m4a" ? "ipod" : inputExt)
+            .output(outputPath)
+            .on("end", () => resolve())
+            .on("error", (err: Error) => reject(err))
+            .run();
+        })
+        .run();
+    });
+
+    return await fs.readFile(outputPath);
+  } finally {
+    await fs.unlink(inputPath).catch(() => {});
+    await fs.unlink(outputPath).catch(() => {});
+  }
+}
+
 /** Compress an audio buffer to mono MP3 at 64kbps / 16kHz */
 async function compressAudio(
   inputBuffer: Buffer,
@@ -327,18 +370,37 @@ export async function POST(request: Request) {
       });
     }
 
-    // Step 3: Prepare audio for Whisper (compress if needed)
+    // Step 2.5: Auto-amplify low-volume audio before transcription
     const ext = s3Key.split(".").pop()?.toLowerCase() ?? "webm";
+    let processBuffer = audioBuffer;
+
+    if (audioAnalysis.peakDb < -20 && !audioAnalysis.isSilent) {
+      // Calculate gain needed: target peak around -6dB for good Whisper results
+      const gainNeeded = Math.min(30, Math.round(-6 - audioAnalysis.peakDb));
+      console.log(
+        `Low audio detected (peak: ${audioAnalysis.peakDb}dB) — amplifying by ${gainNeeded}dB`
+      );
+      try {
+        processBuffer = await amplifyAudio(audioBuffer, ext, gainNeeded);
+        audioAnalysis.recommendation = `Audio was automatically amplified by ${gainNeeded}dB for better transcription.`;
+        console.log(`Amplification complete (${Math.round(processBuffer.length / 1024 / 1024)}MB)`);
+      } catch (ampErr) {
+        console.error("Amplification failed, continuing with original audio:", ampErr);
+        // Continue with original audio — transcription may be poor but won't fail
+      }
+    }
+
+    // Step 3: Prepare audio for Whisper (compress if needed)
     let whisperBuffer: Buffer;
     let whisperFilename: string;
     let needsChunking = false;
 
-    if (audioBuffer.length > COMPRESS_THRESHOLD) {
+    if (processBuffer.length > COMPRESS_THRESHOLD) {
       // Compress large files with ffmpeg
       console.log(
-        `Audio file is ${Math.round(audioBuffer.length / 1024 / 1024)}MB — compressing with ffmpeg...`
+        `Audio file is ${Math.round(processBuffer.length / 1024 / 1024)}MB — compressing with ffmpeg...`
       );
-      whisperBuffer = await compressAudio(audioBuffer, ext);
+      whisperBuffer = await compressAudio(processBuffer, ext);
       whisperFilename = `compressed-${Date.now()}.mp3`;
       console.log(
         `Compressed to ${Math.round(whisperBuffer.length / 1024 / 1024)}MB`
@@ -349,7 +411,7 @@ export async function POST(request: Request) {
       }
     } else {
       // File is small enough — send directly
-      whisperBuffer = audioBuffer;
+      whisperBuffer = processBuffer;
       whisperFilename = s3Key.split("/").pop() ?? `audio.${ext}`;
     }
 

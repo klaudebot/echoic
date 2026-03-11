@@ -122,10 +122,10 @@ create table public.tags (
   organization_id   uuid references public.organizations(id) on delete cascade not null,
   name              text not null,
   color             text,        -- hex color e.g. '#7C3AED'
-  created_at        timestamptz default now() not null,
-
-  unique(organization_id, lower(name))
+  created_at        timestamptz default now() not null
 );
+
+create unique index idx_tags_org_name on public.tags(organization_id, lower(name));
 
 comment on table public.tags is 'Reusable labels for categorizing meetings within an org.';
 

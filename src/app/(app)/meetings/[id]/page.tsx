@@ -31,9 +31,14 @@ import {
   History,
   RotateCcw,
   Pencil,
+  Share2,
+  Link2,
+  Check,
+  Globe,
 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
 import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
+import { getSupabaseBrowser } from "@/lib/supabase/client";
 
 function formatDuration(seconds: number | null): string {
   if (seconds == null) return "--";
@@ -504,6 +509,166 @@ function EditableTitle({ meeting }: { meeting: Meeting }) {
   );
 }
 
+function ShareButton({ meetingId }: { meetingId: string }) {
+  const [open, setOpen] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check current share status on mount
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sb = getSupabaseBrowser() as any;
+    sb
+      .from("meetings")
+      .select("is_public, share_token")
+      .eq("id", meetingId)
+      .single()
+      .then(({ data }: { data: { is_public: boolean; share_token: string } | null }) => {
+        if (data?.is_public && data?.share_token) {
+          setIsPublic(true);
+          setShareUrl(`${window.location.origin}/share/${data.share_token}`);
+        }
+        setLoading(false);
+      });
+  }, [meetingId]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  async function toggleSharing(enable: boolean) {
+    setSharing(true);
+    try {
+      const res = await fetch("/api/meetings/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meetingId, enable }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setIsPublic(data.isPublic);
+        if (data.isPublic && data.shareToken) {
+          setShareUrl(`${window.location.origin}/share/${data.shareToken}`);
+        } else {
+          setShareUrl(null);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to toggle sharing:", err);
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function copyLink() {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (loading) return null;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+          isPublic
+            ? "text-brand-emerald border border-brand-emerald/30 bg-brand-emerald/5 hover:bg-brand-emerald/10"
+            : "text-muted-foreground border border-border hover:text-foreground hover:bg-muted"
+        }`}
+      >
+        {isPublic ? <Globe className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+        {isPublic ? "Shared" : "Share"}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Public share link</h3>
+              <button
+                onClick={() => toggleSharing(!isPublic)}
+                disabled={sharing}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
+                  isPublic ? "bg-brand-emerald" : "bg-muted"
+                } ${sharing ? "opacity-50 cursor-wait" : ""}`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    isPublic ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground mb-3">
+              {isPublic
+                ? "Anyone with the link can view a privacy-safe version of this meeting. Personal information is automatically removed."
+                : "Enable to create a shareable link. AI will automatically censor personal information before sharing."}
+            </p>
+
+            {sharing && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground py-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {isPublic ? "Disabling..." : "Preparing share link (censoring PII)..."}
+              </div>
+            )}
+
+            {isPublic && shareUrl && !sharing && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0 px-3 py-2 bg-muted rounded-lg text-xs text-foreground font-mono truncate">
+                    {shareUrl}
+                  </div>
+                  <button
+                    onClick={copyLink}
+                    className="inline-flex items-center gap-1 px-3 py-2 text-xs font-medium bg-brand-violet text-white rounded-lg hover:bg-brand-violet/90 transition-colors shrink-0"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3 h-3" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Link2 className="w-3 h-3" />
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-brand-violet hover:underline"
+                >
+                  Open preview
+                  <Globe className="w-3 h-3" />
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
@@ -543,7 +708,10 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
           </div>
           <div className="flex items-center gap-2">
             {(meeting.summary || meeting.actionItems.length > 0 || meeting.decisions.length > 0) && (
-              <CopyForAI context={aiContext} />
+              <>
+                <CopyForAI context={aiContext} />
+                <ShareButton meetingId={meeting.id} />
+              </>
             )}
             <button
               onClick={onReprocess}

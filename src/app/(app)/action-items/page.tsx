@@ -19,7 +19,7 @@ export default function ActionItemsPage() {
         </div>
         <h2 className="font-heading text-2xl text-foreground mb-2">No action items yet</h2>
         <p className="text-muted-foreground text-sm max-w-md mb-6">
-          Record a meeting to get started. Echoic will automatically extract action items from your conversations.
+          Record a meeting to get started. Reverbic will automatically extract action items from your conversations.
         </p>
         <AppLink
           href="/meetings/record"

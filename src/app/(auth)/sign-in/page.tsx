@@ -38,7 +38,7 @@ export default function SignInPage() {
               ))}
             </div>
             <span className="font-heading text-3xl tracking-tight text-white">
-              Echoic
+              Reverbic
             </span>
           </div>
 
@@ -80,7 +80,7 @@ export default function SignInPage() {
               ))}
             </div>
             <span className="font-heading text-2xl tracking-tight text-foreground">
-              Echoic
+              Reverbic
             </span>
           </div>
 

@@ -43,7 +43,7 @@ export default function MarketingLayout({
                   ))}
                 </div>
                 <span className="font-heading text-xl tracking-tight text-foreground">
-                  Echoic
+                  Reverbic
                 </span>
               </Link>
             </div>

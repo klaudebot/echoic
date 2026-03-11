@@ -112,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Link href={navHref("/dashboard")} className="flex items-center gap-2.5">
           <WaveformLogo />
           <span className="font-heading text-lg font-normal text-foreground tracking-tight">
-            Echoic
+            Reverbic
           </span>
         </Link>
       </div>
@@ -211,7 +211,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-foreground truncate">Jamie</div>
-              <div className="text-xs text-muted-foreground truncate">jamie@echoic.ai</div>
+              <div className="text-xs text-muted-foreground truncate">jamie@reverbic.ai</div>
             </div>
             <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
               <LogOut className="w-4 h-4" />

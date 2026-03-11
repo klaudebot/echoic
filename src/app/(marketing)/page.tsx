@@ -99,7 +99,7 @@ const features = [
     whyItMatters: "Teams using Meeting Coach reduce filler words by 40% and improve talk-to-listen ratios within 2 weeks.",
     color: "brand-emerald",
     gradient: "from-brand-violet/10 via-brand-emerald/10 to-brand-cyan/5",
-    badge: "Only on Echoic",
+    badge: "Only on Reverbic",
     exclusive: true,
   },
   {
@@ -113,7 +113,7 @@ const features = [
     whyItMatters: "No more 'didn't we already decide this?' moments. Every decision is tracked, timestamped, and searchable.",
     color: "brand-amber",
     gradient: "from-brand-violet/10 via-brand-amber/10 to-brand-cyan/5",
-    badge: "Only on Echoic",
+    badge: "Only on Reverbic",
     exclusive: true,
   },
   {
@@ -127,7 +127,7 @@ const features = [
     whyItMatters: "Async teams save 5+ hours per week by sharing 30-second clips instead of scheduling recap calls.",
     color: "brand-rose",
     gradient: "from-brand-violet/10 via-brand-rose/10 to-brand-cyan/5",
-    badge: "Only on Echoic",
+    badge: "Only on Reverbic",
     exclusive: true,
   },
   {
@@ -154,7 +154,7 @@ const colorMap: Record<string, string> = {
 /* ─── Testimonials ────────────────────────────── */
 const testimonials = [
   {
-    quote: "Echoic saved our team 15 hours per week on meeting notes. The smart summaries are eerily accurate - it catches decisions I didn't even realize we'd made.",
+    quote: "Reverbic saved our team 15 hours per week on meeting notes. The smart summaries are eerily accurate - it catches decisions I didn't even realize we'd made.",
     name: "Sarah Mitchell",
     role: "VP Engineering, ScaleUp",
     avatar: "SM",
@@ -166,7 +166,7 @@ const testimonials = [
     avatar: "DR",
   },
   {
-    quote: "We used to lose track of decisions across 40+ weekly meetings. Echoic's Decision Tracker is like having an organizational memory. Game-changer for remote teams.",
+    quote: "We used to lose track of decisions across 40+ weekly meetings. Reverbic's Decision Tracker is like having an organizational memory. Game-changer for remote teams.",
     name: "Priya Sharma",
     role: "COO, Nexus Health",
     avatar: "PS",
@@ -316,7 +316,7 @@ export default function MarketingPage() {
                   <div className="h-3 w-3 rounded-full bg-green-400" />
                 </div>
                 <div className="flex-1 bg-muted/50 px-4 py-1.5 text-xs text-muted-foreground font-mono rounded-[2px]">
-                  app.echoic.ai/meeting/q1-roadmap-review
+                  app.reverbic.ai/meeting/q1-roadmap-review
                 </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
@@ -394,7 +394,7 @@ export default function MarketingPage() {
               <span className="gradient-text">need</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              From real-time transcription to AI coaching, Echoic captures every detail so you can focus on what matters.
+              From real-time transcription to AI coaching, Reverbic captures every detail so you can focus on what matters.
             </p>
           </RevealSection>
 
@@ -437,7 +437,7 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* ──── WHY ECHOIC ──────────────────────── */}
+      {/* ──── WHY REVERBIC ──────────────────────── */}
       <section className="py-24 sm:py-32 bg-gradient-to-br from-brand-deep via-[#1a1040] to-brand-deep relative overflow-hidden">
         {/* Decorative blurs */}
         <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-brand-violet/10 blur-3xl" />
@@ -445,13 +445,13 @@ export default function MarketingPage() {
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <RevealSection className="text-center mb-16">
-            <p className="text-sm font-semibold text-brand-cyan mb-2">Only on Echoic</p>
+            <p className="text-sm font-semibold text-brand-cyan mb-2">Only on Reverbic</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
               Why{" "}
-              <span className="gradient-text">Echoic?</span>
+              <span className="gradient-text">Reverbic?</span>
             </h2>
             <p className="mt-4 text-lg text-white/60 max-w-2xl mx-auto">
-              Other tools transcribe. Echoic transforms how your team communicates.
+              Other tools transcribe. Reverbic transforms how your team communicates.
             </p>
           </RevealSection>
 
@@ -466,7 +466,7 @@ export default function MarketingPage() {
                 </div>
                 <h3 className="text-xl font-semibold font-sans text-white">Meeting Coach</h3>
                 <p className="mt-2 text-base font-medium text-brand-cyan">
-                  Most tools transcribe. Echoic coaches.
+                  Most tools transcribe. Reverbic coaches.
                 </p>
                 <p className="mt-3 text-sm text-white/60 leading-relaxed">
                   Real-time feedback on talk-to-listen ratio, filler words, and speaking pace.
@@ -559,7 +559,7 @@ export default function MarketingPage() {
               {
                 step: "01",
                 title: "Record",
-                description: "Join your meeting as usual. Echoic connects to Zoom, Google Meet, or Teams and starts recording automatically. Or upload any audio file.",
+                description: "Join your meeting as usual. Reverbic connects to Zoom, Google Meet, or Teams and starts recording automatically. Or upload any audio file.",
                 icon: (
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
@@ -762,7 +762,7 @@ export default function MarketingPage() {
                   ))}
                 </div>
                 <span className="font-heading text-xl tracking-tight text-foreground">
-                  Echoic
+                  Reverbic
                 </span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -814,7 +814,7 @@ export default function MarketingPage() {
 
           <div className="mt-12 border-t border-border/50 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-muted-foreground">
-              &copy; 2026 Echoic. All rights reserved.
+              &copy; 2026 Reverbic. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</a>

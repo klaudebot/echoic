@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Echoic — Your meetings, remembered.",
+  title: "Reverbic — Your meetings, remembered.",
   description:
     "AI-powered meeting transcription, smart summaries, action item tracking, and meeting coaching. Never miss a detail again.",
 };

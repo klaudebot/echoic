@@ -24,7 +24,7 @@ export default function CoachPage() {
         </div>
         <h2 className="font-heading text-2xl text-foreground mb-2">No coaching insights yet</h2>
         <p className="text-muted-foreground text-sm max-w-md mb-6">
-          Record meetings to unlock AI coaching insights. Echoic will analyze your speaking patterns, talk ratio, filler words, and more to help you improve.
+          Record meetings to unlock AI coaching insights. Reverbic will analyze your speaking patterns, talk ratio, filler words, and more to help you improve.
         </p>
         <AppLink
           href="/meetings/record"

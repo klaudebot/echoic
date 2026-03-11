@@ -22,7 +22,7 @@ const onboardingSteps = [
   {
     id: "connect",
     title: "Connect your calendar",
-    description: "Link Google Calendar or Outlook so Echoic can auto-join your meetings.",
+    description: "Link Google Calendar or Outlook so Reverbic can auto-join your meetings.",
     icon: Calendar,
     cta: "Connect Calendar",
     href: "/integrations",
@@ -30,7 +30,7 @@ const onboardingSteps = [
   {
     id: "record",
     title: "Record your first meeting",
-    description: "Upload a recording, start a live recording, or let Echoic join your next call.",
+    description: "Upload a recording, start a live recording, or let Reverbic join your next call.",
     icon: Mic,
     cta: "Upload or Record",
     href: "/meetings/upload",
@@ -68,7 +68,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Welcome */}
       <div>
-        <h1 className="font-heading text-3xl text-foreground">Welcome to Echoic</h1>
+        <h1 className="font-heading text-3xl text-foreground">Welcome to Reverbic</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Let&apos;s get you set up. Complete these steps to start capturing meeting intelligence.
         </p>

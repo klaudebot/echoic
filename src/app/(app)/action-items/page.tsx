@@ -15,6 +15,7 @@ import {
   Filter,
   Calendar,
 } from "lucide-react";
+import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
 
 interface ActionItem {
   text: string;
@@ -171,11 +172,32 @@ export default function ActionItemsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-2xl text-foreground">Action Items</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Track and manage action items across all your meetings
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl text-foreground">Action Items</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Track and manage action items across all your meetings
+          </p>
+        </div>
+        {totalItems > 0 && (
+          <CopyForAI
+            context={{
+              title: "Action Items — All Meetings",
+              date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              summary: `${totalItems} action items across ${groups.length} meetings. ${openItems} open, ${completedItems} completed.`,
+              keyPoints: [],
+              actionItems: groups.flatMap((g) =>
+                g.items.map((item) => ({
+                  text: `${item.text} (from: ${g.meetingTitle})`,
+                  assignee: item.assignee,
+                  priority: item.priority,
+                  completed: item.completed,
+                }))
+              ),
+              decisions: [],
+            }}
+          />
+        )}
       </div>
 
       {loaded && totalItems === 0 && (

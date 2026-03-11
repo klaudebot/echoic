@@ -33,6 +33,7 @@ import {
   Pencil,
 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
+import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
 
 function formatDuration(seconds: number | null): string {
   if (seconds == null) return "--";
@@ -507,6 +508,15 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
 
+  const aiContext: MeetingContext = {
+    title: meeting.title,
+    date: formatDate(meeting.createdAt),
+    summary: meeting.summary,
+    keyPoints: meeting.keyPoints,
+    actionItems: meeting.actionItems,
+    decisions: meeting.decisions,
+  };
+
   const handleSeekToTimestamp = useCallback((time: number) => {
     // Use a new value each time so effect fires even if same timestamp clicked twice
     setSeekToTime(time + Math.random() * 0.001);
@@ -531,14 +541,19 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
               <AudioBadge analysis={meeting.audioAnalysis} />
             </div>
           </div>
-          <button
-            onClick={onReprocess}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground border border-border rounded-lg hover:text-foreground hover:bg-muted transition-colors"
-            title="Reprocess audio with latest pipeline (auto-amplify, re-transcribe)"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reprocess
-          </button>
+          <div className="flex items-center gap-2">
+            {(meeting.summary || meeting.actionItems.length > 0 || meeting.decisions.length > 0) && (
+              <CopyForAI context={aiContext} />
+            )}
+            <button
+              onClick={onReprocess}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground border border-border rounded-lg hover:text-foreground hover:bg-muted transition-colors"
+              title="Reprocess audio with latest pipeline (auto-amplify, re-transcribe)"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Reprocess
+            </button>
+          </div>
         </div>
 
         {/* Tags */}

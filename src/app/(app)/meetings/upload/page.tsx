@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
 import { saveMeeting, updateMeeting, type Meeting } from "@/lib/meeting-store";
+import { compressAudioFile } from "@/lib/audio-compress";
 import {
   Upload,
   FileAudio,
@@ -57,6 +58,8 @@ export default function UploadPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recordingId, setRecordingId] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressProgress, setCompressProgress] = useState(0);
   const [language, setLanguage] = useState("English");
   const [speakerCount, setSpeakerCount] = useState("auto");
   const [tags, setTags] = useState("");
@@ -131,13 +134,32 @@ export default function UploadPage() {
     }
 
     // Real upload flow
-    setUploading(true);
-    setProgress(0);
     setError(null);
 
     try {
-      // Step 1: Get presigned URL
-      const contentType = file.type || "audio/webm";
+      // Step 1: Compress large files client-side
+      let uploadBlob: Blob = file;
+      let contentType = file.type || "audio/webm";
+      let uploadFileSize = file.size;
+
+      if (file.size >= 24 * 1024 * 1024) {
+        setCompressing(true);
+        setCompressProgress(0);
+        const result = await compressAudioFile(file, (pct) => {
+          setCompressProgress(pct);
+        });
+        setCompressing(false);
+        if (result.compressed) {
+          uploadBlob = result.blob;
+          contentType = "audio/mpeg";
+          uploadFileSize = result.blob.size;
+        }
+      }
+
+      // Step 2: Get presigned URL
+      setUploading(true);
+      setProgress(0);
+
       const res = await fetch("/api/recordings/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -156,7 +178,7 @@ export default function UploadPage() {
 
       const { uploadUrl, recordingId: rid } = await res.json();
 
-      // Step 2: Upload directly to S3 with progress tracking
+      // Step 3: Upload directly to S3 with progress tracking
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhrRef.current = xhr;
@@ -181,7 +203,7 @@ export default function UploadPage() {
 
         xhr.open("PUT", uploadUrl);
         xhr.setRequestHeader("Content-Type", contentType);
-        xhr.send(file);
+        xhr.send(uploadBlob);
       });
 
       setRecordingId(rid);
@@ -194,7 +216,7 @@ export default function UploadPage() {
         title: file.name.replace(/\.[^.]+$/, ''),
         s3Key: `default-account/default-user/${rid}.${file.name.split('.').pop()}`,
         fileName: file.name,
-        fileSize: file.size,
+        fileSize: uploadFileSize,
         duration: null,
         language,
         tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
@@ -239,6 +261,7 @@ export default function UploadPage() {
         updateMeeting(rid, { status: 'failed', errorMessage: err instanceof Error ? err.message : 'Processing failed' });
       });
     } catch (err) {
+      setCompressing(false);
       setUploading(false);
       setError(err instanceof Error ? err.message : "Upload failed");
     }
@@ -251,6 +274,8 @@ export default function UploadPage() {
     }
     setFile(null);
     setProgress(0);
+    setCompressing(false);
+    setCompressProgress(0);
     setDone(false);
     setUploading(false);
     setError(null);
@@ -323,14 +348,14 @@ export default function UploadPage() {
               <p className="text-xs text-muted-foreground">
                 {(file.size / 1_000_000).toFixed(1)} MB
               </p>
-              {(uploading || done) && (
+              {(compressing || uploading || done) && (
                 <div className="mt-2">
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-100 ${
-                        done ? "bg-brand-emerald" : "bg-brand-violet"
+                        done ? "bg-brand-emerald" : compressing ? "bg-brand-amber" : "bg-brand-violet"
                       }`}
-                      style={{ width: `${progress}%` }}
+                      style={{ width: `${compressing ? compressProgress : progress}%` }}
                     />
                   </div>
                   <p className="text-[11px] mt-1 text-muted-foreground">
@@ -338,6 +363,8 @@ export default function UploadPage() {
                       <span className="text-brand-emerald font-medium flex items-center gap-1">
                         <Check className="w-3 h-3" /> Upload complete — processing transcript...
                       </span>
+                    ) : compressing ? (
+                      `Compressing audio... ${compressProgress}%`
                     ) : (
                       `Uploading... ${progress}%`
                     )}
@@ -345,7 +372,7 @@ export default function UploadPage() {
                 </div>
               )}
             </div>
-            {!uploading && !done && (
+            {!compressing && !uploading && !done && (
               <button onClick={removeFile} className="text-muted-foreground hover:text-foreground p-1">
                 <X className="w-4 h-4" />
               </button>
@@ -419,7 +446,7 @@ export default function UploadPage() {
       )}
 
       {/* Upload button */}
-      {file && !done && !uploading && (
+      {file && !done && !uploading && !compressing && (
         <button
           onClick={startUpload}
           className="w-full py-3 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"

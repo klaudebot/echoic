@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AppLink, useBasePrefix } from "@/components/DemoContext";
 import { saveMeeting, updateMeeting } from "@/lib/meeting-store";
+import { compressAudioFile } from "@/lib/audio-compress";
 import {
   Mic,
   Square,
@@ -18,10 +19,11 @@ export default function RecordPage() {
   const prefix = useBasePrefix();
   const isDemo = prefix === "/demo";
 
-  const [status, setStatus] = useState<"idle" | "requesting" | "recording" | "paused" | "uploading" | "done">("idle");
+  const [status, setStatus] = useState<"idle" | "requesting" | "recording" | "paused" | "compressing" | "uploading" | "done">("idle");
   const [elapsed, setElapsed] = useState(0);
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [compressProgress, setCompressProgress] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [recordingId, setRecordingId] = useState<string | null>(null);
 
@@ -275,6 +277,28 @@ export default function RecordPage() {
       audioContextRef.current = null;
     }
 
+    // Compress if large (> 24MB)
+    let uploadBlob: Blob = blob;
+    let contentType = "audio/webm";
+    let uploadFileSize = blob.size;
+
+    if (blob.size >= 24 * 1024 * 1024) {
+      setStatus("compressing");
+      setCompressProgress(0);
+      try {
+        const result = await compressAudioFile(blob, (pct) => {
+          setCompressProgress(pct);
+        });
+        if (result.compressed) {
+          uploadBlob = result.blob;
+          contentType = "audio/mpeg";
+          uploadFileSize = result.blob.size;
+        }
+      } catch {
+        // Compression failed, continue with original blob
+      }
+    }
+
     // Upload
     setStatus("uploading");
     setUploadProgress(0);
@@ -285,7 +309,7 @@ export default function RecordPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fileName: `recording-${Date.now()}.webm`,
-          contentType: "audio/webm",
+          contentType,
           accountId: "default-account",
           userId: "default-user",
         }),
@@ -319,8 +343,8 @@ export default function RecordPage() {
         xhr.addEventListener("error", () => reject(new Error("Upload failed")));
 
         xhr.open("PUT", uploadUrl);
-        xhr.setRequestHeader("Content-Type", "audio/webm");
-        xhr.send(blob);
+        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.send(uploadBlob);
       });
 
       setRecordingId(rid);
@@ -333,7 +357,7 @@ export default function RecordPage() {
         title: `Recording ${new Date().toLocaleDateString()}`,
         s3Key: `default-account/default-user/${rid}.webm`,
         fileName,
-        fileSize: blob.size,
+        fileSize: uploadFileSize,
         duration: elapsed,
         language: 'en',
         tags: [],
@@ -459,6 +483,9 @@ export default function RecordPage() {
                 <span className="text-sm text-brand-amber font-medium">Paused</span>
               </>
             )}
+            {status === "compressing" && (
+              <span className="text-sm text-brand-amber font-medium">Compressing audio...</span>
+            )}
             {status === "uploading" && (
               <span className="text-sm text-brand-violet font-medium">Uploading recording...</span>
             )}
@@ -497,6 +524,21 @@ export default function RecordPage() {
             />
           )}
         </div>
+
+        {/* Compression progress bar */}
+        {status === "compressing" && (
+          <div className="mb-6 px-4">
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full bg-brand-amber transition-all duration-100"
+                style={{ width: `${compressProgress}%` }}
+              />
+            </div>
+            <p className="text-[11px] mt-1 text-muted-foreground text-center">
+              Compressing audio... {compressProgress}%
+            </p>
+          </div>
+        )}
 
         {/* Upload progress bar */}
         {status === "uploading" && (
@@ -620,6 +662,7 @@ export default function RecordPage() {
                 setElapsed(0);
                 setNotes("");
                 setError(null);
+                setCompressProgress(0);
                 setUploadProgress(0);
                 setRecordingId(null);
                 pausedElapsedRef.current = 0;

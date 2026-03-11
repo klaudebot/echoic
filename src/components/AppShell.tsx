@@ -233,6 +233,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Skip if any modifier key is held (Cmd+R, Ctrl+R, etc.)
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
       // "R" → navigate to record page (unless already there)
       if (e.key === "r" || e.key === "R") {
         const cleanPath = pathname.replace(/^\/demo/, "");

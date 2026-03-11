@@ -417,6 +417,7 @@ export default function RecordPage() {
       ) {
         return;
       }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       if ((e.key === "r" || e.key === "R") && status === "idle") {
         e.preventDefault();
         startRecording();

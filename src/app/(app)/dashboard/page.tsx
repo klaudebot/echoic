@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppLink } from "@/components/DemoContext";
+import { useUser } from "@/components/UserContext";
 import {
   Upload,
   Mic,
@@ -54,6 +55,7 @@ const onboardingSteps = [
 ];
 
 export default function DashboardPage() {
+  const { user } = useUser();
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
   const toggleStep = (id: string) => {
@@ -68,7 +70,9 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Welcome */}
       <div>
-        <h1 className="font-heading text-3xl text-foreground">Welcome to Reverbic</h1>
+        <h1 className="font-heading text-3xl text-foreground">
+          Welcome{user?.name ? `, ${user.name.split(" ")[0]}` : " to Reverbic"}
+        </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Let&apos;s get you set up. Complete these steps to start capturing meeting intelligence.
         </p>

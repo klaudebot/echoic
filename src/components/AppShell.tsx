@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useUser } from "@/components/UserContext";
 import {
   LayoutDashboard,
   Mic,
@@ -71,6 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isDemo = pathname.startsWith("/demo");
+  const { user, clearUser } = useUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(["/meetings"]);
   const { resolvedTheme, setTheme } = useTheme();
@@ -208,14 +210,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="px-3 py-3 border-t border-border shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-brand-violet/10 flex items-center justify-center">
-              <span className="text-xs font-medium text-brand-violet">J</span>
+              <span className="text-xs font-medium text-brand-violet">
+                {user?.name?.[0]?.toUpperCase() || "U"}
+              </span>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-foreground truncate">Jamie</div>
-              <div className="text-xs text-muted-foreground truncate">jamie@reverbic.ai</div>
+              <div className="text-sm font-medium text-foreground truncate">
+                {user?.name || "User"}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                {user?.email || ""}
+              </div>
             </div>
             <button
-              onClick={() => router.push("/")}
+              onClick={() => {
+                clearUser();
+                router.push("/");
+              }}
               className="text-muted-foreground hover:text-foreground transition-colors p-1"
               title="Sign out"
             >

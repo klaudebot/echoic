@@ -24,7 +24,11 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Wire Supabase Auth — for now redirect to demo
+    // Persist user profile to localStorage for the app shell
+    try {
+      localStorage.setItem("reverbic_user", JSON.stringify({ name, email }));
+    } catch {}
+    // TODO: Wire Supabase Auth
     setTimeout(() => router.push("/dashboard"), 1000);
   };
 

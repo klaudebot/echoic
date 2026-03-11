@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { AppLink } from "@/components/DemoContext";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/components/UserContext";
 import {
   User,
   Bell,
@@ -15,6 +16,7 @@ import {
   Download,
   Trash2,
   Crown,
+  Check,
 } from "lucide-react";
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
@@ -37,11 +39,23 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: b
 }
 
 export default function SettingsPage() {
+  const { user, setUser } = useUser();
+  const router = useRouter();
+
   // Profile
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [timezone, setTimezone] = useState("America/New_York");
   const [language, setLanguage] = useState("en");
+  const [saved, setSaved] = useState(false);
+
+  // Populate from user context
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
   // Notifications
   const [emailSummaries, setEmailSummaries] = useState(true);
@@ -55,7 +69,13 @@ export default function SettingsPage() {
   // API
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
-  const apiKey = "echo_sk_live_" + "*".repeat(24);
+  const apiKey = "rvb_sk_live_" + "*".repeat(24);
+
+  function handleSaveProfile() {
+    setUser({ name, email });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
 
   function handleCopyApiKey() {
     setApiKeyCopied(true);
@@ -133,8 +153,18 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <button className="text-sm font-medium px-4 py-2 bg-brand-violet text-white rounded-lg hover:bg-brand-violet/90 transition-colors">
-          Save Changes
+        <button
+          onClick={handleSaveProfile}
+          className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 bg-brand-violet text-white rounded-lg hover:bg-brand-violet/90 transition-colors"
+        >
+          {saved ? (
+            <>
+              <Check className="w-4 h-4" />
+              Saved
+            </>
+          ) : (
+            "Save Changes"
+          )}
         </button>
       </div>
 
@@ -215,15 +245,42 @@ export default function SettingsPage() {
             </div>
             <div>
               <div className="text-sm font-semibold text-foreground">Free Plan</div>
-              <div className="text-xs text-muted-foreground">5 meetings/month included</div>
+              <div className="text-xs text-muted-foreground">3 hours of transcription / month</div>
             </div>
           </div>
           <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">Current</span>
         </div>
 
-        <button className="text-sm font-medium px-4 py-2 border border-brand-violet text-brand-violet rounded-lg hover:bg-brand-violet/5 transition-colors">
-          Upgrade to Pro
-        </button>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {[
+            { name: "Starter", price: "$9", features: "30hrs, AI summaries, 3 integrations" },
+            { name: "Pro", price: "$19", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
+            { name: "Team", price: "$39", features: "SSO, admin, API, priority support" },
+          ].map((plan) => (
+            <div
+              key={plan.name}
+              className={`border rounded-lg p-3 text-center ${
+                plan.highlighted
+                  ? "border-brand-violet bg-brand-violet/5"
+                  : "border-border"
+              }`}
+            >
+              <div className="text-sm font-semibold text-foreground">{plan.name}</div>
+              <div className="text-lg font-bold text-foreground mt-1">{plan.price}<span className="text-xs text-muted-foreground font-normal">/mo</span></div>
+              <div className="text-[11px] text-muted-foreground mt-1">{plan.features}</div>
+              <button
+                onClick={() => router.push("/#pricing")}
+                className={`mt-3 w-full text-xs font-medium py-1.5 rounded-md transition-colors ${
+                  plan.highlighted
+                    ? "bg-brand-violet text-white hover:bg-brand-violet/90"
+                    : "border border-border text-foreground hover:bg-muted"
+                }`}
+              >
+                Upgrade
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* API */}
@@ -237,7 +294,7 @@ export default function SettingsPage() {
           <label className="text-xs font-medium text-muted-foreground block mb-1.5">API Key</label>
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 font-mono text-sm text-foreground overflow-hidden">
-              {showApiKey ? apiKey : "echo_sk_live_" + "*".repeat(24)}
+              {showApiKey ? apiKey : "rvb_sk_live_" + "*".repeat(24)}
             </div>
             <button
               onClick={() => setShowApiKey(!showApiKey)}

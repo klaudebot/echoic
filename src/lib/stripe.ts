@@ -14,16 +14,16 @@ export function getStripe(): Stripe {
 /** Plan tier + interval → Stripe price ID mapping */
 export const PLAN_PRICES: Record<string, Record<string, string>> = {
   starter: {
-    monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY ?? "",
-    yearly: process.env.STRIPE_PRICE_STARTER_YEARLY ?? "",
+    monthly: (process.env.STRIPE_PRICE_STARTER_MONTHLY ?? "").trim(),
+    yearly: (process.env.STRIPE_PRICE_STARTER_YEARLY ?? "").trim(),
   },
   pro: {
-    monthly: process.env.STRIPE_PRICE_PRO_MONTHLY ?? "",
-    yearly: process.env.STRIPE_PRICE_PRO_YEARLY ?? "",
+    monthly: (process.env.STRIPE_PRICE_PRO_MONTHLY ?? "").trim(),
+    yearly: (process.env.STRIPE_PRICE_PRO_YEARLY ?? "").trim(),
   },
   team: {
-    monthly: process.env.STRIPE_PRICE_TEAM_MONTHLY ?? "",
-    yearly: process.env.STRIPE_PRICE_TEAM_YEARLY ?? "",
+    monthly: (process.env.STRIPE_PRICE_TEAM_MONTHLY ?? "").trim(),
+    yearly: (process.env.STRIPE_PRICE_TEAM_YEARLY ?? "").trim(),
   },
 };
 

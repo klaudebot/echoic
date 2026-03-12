@@ -622,7 +622,7 @@ export default function MarketingPage() {
               >
                 Annual
                 <span className="absolute -top-2.5 -right-3 bg-brand-emerald text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
-                  Save 44%
+                  Save up to 44%
                 </span>
               </button>
             </div>

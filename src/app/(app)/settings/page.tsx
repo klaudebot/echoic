@@ -335,11 +335,25 @@ export default function SettingsPage() {
               <Crown className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-foreground">Free Plan</div>
-              <div className="text-xs text-muted-foreground">3 hours of transcription / month</div>
+              <div className="text-sm font-semibold text-foreground">
+                {(user?.orgPlan?.plan ?? "free").charAt(0).toUpperCase() + (user?.orgPlan?.plan ?? "free").slice(1)} Plan
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {user?.orgPlan?.transcriptionHoursLimit === -1
+                  ? "Unlimited transcription"
+                  : `${user?.orgPlan?.transcriptionHoursLimit ?? 3} hours of transcription / month`}
+              </div>
             </div>
           </div>
-          <span className="text-xs font-medium px-2 py-1 rounded-full bg-brand-emerald/10 text-brand-emerald">Current</span>
+          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+            user?.orgPlan?.planStatus === "active" || !user?.orgPlan?.planStatus
+              ? "bg-brand-emerald/10 text-brand-emerald"
+              : "bg-brand-amber/10 text-brand-amber"
+          }`}>
+            {user?.orgPlan?.planStatus === "past_due" ? "Past Due"
+              : user?.orgPlan?.planStatus === "canceled" ? "Canceled"
+              : "Active"}
+          </span>
         </div>
 
         {/* Billing interval toggle */}
@@ -365,7 +379,7 @@ export default function SettingsPage() {
             >
               Annual
               <span className="absolute -top-2 -right-2 bg-brand-emerald text-white text-[9px] font-bold px-1 py-0.5 rounded-full leading-none">
-                -44%
+                Save
               </span>
             </button>
           </div>
@@ -373,17 +387,20 @@ export default function SettingsPage() {
 
         <div className="grid sm:grid-cols-3 gap-3">
           {[
-            { name: "Starter", tier: "starter", monthlyPrice: "$17.97", yearlyPrice: "$9.97", features: "30hrs, AI summaries, 3 integrations", highlighted: false },
-            { name: "Pro", tier: "pro", monthlyPrice: "$28.97", yearlyPrice: "$18.97", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
-            { name: "Team", tier: "team", monthlyPrice: "$38.97", yearlyPrice: "$24.97", features: "SSO, admin, API, priority support", highlighted: false },
+            { name: "Starter", tier: "starter", monthlyPrice: "$17.97", yearlyPrice: "$9.97", features: "30hrs, AI summaries, 3 integrations" },
+            { name: "Pro", tier: "pro", monthlyPrice: "$28.97", yearlyPrice: "$18.97", features: "Unlimited, Coach, Clips, all integrations" },
+            { name: "Team", tier: "team", monthlyPrice: "$38.97", yearlyPrice: "$24.97", features: "SSO, admin, API, priority support" },
           ].map((plan) => {
             const price = billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
             const showStrike = billingInterval === "yearly" && plan.monthlyPrice !== plan.yearlyPrice;
+            const currentPlan = user?.orgPlan?.plan ?? "free";
+            const isCurrentPlan = plan.tier === currentPlan;
+            const isUpgrade = currentPlan === "free" || (currentPlan === "starter" && plan.tier !== "starter") || (currentPlan === "pro" && plan.tier === "team");
             return (
             <div
               key={plan.name}
               className={`border rounded-lg p-3 text-center ${
-                plan.highlighted
+                isCurrentPlan
                   ? "border-brand-violet bg-brand-violet/5"
                   : "border-border"
               }`}
@@ -402,17 +419,23 @@ export default function SettingsPage() {
               <div className="text-[11px] text-muted-foreground mt-1">{plan.features}</div>
               <button
                 onClick={() => handleUpgrade(plan.tier)}
-                disabled={upgradingTier !== null}
+                disabled={upgradingTier !== null || isCurrentPlan || !isUpgrade}
                 className={`mt-3 w-full text-xs font-medium py-1.5 rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 ${
-                  plan.highlighted
-                    ? "bg-brand-violet text-white hover:bg-brand-violet/90"
-                    : "border border-border text-foreground hover:bg-muted"
+                  isCurrentPlan
+                    ? "bg-brand-violet/10 text-brand-violet cursor-default"
+                    : isUpgrade
+                      ? "bg-brand-violet text-white hover:bg-brand-violet/90"
+                      : "border border-border text-muted-foreground cursor-default"
                 }`}
               >
                 {upgradingTier === plan.tier ? (
                   <><Loader2 className="w-3 h-3 animate-spin" /> Redirecting...</>
-                ) : (
+                ) : isCurrentPlan ? (
+                  "Current Plan"
+                ) : isUpgrade ? (
                   "Upgrade"
+                ) : (
+                  "Included"
                 )}
               </button>
             </div>

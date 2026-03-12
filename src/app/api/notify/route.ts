@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-auth";
 import {
   sendTranscriptReadyEmail,
   sendProcessingFailedEmail,
@@ -17,6 +18,9 @@ export async function POST(request: Request) {
   let to = "unknown";
 
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     type = body.type ?? "unknown";
     to = body.to ?? "unknown";

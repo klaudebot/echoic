@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/openai";
+import { requireAuth } from "@/lib/api-auth";
 
 export const maxDuration = 30;
 
 export async function POST(request: Request) {
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const { prompt } = await request.json();
 
     if (!prompt || typeof prompt !== "string") {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { getOpenAI } from "@/lib/openai";
+import { requireAuth } from "@/lib/api-auth";
 
 export const maxDuration = 45;
 
@@ -14,6 +15,9 @@ export const maxDuration = 45;
  */
 export async function POST(request: Request) {
   try {
+    const { user, error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const { meetingId, enable } = await request.json();
 
     if (!meetingId || typeof enable !== "boolean") {
@@ -22,6 +26,27 @@ export async function POST(request: Request) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin = getSupabaseAdmin() as any;
+
+    // Verify user owns this meeting via org membership
+    const { data: membership } = await admin
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user!.id)
+      .limit(1)
+      .single();
+
+    if (membership) {
+      const { data: meetingCheck } = await admin
+        .from("meetings")
+        .select("id")
+        .eq("id", meetingId)
+        .eq("organization_id", membership.organization_id)
+        .single();
+
+      if (!meetingCheck) {
+        return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+      }
+    }
 
     if (!enable) {
       // Disable sharing

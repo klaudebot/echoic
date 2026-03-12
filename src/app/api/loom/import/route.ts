@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { requireAuth } from "@/lib/api-auth";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
@@ -218,6 +219,9 @@ export async function POST(request: Request) {
   let tmpPath: string | null = null;
 
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const { url } = await request.json();
 
     if (!url || !LOOM_URL_RE.test(url)) {

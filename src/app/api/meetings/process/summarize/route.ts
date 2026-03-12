@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOpenAI } from "@/lib/openai";
+import { requireAuth } from "@/lib/api-auth";
 
 const SUMMARIZE_SYSTEM_PROMPT = `You are a professional meeting summarization assistant. Given a meeting transcript, produce a structured JSON analysis. Use a professional, concise business voice.
 
@@ -34,6 +35,9 @@ export async function POST(request: Request) {
   const log = (msg: string) => console.log(`[summarize] ${msg} (+${Date.now() - t0}ms)`);
 
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const { text, title } = body;
     log(`START title="${title ?? "(none)"}" textLength=${text?.length ?? 0}`);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/api-auth";
 
 // TODO: Actual audio processing requires ffmpeg or a cloud-based audio
 // processing service (e.g., AWS MediaConvert, Dolby.io).
@@ -10,6 +11,9 @@ const MAX_GAIN_DB = 30;
 
 export async function POST(request: Request) {
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const { s3Key, gainDb } = body;
 

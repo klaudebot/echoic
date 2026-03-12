@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getOpenAI } from "@/lib/openai";
+import { requireAuth } from "@/lib/api-auth";
 import type { Readable } from "stream";
 
 let _s3Client: S3Client | null = null;
@@ -40,6 +41,9 @@ export async function POST(request: Request) {
   const log = (msg: string) => console.log(`[transcribe] ${msg} (+${Date.now() - t0}ms)`);
 
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const { s3Key, startTime, language } = body;
     log(`START s3Key=${s3Key} startTime=${startTime ?? 0} language=${language ?? "auto"}`);

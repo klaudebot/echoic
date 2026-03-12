@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getOpenAI } from "@/lib/openai";
+import { requireAuth, verifyS3KeyOwnership } from "@/lib/api-auth";
 import type { Readable } from "stream";
 import fs from "fs/promises";
 import os from "os";
@@ -311,6 +312,9 @@ export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {
+    const { user, error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const { s3Key, title, language } = body;
 
@@ -319,6 +323,12 @@ export async function POST(request: Request) {
         { error: "Missing or invalid s3Key" },
         { status: 400 }
       );
+    }
+
+    // Verify S3 key ownership
+    const ownsKey = await verifyS3KeyOwnership(s3Key, user!.id);
+    if (!ownsKey) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     // Step 1: Download audio from S3

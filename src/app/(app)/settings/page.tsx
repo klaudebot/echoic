@@ -375,7 +375,7 @@ export default function SettingsPage() {
           {[
             { name: "Starter", tier: "starter", monthlyPrice: "$17.97", yearlyPrice: "$9.97", features: "30hrs, AI summaries, 3 integrations", highlighted: false },
             { name: "Pro", tier: "pro", monthlyPrice: "$28.97", yearlyPrice: "$18.97", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
-            { name: "Team", tier: "team", monthlyPrice: "$38.97", yearlyPrice: "$38.97", features: "SSO, admin, API, priority support", highlighted: false },
+            { name: "Team", tier: "team", monthlyPrice: "$38.97", yearlyPrice: "$24.97", features: "SSO, admin, API, priority support", highlighted: false },
           ].map((plan) => {
             const price = billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
             const showStrike = billingInterval === "yearly" && plan.monthlyPrice !== plan.yearlyPrice;

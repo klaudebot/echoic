@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { requireAuth } from "@/lib/api-auth";
 import type { Readable } from "stream";
 import fs from "fs/promises";
 import os from "os";
@@ -242,6 +243,9 @@ export async function POST(request: Request) {
   const log = (msg: string) => console.log(`[prepare] ${msg} (+${Date.now() - t0}ms)`);
 
   try {
+    const { error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const { s3Key } = body;
     log(`START s3Key=${s3Key}`);

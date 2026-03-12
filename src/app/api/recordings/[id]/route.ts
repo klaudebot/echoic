@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { getDownloadPresignedUrl } from "@/lib/s3";
+import { requireAuth, verifyS3KeyOwnership } from "@/lib/api-auth";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { user, error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const { id } = await params;
 
     if (!id) {
@@ -15,9 +19,6 @@ export async function GET(
       );
     }
 
-    // In a full implementation this would look up the recording metadata
-    // from the database to get the exact S3 key. For now, we accept
-    // an optional `key` query param or construct a placeholder.
     const url = new URL(_request.url);
     const key = url.searchParams.get("key");
 
@@ -26,6 +27,12 @@ export async function GET(
         { error: "Missing key query parameter" },
         { status: 400 }
       );
+    }
+
+    // Verify S3 key ownership
+    const ownsKey = await verifyS3KeyOwnership(key, user!.id);
+    if (!ownsKey) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const downloadUrl = await getDownloadPresignedUrl(key);

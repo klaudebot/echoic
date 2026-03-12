@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { requireAuth, verifyS3KeyOwnership } from "@/lib/api-auth";
 import type { Readable } from "stream";
 
 let _s3Client: S3Client | null = null;
@@ -78,6 +79,9 @@ function analyzeAudioLevels(buffer: Buffer): {
 
 export async function POST(request: Request) {
   try {
+    const { user, error: authError } = await requireAuth();
+    if (authError) return authError;
+
     const body = await request.json();
     const { s3Key } = body;
 
@@ -86,6 +90,12 @@ export async function POST(request: Request) {
         { error: "Missing or invalid s3Key" },
         { status: 400 }
       );
+    }
+
+    // Verify S3 key ownership
+    const ownsKey = await verifyS3KeyOwnership(s3Key, user!.id);
+    if (!ownsKey) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     // Download from S3

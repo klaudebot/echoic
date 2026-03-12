@@ -154,28 +154,6 @@ const colorMap: Record<string, string> = {
   "brand-rose": "text-brand-rose bg-brand-rose/10",
 };
 
-/* ─── Testimonials ────────────────────────────── */
-const testimonials = [
-  {
-    quote: "Reverbic saved our team 15 hours per week on meeting notes. The smart summaries are eerily accurate - it catches decisions I didn't even realize we'd made.",
-    name: "Sarah Mitchell",
-    role: "VP Engineering, ScaleUp",
-    avatar: "SM",
-  },
-  {
-    quote: "The Meeting Coach feature transformed how I run standups. My talk-to-listen ratio went from 60% to 30%, and my team is way more engaged now.",
-    name: "Daniel Reyes",
-    role: "Product Manager, Streamline",
-    avatar: "DR",
-  },
-  {
-    quote: "We used to lose track of decisions across 40+ weekly meetings. Reverbic's Decision Tracker is like having an organizational memory. Game-changer for remote teams.",
-    name: "Priya Sharma",
-    role: "COO, Nexus Health",
-    avatar: "PS",
-  },
-];
-
 /* ─── Pricing ─────────────────────────────────── */
 const plans = [
   {
@@ -215,7 +193,7 @@ const plans = [
   {
     name: "Team",
     monthlyPrice: "$38.97",
-    yearlyPrice: "$38.97",
+    yearlyPrice: "$24.97",
     period: "/seat/mo",
     description: "For teams that need full control",
     features: [
@@ -277,12 +255,9 @@ export default function MarketingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
               </Link>
-              <button className="inline-flex items-center justify-center border border-border bg-white px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
-                <svg className="mr-2 w-5 h-5 text-brand-violet" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Watch Demo
-              </button>
+              <a href="#pricing" className="inline-flex items-center justify-center border border-border bg-white px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
+                View Pricing
+              </a>
             </div>
 
             {/* Stats */}
@@ -361,20 +336,27 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* ──── LOGO BAR ──────────────────────────── */}
+      {/* ──── INTEGRATIONS BAR ─────────────────── */}
       <RevealSection>
         <section className="border-y border-border/50 bg-muted/30 py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm font-medium text-muted-foreground mb-8">
-              Trusted by teams at
+              Works with the tools you already use
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
-              {["Stripe", "Notion", "Linear", "Figma", "Vercel"].map((name) => (
+              {[
+                { name: "Zoom", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M4.585 4.585A2.08 2.08 0 006.17 4h11.66c.59 0 1.16.21 1.585.585A2.08 2.08 0 0120 6.17v7.66h-4l-4 4v-4H4V6.17c0-.59.21-1.16.585-1.585zM16 10v4h4v3.83a2.08 2.08 0 01-.585 1.585A2.08 2.08 0 0117.83 20H6.17a2.08 2.08 0 01-1.585-.585A2.08 2.08 0 014 17.83V14h8v4l4-4z"/></svg> },
+                { name: "Google Meet", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> },
+                { name: "Slack", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5.042 15.165a2.528 2.528 0 01-2.52 2.523A2.528 2.528 0 010 15.165a2.527 2.527 0 012.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 012.521-2.52 2.527 2.527 0 012.521 2.52v6.313A2.528 2.528 0 018.834 24a2.528 2.528 0 01-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 01-2.521-2.52A2.528 2.528 0 018.834 0a2.528 2.528 0 012.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 012.521 2.521 2.528 2.528 0 01-2.521 2.521H2.522A2.528 2.528 0 010 8.834a2.528 2.528 0 012.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 012.522-2.521A2.528 2.528 0 0124 8.834a2.528 2.528 0 01-2.522 2.521h-2.522V8.834zm-1.27 0a2.528 2.528 0 01-2.523 2.521 2.527 2.527 0 01-2.52-2.521V2.522A2.527 2.527 0 0115.163 0a2.528 2.528 0 012.523 2.522v6.312zM15.163 18.956a2.528 2.528 0 012.523 2.522A2.528 2.528 0 0115.163 24a2.527 2.527 0 01-2.52-2.522v-2.522h2.52zm0-1.27a2.527 2.527 0 01-2.52-2.523 2.527 2.527 0 012.52-2.52h6.315A2.528 2.528 0 0124 15.163a2.528 2.528 0 01-2.522 2.523h-6.315z"/></svg> },
+                { name: "Notion", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L18.49 2.37c-.42-.326-.98-.7-2.055-.607L3.48 2.88c-.466.047-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.166V6.354c0-.606-.233-.933-.748-.886l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952l1.448.327s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.513.28-.886.747-.933zM3.2 1.24l13.542-1c1.635-.14 2.055-.047 3.083.7l4.25 2.986c.7.513.933.653.933 1.213v16.378c0 1.026-.373 1.632-1.681 1.726l-15.458.933c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.92c0-.84.373-1.54 1.215-1.68z"/></svg> },
+                { name: "Teams", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.404 4.5a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zM22.5 9.75a1.5 1.5 0 00-1.5-1.5h-4.5a1.5 1.5 0 00-1.5 1.5v4.5a1.5 1.5 0 001.5 1.5h.75v3l3-3h.75a1.5 1.5 0 001.5-1.5v-4.5zM14.154 6a3 3 0 11-6 0 3 3 0 016 0zM1.5 18a6 6 0 0112 0v.75a.75.75 0 01-.75.75H2.25a.75.75 0 01-.75-.75V18z"/></svg> },
+              ].map((item) => (
                 <span
-                  key={name}
-                  className="text-xl font-heading tracking-tight text-muted-foreground/60 hover:text-muted-foreground transition-colors select-none"
+                  key={item.name}
+                  className="inline-flex items-center gap-2 text-lg font-medium tracking-tight text-muted-foreground/60 hover:text-muted-foreground transition-colors select-none"
                 >
-                  {name}
+                  {item.icon}
+                  {item.name}
                 </span>
               ))}
             </div>
@@ -598,48 +580,6 @@ export default function MarketingPage() {
                   </div>
                   <h3 className="text-xl font-semibold font-sans text-foreground">{s.title}</h3>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{s.description}</p>
-                </div>
-              </RevealSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ──── SOCIAL PROOF ──────────────────────── */}
-      <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center mb-16">
-            <p className="text-sm font-semibold text-brand-emerald mb-2">Testimonials</p>
-            <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl">
-              Loved by{" "}
-              <span className="gradient-text">modern teams</span>
-            </h2>
-          </RevealSection>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((t, i) => (
-              <RevealSection key={i}>
-                <div className="flex flex-col h-full rounded-[4px] border border-border/50 bg-card p-6 hover:shadow-lg transition-all duration-300">
-                  {/* Stars */}
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(5)].map((_, j) => (
-                      <svg key={j} className="w-4 h-4 text-brand-amber fill-brand-amber" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-sm leading-relaxed text-foreground flex-1">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <div className="mt-6 flex items-center gap-3 pt-4 border-t border-border/50">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-cyan text-xs font-bold text-white">
-                      {t.avatar}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">{t.name}</div>
-                      <div className="text-xs text-muted-foreground">{t.role}</div>
-                    </div>
-                  </div>
                 </div>
               </RevealSection>
             ))}

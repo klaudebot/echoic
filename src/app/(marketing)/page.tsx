@@ -179,21 +179,6 @@ const testimonials = [
 /* ─── Pricing ─────────────────────────────────── */
 const plans = [
   {
-    name: "Free",
-    monthlyPrice: "$0",
-    yearlyPrice: "$0",
-    period: "/mo",
-    description: "For individuals getting started",
-    features: [
-      "3 hours of transcription / month",
-      "Basic summaries",
-      "1 integration",
-    ],
-    cta: "Start Free",
-    highlighted: false,
-    tier: null,
-  },
-  {
     name: "Starter",
     monthlyPrice: "$17.97",
     yearlyPrice: "$9.97",
@@ -703,7 +688,7 @@ export default function MarketingPage() {
             </div>
           </RevealSection>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
             {plans.map((plan, i) => {
               const price = billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
               const showStrikethrough = billingInterval === "yearly" && plan.monthlyPrice !== plan.yearlyPrice && plan.monthlyPrice !== "$0";
@@ -763,6 +748,152 @@ export default function MarketingPage() {
               );
             })}
           </div>
+
+          {/* ──── FREE TIER BANNER ─────────────── */}
+          <RevealSection className="mt-8 max-w-5xl mx-auto">
+            <div className="rounded-[4px] border border-border/50 bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
+                  <h3 className="text-xl font-semibold font-sans text-foreground">Free</h3>
+                  <span className="text-3xl font-bold font-sans text-foreground">$0</span>
+                  <span className="text-sm text-muted-foreground">/mo</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  For individuals getting started — no credit card required
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                {["3 hrs transcription / mo", "Basic summaries", "1 integration", "10 meetings / mo"].map((f, i) => (
+                  <span key={i} className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-brand-emerald shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {f}
+                  </span>
+                ))}
+              </div>
+              <Link
+                href="/sign-up"
+                className="shrink-0 rounded-[4px] bg-muted px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-muted/70 transition-all"
+              >
+                Start Free
+              </Link>
+            </div>
+          </RevealSection>
+
+          {/* ──── COMPARISON CHART ──────────────── */}
+          <RevealSection className="mt-20">
+            <div className="text-center mb-10">
+              <h3 className="text-2xl font-heading sm:text-3xl">
+                Compare all <span className="gradient-text">features</span>
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                See exactly what you get with each plan
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="py-4 px-4 text-left font-semibold text-foreground w-[40%]">Feature</th>
+                    <th className="py-4 px-4 text-center font-semibold text-foreground">Starter</th>
+                    <th className="py-4 px-4 text-center font-semibold text-brand-violet">Pro</th>
+                    <th className="py-4 px-4 text-center font-semibold text-foreground">Team</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { category: "Recording & Transcription" },
+                    { feature: "Transcription hours / month", starter: "30 hrs", pro: "Unlimited", team: "Unlimited" },
+                    { feature: "Transcription accuracy", starter: "99.2%", pro: "99.2%", team: "99.2%" },
+                    { feature: "Speaker identification", starter: true, pro: true, team: true },
+                    { feature: "Upload audio / video files", starter: true, pro: true, team: true },
+                    { feature: "Live recording", starter: true, pro: true, team: true },
+                    { feature: "Meetings per month", starter: "100", pro: "Unlimited", team: "Unlimited" },
+                    { feature: "Custom vocabulary", starter: false, pro: false, team: true },
+
+                    { category: "AI & Meeting Notes" },
+                    { feature: "AI summaries", starter: true, pro: true, team: true },
+                    { feature: "Action item extraction", starter: true, pro: true, team: true },
+                    { feature: "Decision tracking", starter: false, pro: true, team: true },
+                    { feature: "AI Meeting Coach", starter: false, pro: true, team: true },
+                    { feature: "Smart Clips", starter: false, pro: true, team: true },
+                    { feature: "Advanced analytics", starter: false, pro: true, team: true },
+                    { feature: "Keyword & topic detection", starter: false, pro: true, team: true },
+                    { feature: "Sentiment analysis", starter: false, pro: true, team: true },
+
+                    { category: "Collaboration & Sharing" },
+                    { feature: "Shareable meeting links", starter: true, pro: true, team: true },
+                    { feature: "Team workspace", starter: true, pro: true, team: true },
+                    { feature: "Comments & reactions", starter: true, pro: true, team: true },
+                    { feature: "Team members", starter: "5", pro: "20", team: "Unlimited" },
+
+                    { category: "Integrations" },
+                    { feature: "Integrations", starter: "3", pro: "All", team: "All" },
+                    { feature: "Slack notifications", starter: true, pro: true, team: true },
+                    { feature: "Calendar sync", starter: true, pro: true, team: true },
+                    { feature: "API access", starter: false, pro: false, team: true },
+                    { feature: "Webhooks", starter: false, pro: false, team: true },
+
+                    { category: "Security & Admin" },
+                    { feature: "SSO / SAML", starter: false, pro: false, team: true },
+                    { feature: "Admin dashboard", starter: false, pro: false, team: true },
+                    { feature: "Audit logs", starter: false, pro: false, team: true },
+                    { feature: "Data retention controls", starter: false, pro: false, team: true },
+
+                    { category: "Support" },
+                    { feature: "Email support", starter: true, pro: true, team: true },
+                    { feature: "Priority support", starter: false, pro: true, team: true },
+                    { feature: "Dedicated account manager", starter: false, pro: false, team: true },
+
+                    { category: "Storage" },
+                    { feature: "Storage", starter: "5 GB", pro: "50 GB", team: "100 GB" },
+                    { feature: "Transcript history", starter: "Unlimited", pro: "Unlimited", team: "Unlimited" },
+                  ].map((row, i) => {
+                    if ("category" in row && !("feature" in row)) {
+                      return (
+                        <tr key={i} className="border-b border-border/50">
+                          <td colSpan={4} className="pt-8 pb-3 px-4 text-xs font-bold uppercase tracking-wider text-brand-violet">
+                            {row.category}
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    const r = row as { feature: string; starter: boolean | string; pro: boolean | string; team: boolean | string };
+
+                    const renderCell = (value: boolean | string) => {
+                      if (value === true) {
+                        return (
+                          <svg className="w-5 h-5 text-brand-emerald mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        );
+                      }
+                      if (value === false) {
+                        return (
+                          <svg className="w-4 h-4 text-muted-foreground/30 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
+                          </svg>
+                        );
+                      }
+                      return <span className="text-foreground font-medium">{value}</span>;
+                    };
+
+                    return (
+                      <tr key={i} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
+                        <td className="py-3.5 px-4 text-muted-foreground">{r.feature}</td>
+                        <td className="py-3.5 px-4 text-center">{renderCell(r.starter)}</td>
+                        <td className="py-3.5 px-4 text-center bg-brand-violet/[0.03]">{renderCell(r.pro)}</td>
+                        <td className="py-3.5 px-4 text-center">{renderCell(r.team)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </RevealSection>
         </div>
       </section>
 

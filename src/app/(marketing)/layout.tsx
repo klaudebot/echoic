@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import CookieConsent from "@/components/CookieConsent";
 
 export default function MarketingLayout({
   children,
@@ -128,6 +129,7 @@ export default function MarketingLayout({
 
       {/* Page content */}
       <main>{children}</main>
+      <CookieConsent />
     </div>
   );
 }

@@ -34,15 +34,18 @@ export const maxDuration = 120;
 
 const LOOM_URL_RE = /^https?:\/\/(www\.)?loom\.com\/share\/([a-f0-9]+)/;
 
+const FETCH_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Referer": "https://www.loom.com/",
+  "Origin": "https://www.loom.com",
+};
+
 /**
- * Extract video metadata and HLS URL from a Loom share page.
+ * Extract video metadata and HLS master URL from a Loom share page.
  */
 async function extractLoomData(url: string) {
   const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml",
-    },
+    headers: { ...FETCH_HEADERS, Accept: "text/html,application/xhtml+xml" },
   });
 
   if (!res.ok) {
@@ -51,74 +54,153 @@ async function extractLoomData(url: string) {
 
   const html = await res.text();
 
-  // Extract title from og:title or page title
+  // Extract title
   const titleMatch = html.match(/<meta\s+(?:property|name)="og:title"\s+content="([^"]+)"/i)
     || html.match(/<title>([^<]+)<\/title>/i);
   const title = titleMatch?.[1]?.replace(/ \| Loom$/, "").trim() || "Loom Recording";
 
-  // Extract duration from Apollo state or og:video:duration
+  // Extract duration
   const durationMatch = html.match(/"durationInSeconds":\s*(\d+(?:\.\d+)?)/);
   const duration = durationMatch ? parseFloat(durationMatch[1]) : null;
 
-  // Extract HLS URL from Apollo state
-  // Loom embeds signed CloudFront URLs in the __APOLLO_STATE__ object
-  const hlsMatch = html.match(/"(https:\/\/[^"]*\.m3u8[^"]*)"/);
+  // Extract HLS URL from Apollo state — look for the m3u8 URL
+  const hlsMatch = html.match(/"(https:\/\/luna\.loom\.com\/[^"]*\.m3u8[^"]*)"/);
 
   if (!hlsMatch) {
-    // Try the Loom API endpoint as fallback
-    const videoIdMatch = url.match(LOOM_URL_RE);
-    if (!videoIdMatch) throw new Error("Could not extract Loom video ID");
-
-    const apiRes = await fetch(`https://www.loom.com/v1/videos/${videoIdMatch[2]}/access-grant`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-      },
-      body: JSON.stringify({}),
-    });
-
-    if (apiRes.ok) {
-      const apiData = await apiRes.json();
-      const hlsUrl = apiData?.video?.play?.raw_cdn_hls_url;
-      if (hlsUrl) {
-        return { title, duration, hlsUrl };
-      }
-    }
-
     throw new Error("Could not extract video URL from Loom page. The video may be private or require authentication.");
   }
 
-  // Unescape any escaped characters in the URL
-  const hlsUrl = hlsMatch[1].replace(/\\u0026/g, "&").replace(/\\/g, "");
+  // Unescape JSON-encoded characters
+  const hlsUrl = hlsMatch[1]
+    .replace(/\\u0026/g, "&")
+    .replace(/\\u003d/g, "=")
+    .replace(/\\u002f/g, "/")
+    .replace(/\\\//g, "/")
+    .replace(/\\/g, "");
 
   return { title, duration, hlsUrl };
 }
 
 /**
- * Download audio from HLS stream using ffmpeg.
- * Returns the path to the downloaded MP3 file.
+ * Download audio from Loom HLS stream by:
+ * 1. Fetching the master playlist
+ * 2. Fetching the audio-only media playlist
+ * 3. Downloading all .ts segments
+ * 4. Concatenating and converting to MP3 with ffmpeg
  */
-async function downloadHlsAudio(hlsUrl: string): Promise<{ filePath: string; fileSize: number }> {
+async function downloadLoomAudio(hlsUrl: string, log: (msg: string) => void): Promise<{ filePath: string; fileSize: number }> {
   const tmpDir = os.tmpdir();
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  const outputPath = path.join(tmpDir, `reverbic-loom-${id}.mp3`);
+  const tmpFiles: string[] = [];
 
-  await new Promise<void>((resolve, reject) => {
-    ffmpeg(hlsUrl)
-      .noVideo()
-      .audioChannels(1)
-      .audioFrequency(16000)
-      .audioBitrate("64k")
-      .format("mp3")
-      .output(outputPath)
-      .on("end", () => resolve())
-      .on("error", (err: Error) => reject(new Error(`FFmpeg error: ${err.message}`)))
-      .run();
-  });
+  try {
+    // Step 1: Fetch master playlist
+    log("Fetching master playlist...");
+    const masterRes = await fetch(hlsUrl, { headers: FETCH_HEADERS });
+    if (!masterRes.ok) throw new Error(`Master playlist fetch failed: ${masterRes.status}`);
+    const masterPlaylist = await masterRes.text();
 
-  const stat = await fs.stat(outputPath);
-  return { filePath: outputPath, fileSize: stat.size };
+    // Extract base URL from the master playlist URL
+    const baseUrl = hlsUrl.substring(0, hlsUrl.lastIndexOf("/") + 1);
+    // Extract query params (CloudFront signed params) from the master URL
+    const queryParams = hlsUrl.includes("?") ? hlsUrl.substring(hlsUrl.indexOf("?")) : "";
+
+    // Step 2: Find the audio playlist reference
+    // Look for TYPE=AUDIO URI or fallback to any media playlist
+    let audioPlaylistPath: string | null = null;
+
+    const audioMediaMatch = masterPlaylist.match(/URI="([^"]*audio[^"]*)"/i);
+    if (audioMediaMatch) {
+      audioPlaylistPath = audioMediaMatch[1];
+    } else {
+      // No separate audio track — use the lowest bitrate video+audio stream
+      const lines = masterPlaylist.split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith("#")) {
+          audioPlaylistPath = trimmed;
+          break;
+        }
+      }
+    }
+
+    if (!audioPlaylistPath) {
+      throw new Error("Could not find audio playlist in HLS manifest");
+    }
+
+    // Step 3: Fetch audio media playlist
+    const audioPlaylistUrl = `${baseUrl}${audioPlaylistPath}${queryParams}`;
+    log(`Fetching audio playlist: ${audioPlaylistPath}`);
+    const audioRes = await fetch(audioPlaylistUrl, { headers: FETCH_HEADERS });
+    if (!audioRes.ok) throw new Error(`Audio playlist fetch failed: ${audioRes.status}`);
+    const audioPlaylist = await audioRes.text();
+
+    // Parse segment file names
+    const segmentNames = audioPlaylist
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith("#"));
+
+    log(`Found ${segmentNames.length} audio segments`);
+
+    // Step 4: Download all segments in parallel (batches of 5)
+    const segmentBuffers: Buffer[] = [];
+    const batchSize = 5;
+
+    for (let i = 0; i < segmentNames.length; i += batchSize) {
+      const batch = segmentNames.slice(i, i + batchSize);
+      const results = await Promise.all(
+        batch.map(async (segName) => {
+          const segUrl = `${baseUrl}${segName}${queryParams}`;
+          const segRes = await fetch(segUrl, { headers: FETCH_HEADERS });
+          if (!segRes.ok) throw new Error(`Segment ${segName} fetch failed: ${segRes.status}`);
+          const arrayBuf = await segRes.arrayBuffer();
+          return Buffer.from(arrayBuf);
+        })
+      );
+      segmentBuffers.push(...results);
+    }
+
+    // Step 5: Concatenate all segments into one .ts file
+    const totalSize = segmentBuffers.reduce((sum, buf) => sum + buf.length, 0);
+    log(`Downloaded ${segmentBuffers.length} segments, total ${(totalSize / 1024 / 1024).toFixed(1)}MB`);
+
+    const tsPath = path.join(tmpDir, `reverbic-loom-${id}.ts`);
+    tmpFiles.push(tsPath);
+    await fs.writeFile(tsPath, Buffer.concat(segmentBuffers));
+
+    // Step 6: Convert to MP3 with ffmpeg (local file, no network issues)
+    const mp3Path = path.join(tmpDir, `reverbic-loom-${id}.mp3`);
+    tmpFiles.push(mp3Path);
+
+    log("Converting to MP3...");
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(tsPath)
+        .noVideo()
+        .audioChannels(1)
+        .audioFrequency(16000)
+        .audioBitrate("64k")
+        .format("mp3")
+        .output(mp3Path)
+        .on("end", () => resolve())
+        .on("error", (err: Error) => reject(new Error(`FFmpeg conversion error: ${err.message}`)))
+        .run();
+    });
+
+    const stat = await fs.stat(mp3Path);
+    log(`Converted to MP3: ${(stat.size / 1024 / 1024).toFixed(1)}MB`);
+
+    // Clean up .ts file but keep .mp3
+    await fs.unlink(tsPath).catch(() => {});
+
+    return { filePath: mp3Path, fileSize: stat.size };
+  } catch (err) {
+    // Clean up on error
+    for (const f of tmpFiles) {
+      await fs.unlink(f).catch(() => {});
+    }
+    throw err;
+  }
 }
 
 /**
@@ -150,13 +232,11 @@ export async function POST(request: Request) {
     // Step 1: Extract metadata and HLS URL
     log("Extracting video data from Loom page...");
     const { title, duration, hlsUrl } = await extractLoomData(url);
-    log(`Found: title="${title}" duration=${duration}s hlsUrl=${hlsUrl.slice(0, 80)}...`);
+    log(`Found: title="${title}" duration=${duration}s`);
 
-    // Step 2: Download audio via ffmpeg
-    log("Downloading audio from HLS stream...");
-    const { filePath, fileSize } = await downloadHlsAudio(hlsUrl);
+    // Step 2: Download audio via HLS segments
+    const { filePath, fileSize } = await downloadLoomAudio(hlsUrl, log);
     tmpPath = filePath;
-    log(`Downloaded: ${(fileSize / 1024 / 1024).toFixed(1)}MB → ${filePath}`);
 
     // Step 3: Upload to S3
     const recordingId = crypto.randomUUID();

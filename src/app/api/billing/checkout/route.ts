@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getStripe, PLAN_PRICES } from "@/lib/stripe";
+import { getStripe, getPriceId, PLAN_PRICES } from "@/lib/stripe";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@supabase/supabase-js";
 
@@ -9,10 +9,15 @@ import { createClient } from "@supabase/supabase-js";
  */
 export async function POST(request: Request) {
   try {
-    const { tier } = await request.json();
+    const { tier, interval = "yearly" } = await request.json();
 
     if (!tier || !PLAN_PRICES[tier]) {
       return NextResponse.json({ error: "Invalid plan tier" }, { status: 400 });
+    }
+
+    const priceId = getPriceId(tier, interval === "monthly" ? "monthly" : "yearly");
+    if (!priceId) {
+      return NextResponse.json({ error: "Price not configured for this plan" }, { status: 400 });
     }
 
     // Get authenticated user from auth header
@@ -82,7 +87,7 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
-      line_items: [{ price: PLAN_PRICES[tier], quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${appUrl}/settings?billing=success&plan=${tier}`,
       cancel_url: `${appUrl}/settings?billing=cancelled`,
       subscription_data: {

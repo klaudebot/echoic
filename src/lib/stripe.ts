@@ -11,17 +11,31 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-/** Plan tier → Stripe price ID mapping */
-export const PLAN_PRICES: Record<string, string> = {
-  starter: process.env.STRIPE_PRICE_STARTER ?? "",
-  pro: process.env.STRIPE_PRICE_PRO ?? "",
-  team: process.env.STRIPE_PRICE_TEAM ?? "",
+/** Plan tier + interval → Stripe price ID mapping */
+export const PLAN_PRICES: Record<string, Record<string, string>> = {
+  starter: {
+    monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY ?? "",
+    yearly: process.env.STRIPE_PRICE_STARTER_YEARLY ?? "",
+  },
+  pro: {
+    monthly: process.env.STRIPE_PRICE_PRO_MONTHLY ?? "",
+    yearly: process.env.STRIPE_PRICE_PRO_YEARLY ?? "",
+  },
+  team: {
+    monthly: process.env.STRIPE_PRICE_TEAM_MONTHLY ?? "",
+    yearly: process.env.STRIPE_PRICE_TEAM_YEARLY ?? "",
+  },
 };
+
+/** Get the Stripe price ID for a tier + interval */
+export function getPriceId(tier: string, interval: "monthly" | "yearly"): string | null {
+  return PLAN_PRICES[tier]?.[interval] || null;
+}
 
 /** Price ID → plan tier reverse lookup */
 export function tierFromPriceId(priceId: string): string {
-  for (const [tier, id] of Object.entries(PLAN_PRICES)) {
-    if (id === priceId) return tier;
+  for (const [tier, intervals] of Object.entries(PLAN_PRICES)) {
+    if (intervals.monthly === priceId || intervals.yearly === priceId) return tier;
   }
   return "free";
 }

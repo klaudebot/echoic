@@ -74,6 +74,7 @@ export default function SettingsPage() {
   const [upgradingTier, setUpgradingTier] = useState<string | null>(null);
   const [billingMessage, setBillingMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"yearly" | "monthly">("yearly");
 
   useEffect(() => {
     const billing = searchParams.get("billing");
@@ -98,7 +99,7 @@ export default function SettingsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, interval: billingInterval }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create checkout");
@@ -341,12 +342,44 @@ export default function SettingsPage() {
           <span className="text-xs font-medium px-2 py-1 rounded-full bg-brand-emerald/10 text-brand-emerald">Current</span>
         </div>
 
+        {/* Billing interval toggle */}
+        <div className="flex items-center justify-center">
+          <div className="inline-flex items-center gap-1 bg-muted rounded-full p-1">
+            <button
+              onClick={() => setBillingInterval("monthly")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                billingInterval === "monthly"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingInterval("yearly")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all relative ${
+                billingInterval === "yearly"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Annual
+              <span className="absolute -top-2 -right-2 bg-brand-emerald text-white text-[9px] font-bold px-1 py-0.5 rounded-full leading-none">
+                -44%
+              </span>
+            </button>
+          </div>
+        </div>
+
         <div className="grid sm:grid-cols-3 gap-3">
           {[
-            { name: "Starter", tier: "starter", price: "$9", features: "30hrs, AI summaries, 3 integrations", highlighted: false },
-            { name: "Pro", tier: "pro", price: "$19", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
-            { name: "Team", tier: "team", price: "$39", features: "SSO, admin, API, priority support", highlighted: false },
-          ].map((plan) => (
+            { name: "Starter", tier: "starter", monthlyPrice: "$17.97", yearlyPrice: "$9.97", features: "30hrs, AI summaries, 3 integrations", highlighted: false },
+            { name: "Pro", tier: "pro", monthlyPrice: "$28.97", yearlyPrice: "$18.97", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
+            { name: "Team", tier: "team", monthlyPrice: "$38.97", yearlyPrice: "$38.97", features: "SSO, admin, API, priority support", highlighted: false },
+          ].map((plan) => {
+            const price = billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
+            const showStrike = billingInterval === "yearly" && plan.monthlyPrice !== plan.yearlyPrice;
+            return (
             <div
               key={plan.name}
               className={`border rounded-lg p-3 text-center ${
@@ -356,7 +389,16 @@ export default function SettingsPage() {
               }`}
             >
               <div className="text-sm font-semibold text-foreground">{plan.name}</div>
-              <div className="text-lg font-bold text-foreground mt-1">{plan.price}<span className="text-xs text-muted-foreground font-normal">/mo</span></div>
+              <div className="mt-1">
+                {showStrike && (
+                  <span className="text-xs text-muted-foreground line-through mr-1">{plan.monthlyPrice}</span>
+                )}
+                <span className="text-lg font-bold text-foreground">{price}</span>
+                <span className="text-xs text-muted-foreground font-normal">/mo</span>
+              </div>
+              {billingInterval === "yearly" && (
+                <div className="text-[10px] text-brand-emerald font-medium">billed annually</div>
+              )}
               <div className="text-[11px] text-muted-foreground mt-1">{plan.features}</div>
               <button
                 onClick={() => handleUpgrade(plan.tier)}
@@ -374,7 +416,8 @@ export default function SettingsPage() {
                 )}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

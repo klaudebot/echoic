@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /* ─── Waveform Visualizer ─────────────────────── */
 function WaveformVisualizer() {
@@ -180,7 +180,8 @@ const testimonials = [
 const plans = [
   {
     name: "Free",
-    price: "$0",
+    monthlyPrice: "$0",
+    yearlyPrice: "$0",
     period: "/mo",
     description: "For individuals getting started",
     features: [
@@ -190,10 +191,12 @@ const plans = [
     ],
     cta: "Start Free",
     highlighted: false,
+    tier: null,
   },
   {
     name: "Starter",
-    price: "$9",
+    monthlyPrice: "$17.97",
+    yearlyPrice: "$9.97",
     period: "/seat/mo",
     description: "For professionals who run meetings",
     features: [
@@ -204,10 +207,12 @@ const plans = [
     ],
     cta: "Get Started",
     highlighted: false,
+    tier: "starter",
   },
   {
     name: "Pro",
-    price: "$19",
+    monthlyPrice: "$28.97",
+    yearlyPrice: "$18.97",
     period: "/seat/mo",
     description: "For power users who live in meetings",
     features: [
@@ -220,10 +225,12 @@ const plans = [
     ],
     cta: "Get Started",
     highlighted: true,
+    tier: "pro",
   },
   {
     name: "Team",
-    price: "$39",
+    monthlyPrice: "$38.97",
+    yearlyPrice: "$38.97",
     period: "/seat/mo",
     description: "For teams that need full control",
     features: [
@@ -236,11 +243,14 @@ const plans = [
     ],
     cta: "Get Started",
     highlighted: false,
+    tier: "team",
   },
 ];
 
 /* ─── Page ────────────────────────────────────── */
 export default function MarketingPage() {
+  const [billingInterval, setBillingInterval] = useState<"yearly" | "monthly">("yearly");
+
   return (
     <>
       {/* ──── HERO ──────────────────────────────── */}
@@ -664,10 +674,41 @@ export default function MarketingPage() {
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Start free, upgrade when you need more. No credit card required.
             </p>
+
+            {/* Billing toggle */}
+            <div className="mt-8 inline-flex items-center gap-3 bg-card border border-border rounded-full p-1.5">
+              <button
+                onClick={() => setBillingInterval("monthly")}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  billingInterval === "monthly"
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingInterval("yearly")}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all relative ${
+                  billingInterval === "yearly"
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Annual
+                <span className="absolute -top-2.5 -right-3 bg-brand-emerald text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                  Save 44%
+                </span>
+              </button>
+            </div>
           </RevealSection>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
-            {plans.map((plan, i) => (
+            {plans.map((plan, i) => {
+              const price = billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
+              const showStrikethrough = billingInterval === "yearly" && plan.monthlyPrice !== plan.yearlyPrice && plan.monthlyPrice !== "$0";
+
+              return (
               <RevealSection key={i}>
                 <div
                   className={`relative flex flex-col h-full rounded-[4px] p-8 transition-all duration-300 ${
@@ -685,9 +726,17 @@ export default function MarketingPage() {
                     <h3 className="text-lg font-semibold font-sans text-foreground">{plan.name}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
                     <div className="mt-4 flex items-baseline gap-1">
-                      <span className="text-4xl font-bold font-sans text-foreground">{plan.price}</span>
+                      {showStrikethrough && (
+                        <span className="text-lg font-medium text-muted-foreground line-through mr-1">{plan.monthlyPrice}</span>
+                      )}
+                      <span className="text-4xl font-bold font-sans text-foreground">{price}</span>
                       <span className="text-sm text-muted-foreground">{plan.period}</span>
                     </div>
+                    {billingInterval === "yearly" && plan.tier && (
+                      <p className="text-xs text-brand-emerald font-medium mt-1">
+                        billed annually
+                      </p>
+                    )}
                   </div>
                   <ul className="mt-6 flex-1 space-y-3">
                     {plan.features.map((feat, j) => (
@@ -711,7 +760,8 @@ export default function MarketingPage() {
                   </Link>
                 </div>
               </RevealSection>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

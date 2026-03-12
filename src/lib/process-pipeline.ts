@@ -308,7 +308,9 @@ function sendEmailNotification(
           actionItemCount,
           decisionCount,
         }),
-      }).catch(() => {});
+      })
+        .then((r) => { if (!r.ok) r.json().then((d) => console.error(`[pipeline] ${type} email failed:`, d)); })
+        .catch((err) => console.error(`[pipeline] ${type} email error:`, err));
     });
-  }).catch(() => {});
+  }).catch((err) => console.error("[pipeline] Email notification error:", err));
 }

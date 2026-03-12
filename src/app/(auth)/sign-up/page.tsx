@@ -60,7 +60,9 @@ export default function SignUpPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "welcome", to: email, name }),
-    }).catch(() => {});
+    })
+      .then((r) => { if (!r.ok) r.json().then((d) => console.error("[signup] Welcome email failed:", d)); })
+      .catch((err) => console.error("[signup] Welcome email error:", err));
 
     // If email confirmation is required, Supabase returns a user but no session
     if (data.user && !data.session) {

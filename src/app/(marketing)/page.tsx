@@ -49,6 +49,139 @@ function useReveal() {
   return ref;
 }
 
+/* ─── Collapsible Comparison Chart ────────────── */
+const comparisonRows: ({ category: string } | { feature: string; starter: boolean | string; pro: boolean | string; team: boolean | string })[] = [
+  { category: "Recording & Transcription" },
+  { feature: "Transcription hours / month", starter: "30 hrs", pro: "Unlimited", team: "Unlimited" },
+  { feature: "Transcription accuracy", starter: "99.2%", pro: "99.2%", team: "99.2%" },
+  { feature: "Speaker identification", starter: true, pro: true, team: true },
+  { feature: "Upload audio / video files", starter: true, pro: true, team: true },
+  { feature: "Live recording", starter: true, pro: true, team: true },
+  { feature: "Meetings per month", starter: "100", pro: "Unlimited", team: "Unlimited" },
+  { category: "AI Features" },
+  { feature: "Smart summaries", starter: true, pro: true, team: true },
+  { feature: "Action item extraction", starter: true, pro: true, team: true },
+  { feature: "Decision tracking", starter: false, pro: true, team: true },
+  { feature: "AI Meeting Coach", starter: false, pro: true, team: true },
+  { feature: "Smart Clips", starter: false, pro: true, team: true },
+  { feature: "Custom vocabulary", starter: false, pro: false, team: true },
+  { category: "Integrations" },
+  { feature: "Integrations", starter: "3", pro: "All", team: "All" },
+  { feature: "Loom import", starter: true, pro: true, team: true },
+  { feature: "API access", starter: false, pro: false, team: true },
+  { category: "Collaboration & Admin" },
+  { feature: "Team members", starter: "5", pro: "20", team: "Unlimited" },
+  { feature: "Shared meeting library", starter: true, pro: true, team: true },
+  { feature: "Meeting sharing links", starter: true, pro: true, team: true },
+  { feature: "Admin dashboard", starter: false, pro: false, team: true },
+  { feature: "SSO / SAML", starter: false, pro: false, team: true },
+  { category: "Analytics" },
+  { feature: "Basic meeting stats", starter: true, pro: true, team: true },
+  { feature: "Advanced analytics", starter: false, pro: true, team: true },
+  { category: "Support" },
+  { feature: "Support", starter: "Email", pro: "Priority email", team: "Priority + Slack" },
+  { category: "Storage" },
+  { feature: "Storage", starter: "5 GB", pro: "50 GB", team: "100 GB" },
+  { feature: "Transcript history", starter: "Unlimited", pro: "Unlimited", team: "Unlimited" },
+];
+
+function ComparisonChart() {
+  const [expanded, setExpanded] = useState(false);
+  const previewCount = 10; // show first N rows (includes category headers)
+  const visibleRows = expanded ? comparisonRows : comparisonRows.slice(0, previewCount);
+
+  const renderCell = (value: boolean | string) => {
+    if (value === true) {
+      return (
+        <svg className="w-5 h-5 text-brand-emerald mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      );
+    }
+    if (value === false) {
+      return (
+        <svg className="w-4 h-4 text-muted-foreground/30 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
+        </svg>
+      );
+    }
+    return <span className="text-foreground font-medium">{value}</span>;
+  };
+
+  return (
+    <RevealSection className="mt-20">
+      <div className="text-center mb-10">
+        <h3 className="text-2xl font-heading sm:text-3xl">
+          Compare all <span className="gradient-text">features</span>
+        </h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          See exactly what you get with each plan
+        </p>
+      </div>
+
+      <div className="relative">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-4 px-4 text-left font-semibold text-foreground w-[40%]">Feature</th>
+                <th className="py-4 px-4 text-center font-semibold text-foreground">Starter</th>
+                <th className="py-4 px-4 text-center font-semibold text-brand-violet">Pro</th>
+                <th className="py-4 px-4 text-center font-semibold text-foreground">Team</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleRows.map((row, i) => {
+                if ("category" in row && !("feature" in row)) {
+                  return (
+                    <tr key={i} className="border-b border-border/50">
+                      <td colSpan={4} className="pt-8 pb-3 px-4 text-xs font-bold uppercase tracking-wider text-brand-violet">
+                        {row.category}
+                      </td>
+                    </tr>
+                  );
+                }
+                const r = row as { feature: string; starter: boolean | string; pro: boolean | string; team: boolean | string };
+                return (
+                  <tr key={i} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
+                    <td className="py-3.5 px-4 text-muted-foreground">{r.feature}</td>
+                    <td className="py-3.5 px-4 text-center">{renderCell(r.starter)}</td>
+                    <td className="py-3.5 px-4 text-center bg-brand-violet/[0.03]">{renderCell(r.pro)}</td>
+                    <td className="py-3.5 px-4 text-center">{renderCell(r.team)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Fade overlay when collapsed */}
+        {!expanded && (
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        )}
+      </div>
+
+      <div className="mt-4 text-center">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="inline-flex items-center gap-2 text-sm font-medium text-brand-violet hover:text-brand-violet/80 transition-colors"
+        >
+          {expanded ? "Show less" : `Show all ${comparisonRows.filter(r => "feature" in r).length} features`}
+          <svg
+            className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+    </RevealSection>
+  );
+}
+
 function RevealSection({
   children,
   className = "",
@@ -722,118 +855,7 @@ export default function MarketingPage() {
           </RevealSection>
 
           {/* ──── COMPARISON CHART ──────────────── */}
-          <RevealSection className="mt-20">
-            <div className="text-center mb-10">
-              <h3 className="text-2xl font-heading sm:text-3xl">
-                Compare all <span className="gradient-text">features</span>
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                See exactly what you get with each plan
-              </p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="py-4 px-4 text-left font-semibold text-foreground w-[40%]">Feature</th>
-                    <th className="py-4 px-4 text-center font-semibold text-foreground">Starter</th>
-                    <th className="py-4 px-4 text-center font-semibold text-brand-violet">Pro</th>
-                    <th className="py-4 px-4 text-center font-semibold text-foreground">Team</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { category: "Recording & Transcription" },
-                    { feature: "Transcription hours / month", starter: "30 hrs", pro: "Unlimited", team: "Unlimited" },
-                    { feature: "Transcription accuracy", starter: "99.2%", pro: "99.2%", team: "99.2%" },
-                    { feature: "Speaker identification", starter: true, pro: true, team: true },
-                    { feature: "Upload audio / video files", starter: true, pro: true, team: true },
-                    { feature: "Live recording", starter: true, pro: true, team: true },
-                    { feature: "Meetings per month", starter: "100", pro: "Unlimited", team: "Unlimited" },
-                    { feature: "Custom vocabulary", starter: false, pro: false, team: true },
-
-                    { category: "AI & Meeting Notes" },
-                    { feature: "AI summaries", starter: true, pro: true, team: true },
-                    { feature: "Action item extraction", starter: true, pro: true, team: true },
-                    { feature: "Decision tracking", starter: false, pro: true, team: true },
-                    { feature: "AI Meeting Coach", starter: false, pro: true, team: true },
-                    { feature: "Smart Clips", starter: false, pro: true, team: true },
-                    { feature: "Advanced analytics", starter: false, pro: true, team: true },
-                    { feature: "Keyword & topic detection", starter: false, pro: true, team: true },
-                    { feature: "Sentiment analysis", starter: false, pro: true, team: true },
-
-                    { category: "Collaboration & Sharing" },
-                    { feature: "Shareable meeting links", starter: true, pro: true, team: true },
-                    { feature: "Team workspace", starter: true, pro: true, team: true },
-                    { feature: "Comments & reactions", starter: true, pro: true, team: true },
-                    { feature: "Team members", starter: "5", pro: "20", team: "Unlimited" },
-
-                    { category: "Integrations" },
-                    { feature: "Integrations", starter: "3", pro: "All", team: "All" },
-                    { feature: "Slack notifications", starter: true, pro: true, team: true },
-                    { feature: "Calendar sync", starter: true, pro: true, team: true },
-                    { feature: "API access", starter: false, pro: false, team: true },
-                    { feature: "Webhooks", starter: false, pro: false, team: true },
-
-                    { category: "Security & Admin" },
-                    { feature: "SSO / SAML", starter: false, pro: false, team: true },
-                    { feature: "Admin dashboard", starter: false, pro: false, team: true },
-                    { feature: "Audit logs", starter: false, pro: false, team: true },
-                    { feature: "Data retention controls", starter: false, pro: false, team: true },
-
-                    { category: "Support" },
-                    { feature: "Email support", starter: true, pro: true, team: true },
-                    { feature: "Priority support", starter: false, pro: true, team: true },
-                    { feature: "Dedicated account manager", starter: false, pro: false, team: true },
-
-                    { category: "Storage" },
-                    { feature: "Storage", starter: "5 GB", pro: "50 GB", team: "100 GB" },
-                    { feature: "Transcript history", starter: "Unlimited", pro: "Unlimited", team: "Unlimited" },
-                  ].map((row, i) => {
-                    if ("category" in row && !("feature" in row)) {
-                      return (
-                        <tr key={i} className="border-b border-border/50">
-                          <td colSpan={4} className="pt-8 pb-3 px-4 text-xs font-bold uppercase tracking-wider text-brand-violet">
-                            {row.category}
-                          </td>
-                        </tr>
-                      );
-                    }
-
-                    const r = row as { feature: string; starter: boolean | string; pro: boolean | string; team: boolean | string };
-
-                    const renderCell = (value: boolean | string) => {
-                      if (value === true) {
-                        return (
-                          <svg className="w-5 h-5 text-brand-emerald mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        );
-                      }
-                      if (value === false) {
-                        return (
-                          <svg className="w-4 h-4 text-muted-foreground/30 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
-                          </svg>
-                        );
-                      }
-                      return <span className="text-foreground font-medium">{value}</span>;
-                    };
-
-                    return (
-                      <tr key={i} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
-                        <td className="py-3.5 px-4 text-muted-foreground">{r.feature}</td>
-                        <td className="py-3.5 px-4 text-center">{renderCell(r.starter)}</td>
-                        <td className="py-3.5 px-4 text-center bg-brand-violet/[0.03]">{renderCell(r.pro)}</td>
-                        <td className="py-3.5 px-4 text-center">{renderCell(r.team)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </RevealSection>
+          <ComparisonChart />
         </div>
       </section>
 
@@ -850,7 +872,7 @@ export default function MarketingPage() {
                 Stop losing decisions to bad notes
               </h2>
               <p className="relative mt-4 text-lg text-white/70 max-w-xl mx-auto">
-                Join 1,000+ teams who never miss a meeting insight. Start free today.
+                Never miss a meeting insight again. Start free today.
               </p>
               <div className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link

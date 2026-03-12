@@ -118,9 +118,9 @@ function SignUpForm() {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Left: Branding Panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-brand-deep via-brand-violet/90 to-brand-deep animated-gradient items-center justify-center p-12">
-        <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-brand-cyan/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-brand-violet/20 blur-3xl" />
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] items-center justify-center p-12">
+        <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-white/[0.03] blur-3xl" />
 
         <div className="relative max-w-md text-center">
           {/* Logo */}
@@ -139,12 +139,25 @@ function SignUpForm() {
             </span>
           </div>
 
-          <h2 className="text-3xl font-heading text-white mb-4">
-            Start for free today
-          </h2>
-          <p className="text-white/60 text-base leading-relaxed">
-            5 hours of free transcription every month. No credit card required. Upgrade anytime.
-          </p>
+          {selectedPlan ? (
+            <>
+              <h2 className="text-3xl font-heading text-white mb-4">
+                You&apos;re choosing {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}
+              </h2>
+              <p className="text-white/60 text-base leading-relaxed">
+                Create your account and you&apos;ll be taken to checkout to activate your plan.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-3xl font-heading text-white mb-4">
+                Your meetings, remembered.
+              </h2>
+              <p className="text-white/60 text-base leading-relaxed">
+                AI transcription, smart summaries, action items, and decision tracking — all in one place.
+              </p>
+            </>
+          )}
 
           {/* Features */}
           <div className="mt-12 space-y-4 text-left">
@@ -154,7 +167,7 @@ function SignUpForm() {
               { icon: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z", text: "Decision tracking across meetings" },
               { icon: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z", text: "Meeting Coach with personalized tips" },
             ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 px-4 py-3">
+              <div key={i} className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
                 <svg className="w-5 h-5 text-brand-cyan shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={f.icon} />
                 </svg>
@@ -261,7 +274,7 @@ function SignUpForm() {
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
-                Work email
+                Email
               </label>
               <input
                 id="email"

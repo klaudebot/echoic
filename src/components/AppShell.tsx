@@ -10,9 +10,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import {
   LayoutDashboard,
   Mic,
-  FileText,
   ListChecks,
-  Lightbulb,
   Scissors,
   BarChart3,
   Users,
@@ -35,6 +33,9 @@ import {
   XCircle,
   VolumeX,
   Calendar,
+  Plus,
+  Video,
+  Link as LinkIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -293,10 +294,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
+  const [newMenuOpen, setNewMenuOpen] = useState(false);
+  const newMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close "New" dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (newMenuRef.current && !newMenuRef.current.contains(e.target as Node)) {
+        setNewMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const closeMobile = () => setSidebarOpen(false);
+
   const sidebar = (
     <div className="flex flex-col h-full">
       <div className="px-4 h-14 flex items-center gap-2.5 border-b border-border shrink-0">
-        <Link href={navHref("/dashboard")} className="flex items-center gap-2.5">
+        <Link href={navHref("/dashboard")} onClick={closeMobile} className="flex items-center gap-2.5">
           <WaveformLogo />
           <span className="font-heading text-lg font-normal text-foreground tracking-tight">
             Reverbic
@@ -304,11 +321,58 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
       </div>
 
-      <div className="px-3 py-3">
-        <Link href={navHref("/meetings/upload")} className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors">
-          <Upload className="w-4 h-4" />
-          Upload or Record
-        </Link>
+      <div className="px-3 py-3" ref={newMenuRef}>
+        <button
+          onClick={() => setNewMenuOpen((v) => !v)}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          New Meeting
+          <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform ${newMenuOpen ? "rotate-180" : ""}`} />
+        </button>
+        {newMenuOpen && (
+          <div className="mt-1.5 bg-card border border-border rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+            <Link
+              href={navHref("/meetings/upload")}
+              onClick={() => { setNewMenuOpen(false); closeMobile(); }}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+            >
+              <div className="w-7 h-7 rounded-md bg-brand-violet/10 flex items-center justify-center">
+                <Upload className="w-3.5 h-3.5 text-brand-violet" />
+              </div>
+              <div>
+                <div className="font-medium text-[13px]">Upload File</div>
+                <div className="text-[11px] text-muted-foreground">MP3, WAV, M4A, WebM</div>
+              </div>
+            </Link>
+            <Link
+              href={navHref("/meetings/record")}
+              onClick={() => { setNewMenuOpen(false); closeMobile(); }}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+            >
+              <div className="w-7 h-7 rounded-md bg-brand-rose/10 flex items-center justify-center">
+                <Mic className="w-3.5 h-3.5 text-brand-rose" />
+              </div>
+              <div>
+                <div className="font-medium text-[13px]">Record Live</div>
+                <div className="text-[11px] text-muted-foreground">Use your microphone</div>
+              </div>
+            </Link>
+            <Link
+              href={navHref("/meetings/upload?tab=loom")}
+              onClick={() => { setNewMenuOpen(false); closeMobile(); }}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+            >
+              <div className="w-7 h-7 rounded-md bg-brand-cyan/10 flex items-center justify-center">
+                <Video className="w-3.5 h-3.5 text-brand-cyan" />
+              </div>
+              <div>
+                <div className="font-medium text-[13px]">Import Loom</div>
+                <div className="text-[11px] text-muted-foreground">Paste a Loom share link</div>
+              </div>
+            </Link>
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 space-y-0.5">
@@ -343,6 +407,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         <Link
                           key={child.href}
                           href={childPath}
+                          onClick={closeMobile}
                           className={`block px-2 py-1.5 text-[13px] rounded-md transition-colors ${
                             childActive ? "text-brand-violet font-medium bg-brand-violet/5" : "text-muted-foreground hover:text-foreground"
                           }`}
@@ -361,6 +426,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={item.href}
               href={navHref(item.href)}
+              onClick={closeMobile}
               className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                 active
                   ? "bg-brand-violet/10 text-brand-violet font-medium"

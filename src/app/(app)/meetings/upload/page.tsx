@@ -22,6 +22,7 @@ import {
   Video,
   Loader2,
 } from "lucide-react";
+import { TranscriptionLimitBanner, canTranscribe } from "@/components/PlanGate";
 
 const supportedFormats = [
   { ext: ".mp3", label: "MP3 Audio" },
@@ -228,6 +229,13 @@ export default function UploadPage() {
       return;
     }
 
+    // Check transcription limit
+    const { allowed } = canTranscribe(user?.orgPlan);
+    if (!allowed) {
+      setError("You've reached your transcription limit for this month. Upgrade your plan to continue.");
+      return;
+    }
+
     // Real upload flow
     setError(null);
 
@@ -344,7 +352,8 @@ export default function UploadPage() {
       setUploading(false);
       setError(err instanceof Error ? err.message : "Upload failed");
     }
-  }, [file, isDemo, language, tags]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, isDemo, language, tags, user?.orgPlan]);
 
   const resetAll = () => {
     if (xhrRef.current) {
@@ -371,6 +380,8 @@ export default function UploadPage() {
       <AppLink href="/meetings" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Meetings
       </AppLink>
+
+      <TranscriptionLimitBanner />
 
       <div>
         <h1 className="font-heading text-3xl text-foreground">Upload Recording</h1>

@@ -18,6 +18,7 @@ import {
   Hash,
   Timer,
 } from "lucide-react";
+import { PlanGate } from "@/components/PlanGate";
 
 /* ── helpers ── */
 
@@ -350,6 +351,7 @@ export default function AnalyticsPage() {
 
   /* ── data state ── */
   return (
+    <PlanGate feature="analytics">
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -586,5 +588,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
+    </PlanGate>
   );
 }

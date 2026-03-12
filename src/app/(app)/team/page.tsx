@@ -169,6 +169,16 @@ export default function TeamPage() {
       return;
     }
 
+    // Check member limit
+    const membersLimit = user.orgPlan?.membersLimit ?? 1;
+    if (membersLimit !== -1) {
+      const activeCount = members.filter((m) => m.status === "accepted" || m.status === "pending").length + 1; // +1 for owner
+      if (activeCount >= membersLimit) {
+        setInviteError(`Your plan allows ${membersLimit} team member${membersLimit === 1 ? "" : "s"}. Upgrade to invite more.`);
+        return;
+      }
+    }
+
     setInviteLoading(true);
 
     const token = crypto.randomUUID();

@@ -244,6 +244,11 @@ export async function runProcessingPipeline(
     await updateMeeting(meetingId, finalUpdates);
     log(`PIPELINE COMPLETE — title="${finalTitle}" total time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
+    // Track transcription usage (hours)
+    trackTranscriptionUsage(totalDuration).catch((e) =>
+      console.error("[pipeline] Usage tracking failed:", e)
+    );
+
     await notifyTranscriptComplete(userId, finalTitle, meetingId);
     sendEmailNotification("transcript-ready", meetingId, finalTitle, userId, sumData.summary, undefined, sumData.actionItems.length, sumData.decisions.length);
 
@@ -276,6 +281,46 @@ class StageError extends Error {
     super(message);
     this.stage = stage;
     this.name = "StageError";
+  }
+}
+
+/** Increment org's transcription_hours_used after a successful transcription */
+async function trackTranscriptionUsage(durationSeconds: number): Promise<void> {
+  const hours = durationSeconds / 3600;
+  if (hours <= 0) return;
+  try {
+    const { getSupabaseBrowser } = await import("@/lib/supabase/client");
+    const supabase = getSupabaseBrowser();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: membership } = await (supabase as any)
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .single();
+
+    if (!membership?.organization_id) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: org } = await (supabase as any)
+      .from("organizations")
+      .select("transcription_hours_used")
+      .eq("id", membership.organization_id)
+      .single();
+
+    const currentUsed = org?.transcription_hours_used ?? 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+      .from("organizations")
+      .update({ transcription_hours_used: Math.round((currentUsed + hours) * 100) / 100 })
+      .eq("id", membership.organization_id);
+
+    console.log(`[pipeline] Usage tracked: +${hours.toFixed(2)}hrs (total: ${(currentUsed + hours).toFixed(2)}hrs)`);
+  } catch (e) {
+    console.error("[pipeline] Usage tracking error:", e);
   }
 }
 

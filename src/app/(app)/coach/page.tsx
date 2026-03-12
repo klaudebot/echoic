@@ -23,6 +23,7 @@ import {
   Timer,
   Award,
 } from "lucide-react";
+import { PlanGate } from "@/components/PlanGate";
 
 // ─── Types ───
 
@@ -399,6 +400,7 @@ export default function CoachPage() {
   const currentTrend = weeklyStats[0]?.trend ?? "stable";
 
   return (
+    <PlanGate feature="coach">
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -637,6 +639,7 @@ export default function CoachPage() {
         </>
       )}
     </div>
+    </PlanGate>
   );
 }
 

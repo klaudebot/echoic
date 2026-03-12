@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Upload,
 } from "lucide-react";
+import { TranscriptionLimitBanner, canTranscribe } from "@/components/PlanGate";
 
 export default function RecordPage() {
   const prefix = useBasePrefix();
@@ -146,6 +147,13 @@ export default function RecordPage() {
   const startRecording = useCallback(async () => {
     setError(null);
 
+    // Check transcription limit
+    const { allowed } = canTranscribe(user?.orgPlan);
+    if (!allowed) {
+      setError("You've reached your transcription limit for this month. Upgrade your plan to continue.");
+      return;
+    }
+
     // Demo mode: skip real microphone
     if (isDemo) {
       setStatus("recording");
@@ -209,7 +217,8 @@ export default function RecordPage() {
         setError("Failed to start recording. Please check your microphone settings.");
       }
     }
-  }, [isDemo, drawWaveform]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo, drawWaveform, user?.orgPlan]);
 
   const pauseRecording = useCallback(() => {
     if (isDemo) {
@@ -444,6 +453,8 @@ export default function RecordPage() {
       <AppLink href="/meetings" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Meetings
       </AppLink>
+
+      <TranscriptionLimitBanner />
 
       <div>
         <h1 className="font-heading text-3xl text-foreground">Record Meeting</h1>

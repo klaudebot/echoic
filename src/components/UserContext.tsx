@@ -4,12 +4,22 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
+export interface OrgPlan {
+  plan: "free" | "starter" | "pro" | "team" | "enterprise";
+  planStatus: "active" | "trialing" | "past_due" | "canceled" | "unpaid";
+  transcriptionHoursUsed: number;
+  transcriptionHoursLimit: number;
+  membersLimit: number;
+  meetingsPerMonthLimit: number;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string | null;
   organizationId: string | null;
+  orgPlan?: OrgPlan | null;
 }
 
 interface UserContextValue {
@@ -40,6 +50,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Fetch user's organization membership
     let orgId: string | null = null;
+    let orgPlan: OrgPlan | null = null;
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: membership } = await (supabase as any)
@@ -49,6 +60,26 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .limit(1)
         .single();
       orgId = membership?.organization_id ?? null;
+
+      // Fetch org plan data
+      if (orgId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: org } = await (supabase as any)
+          .from("organizations")
+          .select("plan, plan_status, transcription_hours_used, transcription_hours_limit, members_limit, meetings_per_month_limit")
+          .eq("id", orgId)
+          .single();
+        if (org) {
+          orgPlan = {
+            plan: org.plan ?? "free",
+            planStatus: org.plan_status ?? "active",
+            transcriptionHoursUsed: org.transcription_hours_used ?? 0,
+            transcriptionHoursLimit: org.transcription_hours_limit ?? 3,
+            membersLimit: org.members_limit ?? 1,
+            meetingsPerMonthLimit: org.meetings_per_month_limit ?? 10,
+          };
+        }
+      }
     } catch {
       // No org membership yet — user was just created or trigger failed
     }
@@ -60,6 +91,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       email: authUser.email || "",
       avatarUrl: authUser.user_metadata?.avatar_url,
       organizationId: orgId,
+      orgPlan,
     });
   }, []);
 

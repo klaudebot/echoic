@@ -13,6 +13,7 @@ import {
   ArrowUpDown,
   User,
 } from "lucide-react";
+import { PlanGate } from "@/components/PlanGate";
 
 interface Decision {
   text: string;
@@ -105,6 +106,7 @@ export default function DecisionsPage() {
   }, [groups, searchQuery, sortNewestFirst]);
 
   return (
+    <PlanGate feature="decisions">
     <div className="space-y-6">
       {/* Page header */}
       <div>
@@ -256,5 +258,6 @@ export default function DecisionsPage() {
         </>
       )}
     </div>
+    </PlanGate>
   );
 }

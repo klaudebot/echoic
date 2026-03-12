@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { AppLink } from "@/components/DemoContext";
 import { useMeetings } from "@/hooks/use-meetings";
 import { type Meeting } from "@/lib/meeting-store";
+import { PlanGate } from "@/components/PlanGate";
 import {
   Scissors,
   Mic,
@@ -693,6 +694,7 @@ export default function ClipsPage() {
   ];
 
   return (
+    <PlanGate feature="clips">
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -855,5 +857,6 @@ export default function ClipsPage() {
         </>
       )}
     </div>
+    </PlanGate>
   );
 }

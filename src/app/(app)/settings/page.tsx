@@ -76,7 +76,20 @@ export default function SettingsPage() {
   const [openingPortal, setOpeningPortal] = useState(false);
   const [billingInterval, setBillingInterval] = useState<"yearly" | "monthly">("yearly");
 
+  // Auto-trigger checkout when arriving from signup with a plan
+  const [autoUpgradeTriggered, setAutoUpgradeTriggered] = useState(false);
   useEffect(() => {
+    const upgradePlan = searchParams.get("upgrade");
+    const interval = searchParams.get("interval");
+    if (upgradePlan && !autoUpgradeTriggered) {
+      setAutoUpgradeTriggered(true);
+      if (interval === "monthly" || interval === "yearly") {
+        setBillingInterval(interval);
+      }
+      // Small delay to let the page render, then trigger checkout
+      setTimeout(() => handleUpgrade(upgradePlan), 500);
+    }
+
     const billing = searchParams.get("billing");
     const plan = searchParams.get("plan");
     if (billing === "success" && plan) {
@@ -86,6 +99,7 @@ export default function SettingsPage() {
       setBillingMessage({ type: "error", text: "Checkout was cancelled." });
       setTimeout(() => setBillingMessage(null), 4000);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   async function handleUpgrade(tier: string) {

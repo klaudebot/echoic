@@ -263,15 +263,15 @@ export default function MarketingPage() {
             {/* Stats */}
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">1,000+</span> teams
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">2M+</span> meetings transcribed
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
                 <span className="font-semibold text-foreground">99.2%</span> accuracy
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">50+</span> languages
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">&lt;2 min</span> setup
               </div>
             </div>
 
@@ -674,7 +674,7 @@ export default function MarketingPage() {
                     ))}
                   </ul>
                   <Link
-                    href="/sign-up"
+                    href={`/sign-up?plan=${plan.tier}&interval=${billingInterval}`}
                     className={`mt-8 block rounded-[4px] py-3 text-center text-sm font-semibold transition-all ${
                       plan.highlighted
                         ? "bg-brand-violet text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90"

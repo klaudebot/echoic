@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 
 export default function SignUpPage() {
+  return (
+    <Suspense>
+      <SignUpForm />
+    </Suspense>
+  );
+}
+
+function SignUpForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,14 +22,24 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedPlan = searchParams.get("plan");
+  const selectedInterval = searchParams.get("interval") || "yearly";
 
   // Redirect if already signed in
   useEffect(() => {
     const supabase = getSupabaseBrowser();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) router.replace("/dashboard");
+      if (user) {
+        // If already signed in and came from a plan, go to checkout
+        if (selectedPlan) {
+          router.replace(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`);
+        } else {
+          router.replace("/dashboard");
+        }
+      }
     });
-  }, [router]);
+  }, [router, selectedPlan, selectedInterval]);
 
   const passwordStrength = (() => {
     if (password.length === 0) return { label: "", width: "0%", color: "" };
@@ -38,11 +56,15 @@ export default function SignUpPage() {
     setError(null);
 
     const supabase = getSupabaseBrowser();
+    const redirectPath = selectedPlan
+      ? `/auth/callback?next=${encodeURIComponent(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`)}`
+      : "/auth/callback?next=/dashboard";
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: name },
+        emailRedirectTo: `${window.location.origin}${redirectPath}`,
       },
     });
 
@@ -73,15 +95,22 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push("/dashboard");
+    if (selectedPlan) {
+      router.push(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   const handleOAuth = async (provider: "google" | "github") => {
     const supabase = getSupabaseBrowser();
+    const oauthNext = selectedPlan
+      ? `/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`
+      : "/dashboard";
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(oauthNext)}`,
       },
     });
   };
@@ -164,14 +193,11 @@ export default function SignUpPage() {
               </div>
               <h1 className="text-2xl font-heading text-foreground sm:text-3xl">Check your email</h1>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to activate your account, then sign in.
+                We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>.
+                {selectedPlan
+                  ? " Click the link to activate your account — you'll be taken straight to checkout."
+                  : " Click the link to activate your account and get started."}
               </p>
-              <Link
-                href="/sign-in"
-                className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all"
-              >
-                Go to Sign In
-              </Link>
               <p className="mt-4 text-xs text-muted-foreground">
                 Didn&apos;t get the email? Check your spam folder or try signing up again.
               </p>
@@ -179,7 +205,9 @@ export default function SignUpPage() {
           ) : (<>
           <h1 className="text-2xl font-heading text-foreground sm:text-3xl">Create your account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Start transcribing meetings in under 2 minutes
+            {selectedPlan
+              ? `Sign up to start your ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan`
+              : "Start transcribing meetings in under 2 minutes"}
           </p>
 
           {/* Error */}

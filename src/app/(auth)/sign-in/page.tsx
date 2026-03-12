@@ -22,6 +22,7 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/dashboard";
+  const message = searchParams.get("message");
 
   // Redirect if already signed in
   useEffect(() => {
@@ -102,8 +103,8 @@ function SignInForm() {
           <div className="mt-12 grid grid-cols-3 gap-4">
             {[
               { label: "Accuracy", value: "99.2%" },
-              { label: "Teams", value: "1,000+" },
               { label: "Languages", value: "50+" },
+              { label: "Setup", value: "<2 min" },
             ].map((stat) => (
               <div key={stat.label} className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-4">
                 <div className="text-xl font-bold text-white">{stat.value}</div>
@@ -137,6 +138,13 @@ function SignInForm() {
           <p className="mt-2 text-sm text-muted-foreground">
             Sign in to your account to continue
           </p>
+
+          {/* Success message (e.g. from signup confirmation) */}
+          {message && !error && (
+            <div className="mt-4 rounded-xl border border-brand-emerald/20 bg-brand-emerald/5 px-4 py-3">
+              <p className="text-sm text-brand-emerald">{message}</p>
+            </div>
+          )}
 
           {/* Error */}
           {error && (

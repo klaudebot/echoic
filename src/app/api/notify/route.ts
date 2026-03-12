@@ -18,13 +18,16 @@ export async function POST(request: Request) {
   let to = "unknown";
 
   try {
-    const { error: authError } = await requireAuth();
-    if (authError) return authError;
-
     const body = await request.json();
     type = body.type ?? "unknown";
     to = body.to ?? "unknown";
     const { name, meetingTitle, meetingId, summary, actionItemCount, decisionCount, errorMessage, inviterName, inviterEmail, teamName, newMemberName, newMemberEmail, resetToken } = body;
+
+    // Welcome and password-reset emails are sent pre-auth; all others require auth
+    if (type !== "welcome" && type !== "password-reset") {
+      const { error: authError } = await requireAuth();
+      if (authError) return authError;
+    }
 
     if (!body.type || !body.to) {
       return NextResponse.json({ error: "Missing type or to" }, { status: 400 });

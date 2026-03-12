@@ -12,6 +12,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
   const router = useRouter();
 
   // Redirect if already signed in
@@ -68,8 +69,7 @@ export default function SignUpPage() {
     if (data.user && !data.session) {
       setLoading(false);
       setError(null);
-      // Show confirmation message
-      router.push("/sign-in?message=Check your email to confirm your account");
+      setConfirmationSent(true);
       return;
     }
 
@@ -155,6 +155,28 @@ export default function SignUpPage() {
             </span>
           </div>
 
+          {confirmationSent ? (
+            <div className="text-center">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-emerald/10">
+                <svg className="h-8 w-8 text-brand-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-heading text-foreground sm:text-3xl">Check your email</h1>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Click the link to activate your account, then sign in.
+              </p>
+              <Link
+                href="/sign-in"
+                className="mt-8 inline-flex items-center justify-center rounded-xl bg-brand-violet px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all"
+              >
+                Go to Sign In
+              </Link>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Didn&apos;t get the email? Check your spam folder or try signing up again.
+              </p>
+            </div>
+          ) : (<>
           <h1 className="text-2xl font-heading text-foreground sm:text-3xl">Create your account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Start transcribing meetings in under 2 minutes
@@ -291,9 +313,9 @@ export default function SignUpPage() {
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
             By creating an account, you agree to our{" "}
-            <a href="#" className="underline hover:text-foreground transition-colors">Terms of Service</a>
+            <Link href="/terms" className="underline hover:text-foreground transition-colors">Terms of Service</Link>
             {" "}and{" "}
-            <a href="#" className="underline hover:text-foreground transition-colors">Privacy Policy</a>
+            <Link href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</Link>
           </p>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -302,6 +324,7 @@ export default function SignUpPage() {
               Sign in
             </Link>
           </p>
+          </>)}
         </div>
       </div>
     </div>

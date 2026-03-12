@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/UserContext";
+import { getSupabaseBrowser } from "@/lib/supabase/client";
 import {
   User,
   Bell,
@@ -17,6 +18,8 @@ import {
   Trash2,
   Crown,
   Check,
+  Loader2,
+  ExternalLink,
 } from "lucide-react";
 
 function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
@@ -65,6 +68,71 @@ export default function SettingsPage() {
   // Transcription
   const [transcriptionLang, setTranscriptionLang] = useState("en-US");
   const [customVocab, setCustomVocab] = useState("");
+
+  // Billing
+  const searchParams = useSearchParams();
+  const [upgradingTier, setUpgradingTier] = useState<string | null>(null);
+  const [billingMessage, setBillingMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [openingPortal, setOpeningPortal] = useState(false);
+
+  useEffect(() => {
+    const billing = searchParams.get("billing");
+    const plan = searchParams.get("plan");
+    if (billing === "success" && plan) {
+      setBillingMessage({ type: "success", text: `Successfully upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}!` });
+      setTimeout(() => setBillingMessage(null), 5000);
+    } else if (billing === "cancelled") {
+      setBillingMessage({ type: "error", text: "Checkout was cancelled." });
+      setTimeout(() => setBillingMessage(null), 4000);
+    }
+  }, [searchParams]);
+
+  async function handleUpgrade(tier: string) {
+    setUpgradingTier(tier);
+    try {
+      const supabase = getSupabaseBrowser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ tier }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create checkout");
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      setBillingMessage({ type: "error", text: err instanceof Error ? err.message : "Upgrade failed" });
+      setTimeout(() => setBillingMessage(null), 4000);
+    } finally {
+      setUpgradingTier(null);
+    }
+  }
+
+  async function handleManageBilling() {
+    setOpeningPortal(true);
+    try {
+      const supabase = getSupabaseBrowser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/billing/portal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to open portal");
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      setBillingMessage({ type: "error", text: err instanceof Error ? err.message : "Could not open billing portal" });
+      setTimeout(() => setBillingMessage(null), 4000);
+    } finally {
+      setOpeningPortal(false);
+    }
+  }
 
   // API
   const [showApiKey, setShowApiKey] = useState(false);
@@ -235,10 +303,30 @@ export default function SettingsPage() {
 
       {/* Billing */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <CreditCard className="w-4 h-4 text-brand-amber" />
-          <h2 className="font-heading text-lg text-foreground">Billing</h2>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-brand-amber" />
+            <h2 className="font-heading text-lg text-foreground">Billing</h2>
+          </div>
+          <button
+            onClick={handleManageBilling}
+            disabled={openingPortal}
+            className="text-xs text-brand-violet hover:text-brand-violet/80 font-medium flex items-center gap-1 transition-colors disabled:opacity-50"
+          >
+            {openingPortal ? <Loader2 className="w-3 h-3 animate-spin" /> : <ExternalLink className="w-3 h-3" />}
+            Manage Billing
+          </button>
         </div>
+
+        {billingMessage && (
+          <div className={`rounded-lg p-3 text-sm font-medium ${
+            billingMessage.type === "success"
+              ? "bg-brand-emerald/10 text-brand-emerald border border-brand-emerald/20"
+              : "bg-brand-rose/10 text-brand-rose border border-brand-rose/20"
+          }`}>
+            {billingMessage.text}
+          </div>
+        )}
 
         <div className="bg-muted rounded-lg p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -250,14 +338,14 @@ export default function SettingsPage() {
               <div className="text-xs text-muted-foreground">3 hours of transcription / month</div>
             </div>
           </div>
-          <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">Current</span>
+          <span className="text-xs font-medium px-2 py-1 rounded-full bg-brand-emerald/10 text-brand-emerald">Current</span>
         </div>
 
         <div className="grid sm:grid-cols-3 gap-3">
           {[
-            { name: "Starter", price: "$9", features: "30hrs, AI summaries, 3 integrations" },
-            { name: "Pro", price: "$19", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
-            { name: "Team", price: "$39", features: "SSO, admin, API, priority support" },
+            { name: "Starter", tier: "starter", price: "$9", features: "30hrs, AI summaries, 3 integrations", highlighted: false },
+            { name: "Pro", tier: "pro", price: "$19", features: "Unlimited, Coach, Clips, all integrations", highlighted: true },
+            { name: "Team", tier: "team", price: "$39", features: "SSO, admin, API, priority support", highlighted: false },
           ].map((plan) => (
             <div
               key={plan.name}
@@ -271,14 +359,19 @@ export default function SettingsPage() {
               <div className="text-lg font-bold text-foreground mt-1">{plan.price}<span className="text-xs text-muted-foreground font-normal">/mo</span></div>
               <div className="text-[11px] text-muted-foreground mt-1">{plan.features}</div>
               <button
-                onClick={() => router.push("/#pricing")}
-                className={`mt-3 w-full text-xs font-medium py-1.5 rounded-md transition-colors ${
+                onClick={() => handleUpgrade(plan.tier)}
+                disabled={upgradingTier !== null}
+                className={`mt-3 w-full text-xs font-medium py-1.5 rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 ${
                   plan.highlighted
                     ? "bg-brand-violet text-white hover:bg-brand-violet/90"
                     : "border border-border text-foreground hover:bg-muted"
                 }`}
               >
-                Upgrade
+                {upgradingTier === plan.tier ? (
+                  <><Loader2 className="w-3 h-3 animate-spin" /> Redirecting...</>
+                ) : (
+                  "Upgrade"
+                )}
               </button>
             </div>
           ))}

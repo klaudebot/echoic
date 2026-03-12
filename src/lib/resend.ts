@@ -394,6 +394,133 @@ export async function sendPasswordResetEmail(
   });
 }
 
+/** 7. Subscription Confirmation — sent when a user subscribes */
+export async function sendSubscriptionConfirmationEmail(
+  to: string,
+  planName: string,
+  price: string
+): Promise<void> {
+  const settingsUrl = `${APP_URL}/settings`;
+
+  const body = `
+    <div style="display: inline-block; background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-radius: 8px; padding: 6px 12px; margin-bottom: 16px;">
+      <span style="font-size: 12px; font-weight: 700; color: ${EMERALD}; letter-spacing: 0.5px;">&#10003; SUBSCRIPTION CONFIRMED</span>
+    </div>
+    ${heading(`Welcome to Reverbic ${esc(planName)}`)}
+    ${paragraph(`Your upgrade is complete! You're now on the <strong style="color: ${DEEP};">${esc(planName)} plan</strong>${price ? ` at <strong style="color: ${DEEP};">${esc(price)}/mo</strong>` : ""}.`)}
+
+    <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+      <p style="font-size: 13px; font-weight: 700; color: ${DEEP}; margin: 0 0 12px;">What's unlocked:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+        ${planName === "Starter" ? `
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> 30 hours of transcription / month</td></tr>
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> AI summaries + action items</td></tr>
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> 3 integrations</td></tr>
+        ` : planName === "Pro" ? `
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> Unlimited transcription</td></tr>
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> AI Coach + Smart Clips</td></tr>
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> All integrations + analytics</td></tr>
+        ` : `
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> Everything in Pro</td></tr>
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> SSO / SAML + admin controls</td></tr>
+        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> API access + priority support</td></tr>
+        `}
+      </table>
+    </div>
+
+    ${primaryButton("Go to Dashboard &rarr;", `${APP_URL}/dashboard`)}
+
+    <p style="font-size: 13px; color: #9ca3af; margin: 24px 0 0; line-height: 1.6;">
+      Manage your subscription anytime from <a href="${settingsUrl}" style="color: ${VIOLET}; text-decoration: none; font-weight: 600;">Settings</a>.
+    </p>
+  `;
+
+  await getResend().emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: `You're on Reverbic ${planName}!`,
+    html: emailShell(body, `Your upgrade to Reverbic ${planName} is confirmed.`),
+  });
+}
+
+/** 8. Subscription Cancelled — sent when subscription is cancelled */
+export async function sendSubscriptionCancelledEmail(to: string): Promise<void> {
+  const body = `
+    ${heading("Your subscription has been cancelled")}
+    ${paragraph("Your Reverbic subscription has been cancelled. You'll continue to have access to your current plan features until the end of your billing period.")}
+
+    ${infoBox("After your plan expires", "Your account will revert to the Free plan with 3 hours of transcription per month. All your existing transcripts and data will remain accessible.", AMBER, "#fffbeb")}
+
+    ${paragraph("We'd love to have you back. If you change your mind, you can resubscribe anytime.")}
+
+    ${primaryButton("Resubscribe &rarr;", `${APP_URL}/settings`)}
+  `;
+
+  await getResend().emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: "Your Reverbic subscription has been cancelled",
+    html: emailShell(body, "Your Reverbic subscription has been cancelled. Access continues until period end."),
+  });
+}
+
+/** 9. Payment Failed — sent when a payment attempt fails */
+export async function sendPaymentFailedEmail(to: string): Promise<void> {
+  const body = `
+    <div style="display: inline-block; background: #fef2f2; border-radius: 8px; padding: 6px 12px; margin-bottom: 16px;">
+      <span style="font-size: 12px; font-weight: 700; color: ${ROSE}; letter-spacing: 0.5px;">PAYMENT FAILED</span>
+    </div>
+    ${heading("We couldn't process your payment")}
+    ${paragraph("Your last payment attempt failed. Please update your payment method to avoid service interruption.")}
+
+    ${primaryButton("Update Payment Method &rarr;", `${APP_URL}/settings`)}
+
+    <p style="font-size: 13px; color: #9ca3af; margin: 20px 0 0; line-height: 1.6;">
+      We'll retry the payment in a few days. If the issue persists, your account may be downgraded to the Free plan.
+    </p>
+  `;
+
+  await getResend().emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: "Action required: Payment failed for Reverbic",
+    html: emailShell(body, "Your Reverbic payment failed. Update your payment method to continue."),
+  });
+}
+
+/** 10. Admin Notification — new subscriber alert */
+export async function sendAdminNewSubscriberEmail(
+  to: string,
+  buyerEmail: string,
+  planName: string,
+  price: string
+): Promise<void> {
+  const body = `
+    <div style="display: inline-block; background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-radius: 8px; padding: 6px 12px; margin-bottom: 16px;">
+      <span style="font-size: 12px; font-weight: 700; color: ${EMERALD}; letter-spacing: 0.5px;">&#128176; NEW SUBSCRIBER</span>
+    </div>
+    ${heading("New paying customer!")}
+    ${paragraph(`<strong style="color: ${DEEP};">${esc(buyerEmail)}</strong> just subscribed to the <strong style="color: ${VIOLET};">${esc(planName)}</strong> plan at <strong>${esc(price)}</strong>.`)}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+      <tr>
+        ${statCard(esc(planName), "Plan", VIOLET)}
+        <td style="width: 12px;"></td>
+        ${statCard(esc(price), "Revenue", EMERALD)}
+      </tr>
+    </table>
+
+    ${secondaryButton("View in Stripe &rarr;", "https://dashboard.stripe.com/subscriptions")}
+  `;
+
+  await getResend().emails.send({
+    from: FROM_ADDRESS,
+    to,
+    subject: `New subscriber: ${buyerEmail} → ${planName} (${price})`,
+    html: emailShell(body, `New subscriber! ${buyerEmail} joined ${planName} at ${price}.`),
+  });
+}
+
 // ─── Utility ───
 
 function esc(str: string): string {

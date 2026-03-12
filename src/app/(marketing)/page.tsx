@@ -202,7 +202,7 @@ const plans = [
       "3 integrations",
       "Unlimited transcript history",
     ],
-    cta: "Start Starter Trial",
+    cta: "Get Started",
     highlighted: false,
   },
   {
@@ -218,7 +218,7 @@ const plans = [
       "All integrations",
       "Advanced analytics",
     ],
-    cta: "Start Pro Trial",
+    cta: "Get Started",
     highlighted: true,
   },
   {
@@ -234,7 +234,7 @@ const plans = [
       "Priority support",
       "Custom vocabulary",
     ],
-    cta: "Contact Sales",
+    cta: "Get Started",
     highlighted: false,
   },
 ];

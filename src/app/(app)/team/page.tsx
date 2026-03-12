@@ -81,6 +81,8 @@ export default function TeamPage() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const menuBtnRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const [resendResult, setResendResult] = useState<{ id: string; ok: boolean } | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sb = getSupabaseBrowser() as any;
@@ -189,8 +191,9 @@ export default function TeamPage() {
     }
 
     // Send invite email
+    let emailOk = false;
     try {
-      await fetch("/api/notify", {
+      const res = await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -200,12 +203,22 @@ export default function TeamPage() {
           inviterEmail: user.email,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error("[team] Invite email failed:", data);
+      } else {
+        emailOk = true;
+      }
     } catch (err) {
       console.error("[team] Invite email error:", err);
     }
 
     await loadMembers();
-    setInviteSent(true);
+    if (emailOk) {
+      setInviteSent(true);
+    } else {
+      setInviteError("Invite created but email failed to send. Try resending from the menu.");
+    }
     setInviteEmail("");
     setInviteLoading(false);
     setTimeout(() => setInviteSent(false), 3000);
@@ -214,6 +227,9 @@ export default function TeamPage() {
   async function handleResend(member: TeamMember) {
     setOpenMenu(null);
     if (!user) return;
+
+    setResendingId(member.id);
+    setResendResult(null);
 
     await sb.from("team_invites")
       .update({
@@ -225,8 +241,9 @@ export default function TeamPage() {
       .eq("id", member.id);
 
     // Re-send email
+    let emailOk = false;
     try {
-      await fetch("/api/notify", {
+      const res = await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -236,8 +253,19 @@ export default function TeamPage() {
           inviterEmail: user.email,
         }),
       });
-    } catch {}
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error("[team] Resend invite email failed:", data);
+      } else {
+        emailOk = true;
+      }
+    } catch (err) {
+      console.error("[team] Resend invite email error:", err);
+    }
 
+    setResendingId(null);
+    setResendResult({ id: member.id, ok: emailOk });
+    setTimeout(() => setResendResult(null), 3000);
     await loadMembers();
   }
 
@@ -345,7 +373,17 @@ export default function TeamPage() {
                     <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                   )}
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Invited {timeAgo(member.invitedAt)}
+                    {resendingId === member.id ? (
+                      <span className="text-brand-violet">Resending invite...</span>
+                    ) : resendResult?.id === member.id ? (
+                      resendResult.ok ? (
+                        <span className="text-brand-emerald">Invite resent!</span>
+                      ) : (
+                        <span className="text-brand-rose">Email failed — check email config</span>
+                      )
+                    ) : (
+                      <>Invited {timeAgo(member.invitedAt)}</>
+                    )}
                   </p>
                 </div>
 
@@ -402,13 +440,14 @@ export default function TeamPage() {
               className="fixed z-50 w-44 bg-card border border-border rounded-lg shadow-lg py-1"
               style={{ top: menuPos.top, left: Math.max(8, menuPos.left) }}
             >
-              {member.status === "pending" && (
+              {(member.status === "pending" || member.status === "expired") && (
                 <button
                   onClick={() => handleResend(member)}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                  disabled={resendingId === member.id}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Resend Invite
+                  <RefreshCw className={`w-3.5 h-3.5 ${resendingId === member.id ? "animate-spin" : ""}`} />
+                  {resendingId === member.id ? "Sending..." : "Resend Invite"}
                 </button>
               )}
               <button

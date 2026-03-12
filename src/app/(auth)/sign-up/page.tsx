@@ -72,6 +72,8 @@ function SignUpForm() {
       setLoading(false);
       if (authError.message.includes("already registered")) {
         setError("An account with this email already exists. Try signing in instead.");
+      } else if (authError.message.toLowerCase().includes("rate limit")) {
+        setError("Too many attempts. Please wait a few minutes and try again.");
       } else {
         setError(authError.message);
       }

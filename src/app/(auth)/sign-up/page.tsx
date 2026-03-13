@@ -134,12 +134,12 @@ function SignUpForm() {
         <div className="relative max-w-md text-center">
           {/* Logo */}
           <div className="flex items-center justify-center gap-2.5 mb-8">
-            <div className="flex items-center gap-1">
-              {[...Array(4)].map((_, i) => (
+            <div className="flex items-end gap-[2px] h-7">
+              {[10, 18, 14, 22, 12].map((h, i) => (
                 <div
                   key={i}
                   className="wave-bar w-[3px] rounded-full bg-white/80"
-                  style={{ height: `${12 + Math.random() * 12}px` }}
+                  style={{ height: `${h}px` }}
                 />
               ))}
             </div>
@@ -192,12 +192,12 @@ function SignUpForm() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="flex items-center gap-1">
-              {[...Array(4)].map((_, i) => (
+            <div className="flex items-end gap-[2px] h-6">
+              {[10, 18, 14, 22, 12].map((h, i) => (
                 <div
                   key={i}
                   className="wave-bar w-[3px] rounded-full bg-brand-violet"
-                  style={{ height: `${10 + Math.random() * 10}px` }}
+                  style={{ height: `${h}px` }}
                 />
               ))}
             </div>
@@ -365,23 +365,27 @@ function SignUpForm() {
             By creating an account, you agree to our{" "}
             <Dialog>
               <DialogTrigger className="underline hover:text-foreground transition-colors cursor-pointer">Terms of Service</DialogTrigger>
-              <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Terms of Service</DialogTitle>
                   <p className="text-xs text-muted-foreground">Last updated: March 12, 2026</p>
                 </DialogHeader>
-                <TermsContent />
+                <div className="overflow-y-auto flex-1 -mx-4 px-4">
+                  <TermsContent />
+                </div>
               </DialogContent>
             </Dialog>
             {" "}and{" "}
             <Dialog>
               <DialogTrigger className="underline hover:text-foreground transition-colors cursor-pointer">Privacy Policy</DialogTrigger>
-              <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Privacy Policy</DialogTitle>
                   <p className="text-xs text-muted-foreground">Last updated: March 12, 2026</p>
                 </DialogHeader>
-                <PrivacyContent />
+                <div className="overflow-y-auto flex-1 -mx-4 px-4">
+                  <PrivacyContent />
+                </div>
               </DialogContent>
             </Dialog>
           </p>

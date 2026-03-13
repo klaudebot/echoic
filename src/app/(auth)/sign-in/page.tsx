@@ -86,12 +86,12 @@ function SignInForm() {
         <div className="relative max-w-md text-center">
           {/* Logo */}
           <div className="flex items-center justify-center gap-2.5 mb-8">
-            <div className="flex items-center gap-1">
-              {[...Array(4)].map((_, i) => (
+            <div className="flex items-end gap-[2px] h-7">
+              {[10, 18, 14, 22, 12].map((h, i) => (
                 <div
                   key={i}
                   className="wave-bar w-[3px] rounded-full bg-white/80"
-                  style={{ height: `${12 + Math.random() * 12}px` }}
+                  style={{ height: `${h}px` }}
                 />
               ))}
             </div>
@@ -128,12 +128,12 @@ function SignInForm() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="flex items-center gap-1">
-              {[...Array(4)].map((_, i) => (
+            <div className="flex items-end gap-[2px] h-6">
+              {[10, 18, 14, 22, 12].map((h, i) => (
                 <div
                   key={i}
                   className="wave-bar w-[3px] rounded-full bg-brand-violet"
-                  style={{ height: `${10 + Math.random() * 10}px` }}
+                  style={{ height: `${h}px` }}
                 />
               ))}
             </div>

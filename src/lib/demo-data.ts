@@ -1386,8 +1386,8 @@ export function getDemoMeetingsForStore(): StoreMeeting[] {
     return {
       id: m.id,
       title: m.title,
-      s3Key: "",
-      fileName: `${m.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.webm`,
+      s3Key: `demo/${m.id}.mp3`,
+      fileName: `${m.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.mp3`,
       fileSize: Math.round(m.duration * 12000 + Math.random() * 500000),
       duration: m.duration,
       language: "en",

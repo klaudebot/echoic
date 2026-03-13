@@ -65,7 +65,11 @@ export default function AudioPlayer({
     setLoading(true);
     setError(null);
 
-    fetch(`/api/recordings/${meetingId}?key=${encodeURIComponent(s3Key)}`)
+    const endpoint = s3Key.startsWith("demo/")
+      ? `/api/recordings/demo?key=${encodeURIComponent(s3Key)}`
+      : `/api/recordings/${meetingId}?key=${encodeURIComponent(s3Key)}`;
+
+    fetch(endpoint)
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));

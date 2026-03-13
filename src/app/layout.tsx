@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     template: "%s | Reverbic",
   },
   description:
-    "AI-powered meeting transcription with 99.2% accuracy. Smart summaries, action items, decision tracking, and meeting coaching. Free to start — no credit card required.",
+    "AI-powered meeting transcription with 99.2% accuracy. Smart summaries, action items, decision tracking, and meeting coaching. Trusted by teams for meeting intelligence. Start your free trial.",
 
   keywords: [
     "AI meeting transcription",
@@ -97,7 +97,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Reverbic — AI Meeting Transcription & Intelligence",
     description:
-      "99.2% accurate AI transcription. Smart summaries, action items, decision tracking & meeting coaching. Free to start.",
+      "99.2% accurate AI transcription. Smart summaries, action items, decision tracking & meeting coaching. Trusted by teams for meeting intelligence.",
     images: ["/opengraph-image"],
     creator: "@reverbic_ai",
     site: "@reverbic_ai",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /* ─── Waveform Visualizer ─────────────────────── */
 function WaveformVisualizer() {
@@ -49,139 +49,6 @@ function useReveal() {
   return ref;
 }
 
-/* ─── Collapsible Comparison Chart ────────────── */
-const comparisonRows: ({ category: string } | { feature: string; starter: boolean | string; pro: boolean | string; team: boolean | string })[] = [
-  { category: "Recording & Transcription" },
-  { feature: "Transcription hours / month", starter: "30 hrs", pro: "Unlimited", team: "Unlimited" },
-  { feature: "Transcription accuracy", starter: "99.2%", pro: "99.2%", team: "99.2%" },
-  { feature: "Speaker identification", starter: true, pro: true, team: true },
-  { feature: "Upload audio / video files", starter: true, pro: true, team: true },
-  { feature: "Live recording", starter: true, pro: true, team: true },
-  { feature: "Meetings per month", starter: "100", pro: "Unlimited", team: "Unlimited" },
-  { category: "AI Features" },
-  { feature: "Smart summaries", starter: true, pro: true, team: true },
-  { feature: "Action item extraction", starter: true, pro: true, team: true },
-  { feature: "Decision tracking", starter: false, pro: true, team: true },
-  { feature: "AI Meeting Coach", starter: false, pro: true, team: true },
-  { feature: "Smart Clips", starter: false, pro: true, team: true },
-  { feature: "Custom vocabulary", starter: false, pro: false, team: true },
-  { category: "Integrations" },
-  { feature: "Integrations", starter: "3", pro: "All", team: "All" },
-  { feature: "Loom import", starter: true, pro: true, team: true },
-  { feature: "API access", starter: false, pro: false, team: true },
-  { category: "Collaboration & Admin" },
-  { feature: "Team members", starter: "5", pro: "20", team: "Unlimited" },
-  { feature: "Shared meeting library", starter: true, pro: true, team: true },
-  { feature: "Meeting sharing links", starter: true, pro: true, team: true },
-  { feature: "Admin dashboard", starter: false, pro: false, team: true },
-  { feature: "SSO / SAML", starter: false, pro: false, team: true },
-  { category: "Analytics" },
-  { feature: "Basic meeting stats", starter: true, pro: true, team: true },
-  { feature: "Advanced analytics", starter: false, pro: true, team: true },
-  { category: "Support" },
-  { feature: "Support", starter: "Email", pro: "Priority email", team: "Priority + Slack" },
-  { category: "Storage" },
-  { feature: "Storage", starter: "5 GB", pro: "50 GB", team: "100 GB" },
-  { feature: "Transcript history", starter: "Unlimited", pro: "Unlimited", team: "Unlimited" },
-];
-
-function ComparisonChart() {
-  const [expanded, setExpanded] = useState(false);
-  const previewCount = 10; // show first N rows (includes category headers)
-  const visibleRows = expanded ? comparisonRows : comparisonRows.slice(0, previewCount);
-
-  const renderCell = (value: boolean | string) => {
-    if (value === true) {
-      return (
-        <svg className="w-5 h-5 text-brand-emerald mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-      );
-    }
-    if (value === false) {
-      return (
-        <svg className="w-4 h-4 text-muted-foreground/30 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" />
-        </svg>
-      );
-    }
-    return <span className="text-foreground font-medium">{value}</span>;
-  };
-
-  return (
-    <RevealSection className="mt-20">
-      <div className="text-center mb-10">
-        <h3 className="text-2xl font-heading sm:text-3xl">
-          Compare all <span className="gradient-text">features</span>
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          See exactly what you get with each plan
-        </p>
-      </div>
-
-      <div className="relative">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-4 px-4 text-left font-semibold text-foreground w-[40%]">Feature</th>
-                <th className="py-4 px-4 text-center font-semibold text-foreground">Starter</th>
-                <th className="py-4 px-4 text-center font-semibold text-brand-violet">Pro</th>
-                <th className="py-4 px-4 text-center font-semibold text-foreground">Team</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.map((row, i) => {
-                if ("category" in row && !("feature" in row)) {
-                  return (
-                    <tr key={i} className="border-b border-border/50">
-                      <td colSpan={4} className="pt-8 pb-3 px-4 text-xs font-bold uppercase tracking-wider text-brand-violet">
-                        {row.category}
-                      </td>
-                    </tr>
-                  );
-                }
-                const r = row as { feature: string; starter: boolean | string; pro: boolean | string; team: boolean | string };
-                return (
-                  <tr key={i} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
-                    <td className="py-3.5 px-4 text-muted-foreground">{r.feature}</td>
-                    <td className="py-3.5 px-4 text-center">{renderCell(r.starter)}</td>
-                    <td className="py-3.5 px-4 text-center bg-brand-violet/[0.03]">{renderCell(r.pro)}</td>
-                    <td className="py-3.5 px-4 text-center">{renderCell(r.team)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Fade overlay when collapsed */}
-        {!expanded && (
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-        )}
-      </div>
-
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-2 text-sm font-medium text-brand-violet hover:text-brand-violet/80 transition-colors"
-        >
-          {expanded ? "Show less" : `Show all ${comparisonRows.filter(r => "feature" in r).length} features`}
-          <svg
-            className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-      </div>
-    </RevealSection>
-  );
-}
-
 function RevealSection({
   children,
   className = "",
@@ -206,7 +73,7 @@ const features = [
       </svg>
     ),
     title: "AI Transcription",
-    description: "99.2% accuracy across 50+ languages. Real-time transcription with speaker diarization and smart punctuation.",
+    description: "99.2% accuracy across 50+ languages. Your team gets real-time transcription with speaker identification — no more 'who said what?'",
     color: "brand-violet",
     gradient: "from-brand-violet/10 to-brand-violet/5",
   },
@@ -217,7 +84,7 @@ const features = [
       </svg>
     ),
     title: "Smart Summaries",
-    description: "Key points, decisions, and action items auto-extracted in seconds. Never write meeting notes again.",
+    description: "Key points, decisions, and action items auto-extracted and shared with your team instantly. No more meeting notes.",
     color: "brand-cyan",
     gradient: "from-brand-cyan/10 to-brand-cyan/5",
   },
@@ -271,7 +138,7 @@ const features = [
     ),
     title: "Copy for AI",
     description: "One-click AI-formatted exports: dev tasks, email recaps, exec briefs, standup updates. Paste into ChatGPT, Claude, or Codex.",
-    whyItMatters: "Turn meeting outcomes into ready-to-use prompts. Your meetings become the input layer for every AI tool in your stack.",
+    whyItMatters: "Turn meeting outcomes into ready-to-use prompts. Your team's meetings become the input layer for every AI tool in your stack.",
     color: "brand-violet",
     gradient: "from-brand-violet/10 via-brand-cyan/10 to-brand-emerald/5",
     badge: "Only on Reverbic",
@@ -287,65 +154,8 @@ const colorMap: Record<string, string> = {
   "brand-rose": "text-brand-rose bg-brand-rose/10",
 };
 
-/* ─── Pricing ─────────────────────────────────── */
-const plans = [
-  {
-    name: "Starter",
-    monthlyPrice: "$17.97",
-    yearlyPrice: "$9.97",
-    period: "/seat/mo",
-    description: "For professionals who run meetings",
-    features: [
-      "30 hours of transcription / month",
-      "AI summaries + action items",
-      "3 integrations",
-      "Unlimited transcript history",
-    ],
-    cta: "Get Started",
-    highlighted: false,
-    tier: "starter",
-  },
-  {
-    name: "Pro",
-    monthlyPrice: "$28.97",
-    yearlyPrice: "$18.97",
-    period: "/seat/mo",
-    description: "For power users who live in meetings",
-    features: [
-      "Unlimited transcription",
-      "AI Coach",
-      "Decision Tracker",
-      "Smart Clips",
-      "All integrations",
-      "Advanced analytics",
-    ],
-    cta: "Get Started",
-    highlighted: true,
-    tier: "pro",
-  },
-  {
-    name: "Team",
-    monthlyPrice: "$38.97",
-    yearlyPrice: "$24.97",
-    period: "/seat/mo",
-    description: "For teams that need full control",
-    features: [
-      "Everything in Pro",
-      "SSO / SAML",
-      "Admin controls & dashboard",
-      "API access",
-      "Priority support",
-      "Custom vocabulary",
-    ],
-    cta: "Get Started",
-    highlighted: false,
-    tier: "team",
-  },
-];
-
 /* ─── Page ────────────────────────────────────── */
 export default function MarketingPage() {
-  const [billingInterval, setBillingInterval] = useState<"yearly" | "monthly">("yearly");
 
   return (
     <>
@@ -362,7 +172,7 @@ export default function MarketingPage() {
             {/* Badge */}
             <div className="mb-6 inline-flex items-center gap-2 border border-brand-violet/20 bg-brand-violet/5 px-4 py-1.5 text-sm font-medium text-brand-violet">
               <span className="recording-dot inline-block h-2 w-2 rounded-full bg-brand-violet" />
-              AI-Powered Meeting Intelligence
+              Meeting Intelligence for Teams
             </div>
 
             {/* Heading */}
@@ -373,8 +183,8 @@ export default function MarketingPage() {
 
             {/* Subtext */}
             <p className="mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-              AI transcription with 99.2% accuracy. Smart summaries, action items, and
-              decision tracking — all generated in real time. Stop losing insights to bad notes.
+              Give your team 99.2% accurate transcription, AI summaries, action items, and
+              decision tracking. Stop losing insights across meetings.
             </p>
 
             {/* CTAs */}
@@ -383,14 +193,14 @@ export default function MarketingPage() {
                 href="/sign-up"
                 className="inline-flex items-center justify-center bg-brand-violet px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all hover:shadow-xl hover:shadow-brand-violet/30 rounded-[4px]"
               >
-                Start Free
+                Start Free Trial
                 <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
               </Link>
-              <a href="#pricing" className="inline-flex items-center justify-center border border-border bg-white px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
+              <Link href="/pricing" className="inline-flex items-center justify-center border border-border bg-white px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
                 View Pricing
-              </a>
+              </Link>
             </div>
 
             {/* Stats */}
@@ -474,7 +284,7 @@ export default function MarketingPage() {
         <section className="border-y border-border/50 bg-muted/30 py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm font-medium text-muted-foreground mb-8">
-              Works with the tools you already use
+              Works with the tools your team already uses
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
               {[
@@ -501,13 +311,13 @@ export default function MarketingPage() {
       <section id="features" className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <RevealSection className="text-center mb-16">
-            <p className="text-sm font-semibold text-brand-violet mb-2">Features</p>
+            <p className="text-sm font-semibold text-brand-violet mb-2">Built for Teams</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl">
-              Everything your meetings{" "}
-              <span className="gradient-text">need</span>
+              Everything your team{" "}
+              <span className="gradient-text">needs</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              From real-time transcription to AI coaching, Reverbic captures every detail so you can focus on what matters.
+              From real-time transcription to AI coaching, Reverbic captures every detail so your team can focus on decisions, not note-taking.
             </p>
           </RevealSection>
 
@@ -672,7 +482,7 @@ export default function MarketingPage() {
               {
                 step: "01",
                 title: "Record",
-                description: "Join your meeting as usual. Reverbic connects to Zoom, Google Meet, or Teams and starts recording automatically. Or upload any audio file.",
+                description: "Your team joins meetings as usual. Reverbic connects to Zoom, Google Meet, or Teams and starts recording automatically. Or upload any audio file.",
                 icon: (
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
@@ -694,7 +504,7 @@ export default function MarketingPage() {
               {
                 step: "03",
                 title: "Review & Act",
-                description: "Browse searchable transcripts, share smart clips, assign action items, and track decisions. Your meeting knowledge, always accessible.",
+                description: "Your team browses searchable transcripts, shares smart clips, assigns action items, and tracks decisions. Meeting knowledge accessible to everyone.",
                 icon: (
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -720,142 +530,30 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* ──── PRICING ───────────────────────────── */}
+      {/* ──── PRICING TEASER ─────────────────────── */}
       <section id="pricing" className="py-24 sm:py-32 bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center mb-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <RevealSection>
             <p className="text-sm font-semibold text-brand-violet mb-2">Pricing</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl">
-              Simple, transparent{" "}
-              <span className="gradient-text">pricing</span>
+              Plans that scale with{" "}
+              <span className="gradient-text">your team</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Start free, upgrade when you need more. No credit card required.
+              Start free with 3 hours of transcription per month. Paid plans from $9.97/seat/mo.
             </p>
-
-            {/* Billing toggle */}
-            <div className="mt-8 inline-flex items-center gap-3 bg-card border border-border rounded-full p-1.5">
-              <button
-                onClick={() => setBillingInterval("monthly")}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
-                  billingInterval === "monthly"
-                    ? "bg-foreground text-background shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingInterval("yearly")}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all relative ${
-                  billingInterval === "yearly"
-                    ? "bg-foreground text-background shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Annual
-                <span className="absolute -top-2.5 -right-3 bg-brand-emerald text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
-                  Save up to 44%
-                </span>
-              </button>
-            </div>
-          </RevealSection>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-            {plans.map((plan, i) => {
-              const price = billingInterval === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
-              const showStrikethrough = billingInterval === "yearly" && plan.monthlyPrice !== plan.yearlyPrice && plan.monthlyPrice !== "$0";
-
-              return (
-              <RevealSection key={i}>
-                <div
-                  className={`relative flex flex-col h-full rounded-[4px] p-8 transition-all duration-300 ${
-                    plan.highlighted
-                      ? "border-2 border-brand-violet bg-card shadow-xl shadow-brand-violet/10 scale-[1.02]"
-                      : "border border-border/50 bg-card hover:shadow-lg"
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-violet px-4 py-1 text-xs font-semibold text-white rounded-[2px]">
-                      Most Popular
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-lg font-semibold font-sans text-foreground">{plan.name}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
-                    <div className="mt-4 flex items-baseline gap-1">
-                      {showStrikethrough && (
-                        <span className="text-lg font-medium text-muted-foreground line-through mr-1">{plan.monthlyPrice}</span>
-                      )}
-                      <span className="text-4xl font-bold font-sans text-foreground">{price}</span>
-                      <span className="text-sm text-muted-foreground">{plan.period}</span>
-                    </div>
-                    {billingInterval === "yearly" && plan.tier && (
-                      <p className="text-xs text-brand-emerald font-medium mt-1">
-                        billed annually
-                      </p>
-                    )}
-                  </div>
-                  <ul className="mt-6 flex-1 space-y-3">
-                    {plan.features.map((feat, j) => (
-                      <li key={j} className="flex items-start gap-2.5 text-sm text-foreground">
-                        <svg className="w-4 h-4 mt-0.5 shrink-0 text-brand-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        {feat}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={`/sign-up?plan=${plan.tier}&interval=${billingInterval}`}
-                    className={`mt-8 block rounded-[4px] py-3 text-center text-sm font-semibold transition-all ${
-                      plan.highlighted
-                        ? "bg-brand-violet text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90"
-                        : "bg-muted text-foreground hover:bg-muted/70"
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
-                </div>
-              </RevealSection>
-              );
-            })}
-          </div>
-
-          {/* ──── FREE TIER BANNER ─────────────── */}
-          <RevealSection className="mt-8 max-w-5xl mx-auto">
-            <div className="rounded-[4px] border border-border/50 bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="flex-1 text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
-                  <h3 className="text-xl font-semibold font-sans text-foreground">Free</h3>
-                  <span className="text-3xl font-bold font-sans text-foreground">$0</span>
-                  <span className="text-sm text-muted-foreground">/mo</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  For individuals getting started — no credit card required
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                {["3 hrs transcription / mo", "Basic summaries", "1 integration", "10 meetings / mo"].map((f, i) => (
-                  <span key={i} className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-brand-emerald shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {f}
-                  </span>
-                ))}
-              </div>
+            <div className="mt-8">
               <Link
-                href="/sign-up"
-                className="shrink-0 rounded-[4px] bg-muted px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-muted/70 transition-all"
+                href="/pricing"
+                className="inline-flex items-center justify-center bg-brand-violet px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all rounded-[4px]"
               >
-                Start Free
+                View Pricing
+                <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
               </Link>
             </div>
           </RevealSection>
-
-          {/* ──── COMPARISON CHART ──────────────── */}
-          <ComparisonChart />
         </div>
       </section>
 
@@ -872,14 +570,14 @@ export default function MarketingPage() {
                 Stop losing decisions to bad notes
               </h2>
               <p className="relative mt-4 text-lg text-white/70 max-w-xl mx-auto">
-                Never miss a meeting insight again. Start free today.
+                Never let your team miss a meeting insight again. Start your free trial today.
               </p>
               <div className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/sign-up"
                   className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-[4px]"
                 >
-                  Get Started Free
+                  Start Free Trial
                   <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
@@ -912,7 +610,7 @@ export default function MarketingPage() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                AI-powered meeting transcription and intelligence. Your meetings, remembered.
+                AI-powered meeting intelligence for teams. Your meetings, remembered.
               </p>
               {/* Social Icons */}
               <div className="mt-4 flex gap-3">
@@ -958,7 +656,7 @@ export default function MarketingPage() {
                 title: "Product",
                 links: [
                   { label: "Features", href: "/#features" },
-                  { label: "Pricing", href: "/#pricing" },
+                  { label: "Pricing", href: "/pricing" },
                   { label: "How It Works", href: "/#how-it-works" },
                 ],
               },

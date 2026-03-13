@@ -96,7 +96,7 @@ function SignInForm() {
             Your meetings, remembered.
           </h2>
           <p className="text-white/60 text-base leading-relaxed">
-            AI transcription, smart summaries, action items, and meeting coaching — all in one place.
+            AI transcription, smart summaries, action items, and meeting coaching — built for teams.
           </p>
 
           {/* Stats */}
@@ -254,7 +254,7 @@ function SignInForm() {
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link href="/sign-up" className="font-semibold text-brand-violet hover:text-brand-violet/80 transition-colors">
-              Sign up free
+              Create an account
             </Link>
           </p>
         </div>

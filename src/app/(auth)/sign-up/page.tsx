@@ -153,10 +153,10 @@ function SignUpForm() {
           ) : (
             <>
               <h2 className="text-3xl font-heading text-white mb-4">
-                Your meetings, remembered.
+                Meeting intelligence for your whole team.
               </h2>
               <p className="text-white/60 text-base leading-relaxed">
-                AI transcription, smart summaries, action items, and decision tracking — all in one place.
+                AI transcription, smart summaries, action items, and decision tracking — built for teams.
               </p>
             </>
           )}

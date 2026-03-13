@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { getSupabaseBrowser } from "@/lib/supabase/client";
 import CookieConsent from "@/components/CookieConsent";
 
 export default function MarketingLayout({
@@ -11,12 +12,19 @@ export default function MarketingLayout({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    getSupabaseBrowser().auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
   }, []);
 
   return (
@@ -60,18 +68,29 @@ export default function MarketingLayout({
 
             {/* Desktop CTAs — fixed width right column */}
             <div className="hidden md:flex flex-1 items-center justify-end gap-2">
-              <Link
-                href="/sign-in"
-                className="px-4 py-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/sign-up"
-                className="bg-brand-violet px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-violet/90 transition-all shadow-sm rounded-[4px]"
-              >
-                Get Started
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="bg-brand-violet px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-violet/90 transition-all shadow-sm rounded-[4px]"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    className="px-4 py-1.5 text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    className="bg-brand-violet px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-violet/90 transition-all shadow-sm rounded-[4px]"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -107,12 +126,20 @@ export default function MarketingLayout({
                 Pricing
               </a>
               <div className="flex flex-col gap-2 pt-3 border-t border-border/40 mt-2">
-                <Link href="/sign-in" className="text-sm font-medium text-muted-foreground text-center py-2">
-                  Sign In
-                </Link>
-                <Link href="/sign-up" className="bg-brand-violet px-4 py-2 text-sm font-medium text-white text-center rounded-[4px]">
-                  Get Started
-                </Link>
+                {isLoggedIn ? (
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="bg-brand-violet px-4 py-2 text-sm font-medium text-white text-center rounded-[4px]">
+                    Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/sign-in" className="text-sm font-medium text-muted-foreground text-center py-2">
+                      Sign In
+                    </Link>
+                    <Link href="/sign-up" className="bg-brand-violet px-4 py-2 text-sm font-medium text-white text-center rounded-[4px]">
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

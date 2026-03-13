@@ -219,10 +219,10 @@ export async function POST(request: Request) {
   let tmpPath: string | null = null;
 
   try {
-    const { error: authError } = await requireAuth();
+    const { user, error: authError } = await requireAuth();
     if (authError) return authError;
 
-    const { url } = await request.json();
+    const { url, accountId, userId } = await request.json();
 
     if (!url || !LOOM_URL_RE.test(url)) {
       return NextResponse.json(
@@ -244,7 +244,9 @@ export async function POST(request: Request) {
 
     // Step 3: Upload to S3
     const recordingId = crypto.randomUUID();
-    const s3Key = `default-account/default-user/${recordingId}.mp3`;
+    const acct = accountId || "default-account";
+    const uid = userId || user!.id || "default-user";
+    const s3Key = `${acct}/${uid}/${recordingId}.mp3`;
 
     log(`Uploading to S3: ${s3Key}...`);
     const audioBuffer = await fs.readFile(filePath);

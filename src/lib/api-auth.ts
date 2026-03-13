@@ -39,6 +39,9 @@ export async function verifyS3KeyOwnership(
 
   if (!membership) return false;
 
-  // S3 key starts with orgId/
-  return s3Key.startsWith(`${membership.organization_id}/`);
+  // S3 key starts with orgId/ or legacy default-account/
+  return (
+    s3Key.startsWith(`${membership.organization_id}/`) ||
+    s3Key.startsWith("default-account/")
+  );
 }

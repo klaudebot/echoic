@@ -39,9 +39,15 @@ import {
   FileText as FileTextIcon,
   ExternalLink,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import AudioPlayer from "@/components/AudioPlayer";
-import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+
+const CopyForAI = dynamic(() => import("@/components/CopyForAI"), {
+  loading: () => null,
+  ssr: false,
+});
+type MeetingContext = import("@/components/CopyForAI").MeetingContext;
 
 function formatDuration(seconds: number | null): string {
   if (seconds == null) return "--";

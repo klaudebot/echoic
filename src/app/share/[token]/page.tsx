@@ -13,7 +13,13 @@ import {
   ShieldCheck,
   ExternalLink,
 } from "lucide-react";
-import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
+import dynamic from "next/dynamic";
+
+const CopyForAI = dynamic(() => import("@/components/CopyForAI"), {
+  loading: () => null,
+  ssr: false,
+});
+type MeetingContext = import("@/components/CopyForAI").MeetingContext;
 
 interface SharedContent {
   title: string;

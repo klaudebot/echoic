@@ -232,8 +232,17 @@ export default function MarketingPage() {
                   <div className="h-3 w-3 rounded-full bg-green-400" />
                 </div>
                 <div className="flex-1 bg-muted/50 px-4 py-1.5 text-xs text-muted-foreground font-mono rounded-[2px]">
-                  app.reverbic.ai/meeting/q1-roadmap-review
+                  reverbic.ai/demo/dashboard
                 </div>
+                <a
+                  href="/demo/dashboard"
+                  className="shrink-0 inline-flex items-center gap-1.5 bg-brand-violet/10 hover:bg-brand-violet/20 text-brand-violet px-3 py-1.5 text-xs font-semibold rounded-[2px] transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
+                  </svg>
+                  Live Preview
+                </a>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-[4px] bg-gradient-to-br from-brand-violet/5 to-brand-cyan/5 p-4">

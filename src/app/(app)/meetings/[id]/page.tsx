@@ -744,7 +744,7 @@ function SlackButton({ meetingId }: { meetingId: string }) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={loadChannels}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 border border-purple-500/30 bg-purple-500/5 rounded-lg hover:bg-purple-500/10 transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-violet border border-brand-violet/30 bg-brand-violet/5 rounded-lg hover:bg-brand-violet/10 transition-colors"
       >
         <MessageSquare className="w-3.5 h-3.5" />
         {sent ? `Sent to #${sent}` : "Send to Slack"}
@@ -819,7 +819,7 @@ function NotionButton({ meetingId }: { meetingId: string }) {
       href={exported}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 bg-emerald-500/5 rounded-lg hover:bg-emerald-500/10 transition-colors"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-emerald border border-brand-emerald/30 bg-brand-emerald/5 rounded-lg hover:bg-brand-emerald/10 transition-colors"
     >
       <ExternalLink className="w-3.5 h-3.5" />
       Open in Notion
@@ -828,7 +828,7 @@ function NotionButton({ meetingId }: { meetingId: string }) {
     <button
       onClick={exportToNotion}
       disabled={exporting}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-600 dark:text-stone-400 border border-stone-500/30 bg-stone-500/5 rounded-lg hover:bg-stone-500/10 transition-colors disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-slate border border-brand-slate/30 bg-brand-slate/5 rounded-lg hover:bg-brand-slate/10 transition-colors disabled:opacity-50"
     >
       {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileTextIcon className="w-3.5 h-3.5" />}
       Export to Notion

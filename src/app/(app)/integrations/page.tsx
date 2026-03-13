@@ -244,14 +244,14 @@ function IntegrationCard({
       <div className="flex items-center justify-between pt-3 border-t border-border">
         {isConnected ? (
           <>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-brand-emerald/10 text-brand-emerald">
               <Check className="w-3 h-3" />
               Connected{status?.detail ? ` \u2022 ${status.detail}` : ""}
             </span>
             <button
               onClick={handleDisconnect}
               disabled={disconnecting}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3.5 py-1.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3.5 py-1.5 rounded-lg bg-brand-rose/10 text-brand-rose hover:bg-brand-rose/20 transition-colors"
             >
               {disconnecting ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -277,7 +277,7 @@ function IntegrationCard({
           </>
         ) : (
           <>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-brand-amber/10 text-brand-amber">
               <Clock className="w-3 h-3" />
               Coming Soon
             </span>

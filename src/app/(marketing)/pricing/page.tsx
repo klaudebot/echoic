@@ -468,18 +468,15 @@ export default function PricingPage() {
       <div>
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-[4px] bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] p-12 sm:p-20 text-center">
-              <div className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full bg-white/[0.03] blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-white/[0.02] blur-3xl" />
-
-              <h2 className="relative text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
+            <div className="rounded-[4px] bg-brand-deep p-12 sm:p-20 text-center">
+              <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
                 Need a custom plan?
               </h2>
-              <p className="relative mt-4 text-lg text-white/70 max-w-xl mx-auto">
+              <p className="mt-4 text-lg text-white/70 max-w-xl mx-auto">
                 For large organizations with specific security, compliance, or volume requirements,
                 we offer tailored plans with dedicated support.
               </p>
-              <div className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
                   href="mailto:hello@reverbic.ai"
                   className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-[4px]"

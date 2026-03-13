@@ -127,9 +127,7 @@ function SignUpForm() {
       </Link>
 
       {/* Left: Branding Panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] items-center justify-center p-12">
-        <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -left-40 h-[400px] w-[400px] rounded-full bg-white/[0.03] blur-3xl" />
+      <div className="hidden lg:flex lg:w-1/2 relative bg-brand-deep items-center justify-center p-12">
 
         <div className="relative max-w-md text-center">
           {/* Logo */}

@@ -128,7 +128,7 @@ export default function MarketingPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
               </Link>
-              <Link href="/pricing" className="inline-flex items-center justify-center border border-border bg-white px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
+              <Link href="/pricing" className="inline-flex items-center justify-center border border-border bg-card px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
                 View Pricing
               </Link>
             </div>

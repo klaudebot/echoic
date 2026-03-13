@@ -51,18 +51,7 @@ function emailShell(body: string, preheader?: string): string {
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
                 <td style="padding-right: 10px; vertical-align: middle;">
-                  <!-- Waveform bars -->
-                  <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-                    <td style="width:3px;height:10px;background:${VIOLET_LIGHT};border-radius:2px;"></td>
-                    <td style="width:2px;"></td>
-                    <td style="width:3px;height:18px;background:${VIOLET_LIGHT};border-radius:2px;"></td>
-                    <td style="width:2px;"></td>
-                    <td style="width:3px;height:14px;background:${CYAN};border-radius:2px;"></td>
-                    <td style="width:2px;"></td>
-                    <td style="width:3px;height:22px;background:${CYAN};border-radius:2px;"></td>
-                    <td style="width:2px;"></td>
-                    <td style="width:3px;height:12px;background:${VIOLET_LIGHT};border-radius:2px;"></td>
-                  </tr></table>
+                  <img src="${APP_URL}/icon-transparent.png" alt="" width="24" height="24" style="display:block;" />
                 </td>
                 <td style="vertical-align: middle;">
                   <span style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Reverbic</span>

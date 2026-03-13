@@ -1,10 +1,16 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
-export const runtime = "edge";
 export const contentType = "image/png";
 export const size = { width: 1200, height: 630 };
 
 export async function GET() {
+  let iconDataUrl = "";
+  try {
+    const buf = await readFile(join(process.cwd(), "public", "icon-transparent.png"));
+    iconDataUrl = `data:image/png;base64,${buf.toString("base64")}`;
+  } catch { /* fallback below */ }
   return new ImageResponse(
     (
       <div
@@ -46,21 +52,13 @@ export async function GET() {
 
         {/* Logo + Brand */}
         <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 40 }}>
-          {/* Waveform bars */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            {[56, 96, 76, 120, 64].map((h, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 12,
-                  height: h,
-                  borderRadius: 6,
-                  background: "linear-gradient(to top, #7C3AED, #06B6D4)",
-                  opacity: [0.6, 0.8, 0.9, 1, 0.7][i],
-                }}
-              />
-            ))}
-          </div>
+          {/* Logo icon */}
+          {iconDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={iconDataUrl} alt="" width={64} height={64} />
+          ) : (
+            <div style={{ width: 64, height: 64 }} />
+          )}
           <span
             style={{
               fontSize: 72,

@@ -1,42 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-
-/* ─── Scroll Reveal Hook ─────────────────────── */
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add("visible");
-        }
-      },
-      { threshold: 0.15 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return ref;
-}
-
-function RevealSection({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const ref = useReveal();
-  return (
-    <div ref={ref} className={`reveal ${className}`}>
-      {children}
-    </div>
-  );
-}
+import { useState } from "react";
 
 /* ─── Plan Data ──────────────────────────────── */
 const plans = [
@@ -161,10 +126,10 @@ function ComparisonChart() {
   };
 
   return (
-    <RevealSection className="mt-20">
+    <div className="mt-20">
       <div className="text-center mb-10">
         <h3 className="text-2xl font-heading sm:text-3xl">
-          Compare all <span className="gradient-text">features</span>
+          Compare all <span className="text-brand-violet">features</span>
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
           See exactly what you get with each plan
@@ -229,7 +194,7 @@ function ComparisonChart() {
           </svg>
         </button>
       </div>
-    </RevealSection>
+    </div>
   );
 }
 
@@ -322,11 +287,11 @@ export default function PricingPage() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center">
+          <div className="text-center">
             <p className="text-sm font-semibold text-brand-violet mb-2">Pricing</p>
             <h1 className="text-4xl font-heading sm:text-5xl lg:text-6xl">
               Plans that scale with{" "}
-              <span className="gradient-text">your team</span>
+              <span className="text-brand-violet">your team</span>
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               From early-stage startups to enterprise organizations, Reverbic has a plan
@@ -359,7 +324,7 @@ export default function PricingPage() {
                 </span>
               </button>
             </div>
-          </RevealSection>
+          </div>
         </div>
       </section>
 
@@ -375,7 +340,7 @@ export default function PricingPage() {
                 plan.monthlyPrice !== "$0";
 
               return (
-                <RevealSection key={i}>
+                <div key={i}>
                   <div
                     className={`relative flex flex-col h-full rounded-[4px] p-8 transition-all duration-300 ${
                       plan.highlighted
@@ -431,13 +396,13 @@ export default function PricingPage() {
                       {plan.cta}
                     </Link>
                   </div>
-                </RevealSection>
+                </div>
               );
             })}
           </div>
 
           {/* ──── FREE TIER BANNER ─────────────── */}
-          <RevealSection className="mt-8 max-w-5xl mx-auto">
+          <div className="mt-8 max-w-5xl mx-auto">
             <div className="rounded-[4px] border border-border/50 bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
@@ -472,7 +437,7 @@ export default function PricingPage() {
                 Start Free
               </Link>
             </div>
-          </RevealSection>
+          </div>
 
           {/* ──── COMPARISON CHART ──────────────── */}
           <ComparisonChart />
@@ -482,25 +447,25 @@ export default function PricingPage() {
       {/* ──── FAQ ────────────────────────────────── */}
       <section className="py-24 sm:py-32 bg-muted/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center mb-12">
+          <div className="text-center mb-12">
             <p className="text-sm font-semibold text-brand-violet mb-2">FAQ</p>
             <h2 className="text-3xl font-heading sm:text-4xl">
               Frequently asked{" "}
-              <span className="gradient-text">questions</span>
+              <span className="text-brand-violet">questions</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Everything you need to know about Reverbic pricing and plans.
             </p>
-          </RevealSection>
+          </div>
 
-          <RevealSection>
+          <div>
             <FAQSection />
-          </RevealSection>
+          </div>
         </div>
       </section>
 
       {/* ──── CUSTOM PLAN CTA ────────────────────── */}
-      <RevealSection>
+      <div>
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="relative overflow-hidden rounded-[4px] bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] p-12 sm:p-20 text-center">
@@ -529,7 +494,7 @@ export default function PricingPage() {
             </div>
           </div>
         </section>
-      </RevealSection>
+      </div>
     </>
   );
 }

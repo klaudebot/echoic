@@ -1,68 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useRef } from "react";
-
-/* ─── Waveform Visualizer ─────────────────────── */
-function WaveformVisualizer() {
-  const bars = 32;
-  return (
-    <div className="flex items-center justify-center gap-[3px] h-24">
-      {[...Array(bars)].map((_, i) => {
-        const center = bars / 2;
-        const dist = Math.abs(i - center) / center;
-        const maxH = 96 * (1 - dist * 0.6);
-        return (
-          <div
-            key={i}
-            className="w-[3px] rounded-full bg-gradient-to-t from-brand-violet to-brand-cyan"
-            style={{
-              height: `${maxH}px`,
-              animation: `wave-pulse ${1 + Math.random() * 0.8}s ease-in-out infinite`,
-              animationDelay: `${i * 0.06}s`,
-              opacity: 0.5 + (1 - dist) * 0.5,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-/* ─── Scroll Reveal Hook ─────────────────────── */
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add("visible");
-        }
-      },
-      { threshold: 0.15 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return ref;
-}
-
-function RevealSection({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const ref = useReveal();
-  return (
-    <div ref={ref} className={`reveal ${className}`}>
-      {children}
-    </div>
-  );
-}
 
 /* ─── Feature Data ────────────────────────────── */
 const features = [
@@ -160,14 +96,8 @@ export default function MarketingPage() {
   return (
     <>
       {/* ──── HERO ──────────────────────────────── */}
-      <section className="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
-        {/* Background decorations */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-gray-500/[0.03] blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-gray-400/[0.03] blur-3xl" />
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="pt-32 pb-20 sm:pt-40 sm:pb-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
             {/* Badge */}
             <div className="mb-6 inline-flex items-center gap-2 border border-brand-violet/20 bg-brand-violet/5 px-4 py-1.5 text-sm font-medium text-brand-violet">
@@ -178,7 +108,7 @@ export default function MarketingPage() {
             {/* Heading */}
             <h1 className="max-w-4xl text-5xl font-heading tracking-tight sm:text-6xl lg:text-7xl">
               Your meetings,{" "}
-              <span className="gradient-text">remembered.</span>
+              <span className="text-brand-violet">remembered.</span>
             </h1>
 
             {/* Subtext */}
@@ -203,28 +133,8 @@ export default function MarketingPage() {
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">99.2%</span> accuracy
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">50+</span> languages
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">&lt;2 min</span> setup
-              </div>
-            </div>
-
-            {/* Waveform */}
-            <div className="mt-16 w-full max-w-2xl">
-              <WaveformVisualizer />
-            </div>
-
             {/* Product Preview Card */}
-            <div className="mt-8 w-full max-w-4xl glass-card p-6 shadow-2xl shadow-brand-violet/5 rounded-[4px]">
+            <div className="mt-16 w-full max-w-4xl bg-card border border-border p-6 shadow-xl rounded-[4px]">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center gap-1.5">
                   <div className="h-3 w-3 rounded-full bg-red-400" />
@@ -289,7 +199,7 @@ export default function MarketingPage() {
       </section>
 
       {/* ──── INTEGRATIONS BAR ─────────────────── */}
-      <RevealSection>
+      <div>
         <section className="border-y border-border/50 bg-muted/30 py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm font-medium text-muted-foreground mb-8">
@@ -314,41 +224,32 @@ export default function MarketingPage() {
             </div>
           </div>
         </section>
-      </RevealSection>
+      </div>
 
       {/* ──── FEATURES ──────────────────────────── */}
       <section id="features" className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center mb-16">
+          <div className="text-center mb-16">
             <p className="text-sm font-semibold text-brand-violet mb-2">Built for Teams</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl">
               Everything your team{" "}
-              <span className="gradient-text">needs</span>
+              <span className="text-brand-violet">needs</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               From real-time transcription to AI coaching, Reverbic captures every detail so your team can focus on decisions, not note-taking.
             </p>
-          </RevealSection>
+          </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
-              <RevealSection key={i}>
-                <div className={`group relative rounded-[4px] p-6 hover:shadow-lg hover:shadow-${f.color}/5 transition-all duration-300 h-full bg-gradient-to-br ${f.gradient} ${
+                <div key={i} className={`group relative rounded-[4px] p-6 hover:shadow-md transition-shadow h-full ${
                   f.exclusive
-                    ? "border-2 border-transparent bg-clip-padding shadow-md"
+                    ? "border-2 border-brand-violet/30 shadow-sm"
                     : "border border-border/50"
                 }`}
-                  style={f.exclusive ? {
-                    borderImage: "linear-gradient(135deg, #7c3aed, #06b6d4) 1",
-                    borderImageSlice: 1,
-                  } : undefined}
                 >
                   {f.badge && (
-                    <span className={`absolute top-4 right-4 px-2.5 py-0.5 rounded-[2px] text-[11px] font-semibold ${
-                      f.exclusive
-                        ? "bg-gradient-to-r from-brand-violet to-brand-cyan text-white"
-                        : "bg-brand-violet/10 text-brand-violet"
-                    }`}>
+                    <span className="absolute top-4 right-4 px-2.5 py-0.5 rounded-[2px] text-[11px] font-semibold bg-brand-violet/10 text-brand-violet">
                       {f.badge}
                     </span>
                   )}
@@ -363,34 +264,29 @@ export default function MarketingPage() {
                     </p>
                   )}
                 </div>
-              </RevealSection>
             ))}
           </div>
         </div>
       </section>
 
       {/* ──── WHY REVERBIC ──────────────────────── */}
-      <section className="py-24 sm:py-32 bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] relative overflow-hidden">
-        {/* Decorative blurs */}
-        <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-white/[0.03] blur-3xl" />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center mb-16">
+      <section className="py-24 sm:py-32 bg-brand-deep">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
             <p className="text-sm font-semibold text-brand-cyan mb-2">Only on Reverbic</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
               Why{" "}
-              <span className="gradient-text">Reverbic?</span>
+              <span className="text-brand-violet">Reverbic?</span>
             </h2>
             <p className="mt-4 text-lg text-white/60 max-w-2xl mx-auto">
               Other tools transcribe. Reverbic transforms how your team communicates.
             </p>
-          </RevealSection>
+          </div>
 
           <div className="grid gap-8 md:grid-cols-3">
             {/* Meeting Coach */}
-            <RevealSection>
-              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-all duration-300">
+            <div>
+              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
                 <div className="inline-flex rounded-[4px] p-3 bg-brand-emerald/20 text-brand-emerald mb-4">
                   <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
@@ -414,11 +310,11 @@ export default function MarketingPage() {
                   </div>
                 </div>
               </div>
-            </RevealSection>
+            </div>
 
             {/* Decision Tracker */}
-            <RevealSection>
-              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-all duration-300">
+            <div>
+              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
                 <div className="inline-flex rounded-[4px] p-3 bg-brand-amber/20 text-brand-amber mb-4">
                   <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -442,11 +338,11 @@ export default function MarketingPage() {
                   </div>
                 </div>
               </div>
-            </RevealSection>
+            </div>
 
             {/* Smart Clips */}
-            <RevealSection>
-              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 backdrop-blur-sm p-8 hover:bg-white/10 transition-all duration-300">
+            <div>
+              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
                 <div className="inline-flex rounded-[4px] p-3 bg-brand-rose/20 text-brand-rose mb-4">
                   <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25H12" />
@@ -470,7 +366,7 @@ export default function MarketingPage() {
                   </div>
                 </div>
               </div>
-            </RevealSection>
+            </div>
           </div>
         </div>
       </section>
@@ -478,13 +374,13 @@ export default function MarketingPage() {
       {/* ──── HOW IT WORKS ──────────────────────── */}
       <section id="how-it-works" className="py-24 sm:py-32 bg-muted/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <RevealSection className="text-center mb-16">
+          <div className="text-center mb-16">
             <p className="text-sm font-semibold text-brand-cyan mb-2">How It Works</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl">
               Three steps to{" "}
-              <span className="gradient-text">meeting clarity</span>
+              <span className="text-brand-violet">meeting clarity</span>
             </h2>
-          </RevealSection>
+          </div>
 
           <div className="grid gap-8 md:grid-cols-3">
             {[
@@ -522,8 +418,7 @@ export default function MarketingPage() {
                 color: "brand-emerald",
               },
             ].map((s, i) => (
-              <RevealSection key={i}>
-                <div className="relative text-center p-8 rounded-[4px] border border-border/50 bg-card hover:shadow-lg transition-all duration-300">
+                <div key={i} className="relative text-center p-8 rounded-[4px] border border-border/50 bg-card hover:shadow-md transition-shadow">
                   <div className={`inline-flex rounded-[4px] p-4 mb-4 ${colorMap[s.color] || "text-brand-violet bg-brand-violet/10"}`}>
                     {s.icon}
                   </div>
@@ -533,7 +428,6 @@ export default function MarketingPage() {
                   <h3 className="text-xl font-semibold font-sans text-foreground">{s.title}</h3>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 </div>
-              </RevealSection>
             ))}
           </div>
         </div>
@@ -542,11 +436,11 @@ export default function MarketingPage() {
       {/* ──── PRICING TEASER ─────────────────────── */}
       <section id="pricing" className="py-24 sm:py-32 bg-muted/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <RevealSection>
+          <div>
             <p className="text-sm font-semibold text-brand-violet mb-2">Pricing</p>
             <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl">
               Plans that scale with{" "}
-              <span className="gradient-text">your team</span>
+              <span className="text-brand-violet">your team</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Start free with 3 hours of transcription per month. Paid plans from $9.97/seat/mo.
@@ -562,26 +456,22 @@ export default function MarketingPage() {
                 </svg>
               </Link>
             </div>
-          </RevealSection>
+          </div>
         </div>
       </section>
 
       {/* ──── FINAL CTA ─────────────────────────── */}
-      <RevealSection>
+      <div>
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-[4px] bg-gradient-to-br from-[#0a0c10] via-[#161920] to-[#0a0c10] p-12 sm:p-20 text-center">
-              {/* Decorative circles */}
-              <div className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full bg-white/[0.03] blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-white/[0.02] blur-3xl" />
-
-              <h2 className="relative text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
+            <div className="rounded-[4px] bg-brand-deep p-12 sm:p-20 text-center">
+              <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
                 Stop losing decisions to bad notes
               </h2>
-              <p className="relative mt-4 text-lg text-white/70 max-w-xl mx-auto">
+              <p className="mt-4 text-lg text-white/70 max-w-xl mx-auto">
                 Never let your team miss a meeting insight again. Start your free trial today.
               </p>
-              <div className="relative mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/sign-up"
                   className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-[4px]"
@@ -596,7 +486,7 @@ export default function MarketingPage() {
             </div>
           </div>
         </section>
-      </RevealSection>
+      </div>
 
       {/* ──── FOOTER ────────────────────────────── */}
       <footer className="border-t border-border/50 bg-card py-16">

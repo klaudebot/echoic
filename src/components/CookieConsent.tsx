@@ -25,7 +25,7 @@ export default function CookieConsent() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[60] p-4 sm:p-6">
-      <div className="mx-auto max-w-3xl rounded-[4px] border border-border bg-card shadow-2xl shadow-black/10 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="mx-auto max-w-3xl rounded-sm border border-border bg-card shadow-2xl shadow-black/10 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="flex-1 text-sm text-muted-foreground leading-relaxed">
           We use cookies to improve your experience and analyze site usage. By continuing, you agree to our{" "}
           <Link href="/privacy" className="text-brand-violet hover:underline font-medium">
@@ -42,7 +42,7 @@ export default function CookieConsent() {
           </button>
           <button
             onClick={accept}
-            className="px-5 py-2 text-sm font-semibold bg-brand-violet text-white rounded-[4px] hover:bg-brand-violet/90 transition-all"
+            className="px-5 py-2 text-sm font-semibold bg-brand-violet text-white rounded-sm hover:bg-brand-violet/90 transition-all"
           >
             Accept
           </button>

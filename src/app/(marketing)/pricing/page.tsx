@@ -243,7 +243,7 @@ function FAQSection() {
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
             className="w-full flex items-center justify-between py-5 text-left group"
           >
-            <span className="text-base font-semibold font-sans text-foreground group-hover:text-brand-violet transition-colors pr-4">
+            <span className="text-base font-semibold text-foreground group-hover:text-brand-violet transition-colors pr-4">
               {faq.question}
             </span>
             <svg
@@ -342,19 +342,19 @@ export default function PricingPage() {
               return (
                 <div key={i}>
                   <div
-                    className={`relative flex flex-col h-full rounded-[4px] p-8 transition-all duration-300 ${
+                    className={`relative flex flex-col h-full rounded-sm p-8 transition-all duration-300 ${
                       plan.highlighted
                         ? "border-2 border-brand-violet bg-card shadow-xl shadow-brand-violet/10 scale-[1.02]"
                         : "border border-border/50 bg-card hover:shadow-lg"
                     }`}
                   >
                     {plan.highlighted && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-violet px-4 py-1 text-xs font-semibold text-white rounded-[2px]">
+                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-violet px-4 py-1 text-xs font-semibold text-white rounded-sm">
                         Most Popular
                       </div>
                     )}
                     <div>
-                      <h3 className="text-lg font-semibold font-sans text-foreground">{plan.name}</h3>
+                      <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
                       <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>
                       <div className="mt-4 flex items-baseline gap-1">
                         {showStrikethrough && (
@@ -362,7 +362,7 @@ export default function PricingPage() {
                             {plan.monthlyPrice}
                           </span>
                         )}
-                        <span className="text-4xl font-bold font-sans text-foreground">{price}</span>
+                        <span className="text-4xl font-bold text-foreground">{price}</span>
                         <span className="text-sm text-muted-foreground">{plan.period}</span>
                       </div>
                       {billingInterval === "yearly" && (
@@ -387,7 +387,7 @@ export default function PricingPage() {
                     </ul>
                     <Link
                       href={`/sign-up?plan=${plan.tier}&interval=${billingInterval}`}
-                      className={`mt-8 block rounded-[4px] py-3 text-center text-sm font-semibold transition-all ${
+                      className={`mt-8 block rounded-sm py-3 text-center text-sm font-semibold transition-all ${
                         plan.highlighted
                           ? "bg-brand-violet text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90"
                           : "bg-muted text-foreground hover:bg-muted/70"
@@ -403,11 +403,11 @@ export default function PricingPage() {
 
           {/* ──── FREE TIER BANNER ─────────────── */}
           <div className="mt-8 max-w-5xl mx-auto">
-            <div className="rounded-[4px] border border-border/50 bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="rounded-sm border border-border/50 bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
-                  <h3 className="text-xl font-semibold font-sans text-foreground">Free</h3>
-                  <span className="text-3xl font-bold font-sans text-foreground">$0</span>
+                  <h3 className="text-xl font-semibold text-foreground">Free</h3>
+                  <span className="text-3xl font-bold text-foreground">$0</span>
                   <span className="text-sm text-muted-foreground">/mo</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -432,7 +432,7 @@ export default function PricingPage() {
               </div>
               <Link
                 href="/sign-up"
-                className="shrink-0 rounded-[4px] bg-muted px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-muted/70 transition-all"
+                className="shrink-0 rounded-sm bg-muted px-6 py-2.5 text-sm font-semibold text-foreground hover:bg-muted/70 transition-all"
               >
                 Start Free
               </Link>
@@ -468,7 +468,7 @@ export default function PricingPage() {
       <div>
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[4px] bg-brand-deep p-12 sm:p-20 text-center">
+            <div className="rounded-sm bg-brand-deep p-12 sm:p-20 text-center">
               <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
                 Need a custom plan?
               </h2>
@@ -479,7 +479,7 @@ export default function PricingPage() {
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
                   href="mailto:hello@reverbic.ai"
-                  className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-[4px]"
+                  className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-sm"
                 >
                   Contact Sales
                   <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

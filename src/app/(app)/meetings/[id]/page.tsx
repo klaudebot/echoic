@@ -486,7 +486,7 @@ function EditableTitle({ meeting }: { meeting: Meeting }) {
             if (e.key === "Enter") save(draft);
             if (e.key === "Escape") { setDraft(meeting.title); setEditing(false); }
           }}
-          className="font-heading text-2xl text-foreground bg-transparent border-b-2 border-brand-violet outline-none w-full py-0.5"
+          className="font-heading text-2xl text-foreground bg-transparent border-b-2 border-brand-violet focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-violet/30 w-full py-0.5 rounded-sm"
         />
         {meeting.originalTitle && meeting.title !== meeting.originalTitle && (
           <button

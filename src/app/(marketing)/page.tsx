@@ -121,32 +121,32 @@ export default function MarketingPage() {
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center justify-center bg-brand-violet px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all hover:shadow-xl hover:shadow-brand-violet/30 rounded-[4px]"
+                className="inline-flex items-center justify-center bg-brand-violet px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all hover:shadow-xl hover:shadow-brand-violet/30 rounded-sm"
               >
                 Start Free Trial
                 <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                 </svg>
               </Link>
-              <Link href="/pricing" className="inline-flex items-center justify-center border border-border bg-card px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-[4px]">
+              <Link href="/pricing" className="inline-flex items-center justify-center border border-border bg-card px-8 py-3 text-base font-semibold text-foreground shadow-sm hover:bg-muted/50 transition-all rounded-sm">
                 View Pricing
               </Link>
             </div>
 
             {/* Product Preview Card */}
-            <div className="mt-16 w-full max-w-4xl bg-card border border-border p-6 shadow-xl rounded-[4px]">
+            <div className="mt-16 w-full max-w-4xl bg-card border border-border p-6 shadow-xl rounded-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex items-center gap-1.5">
                   <div className="h-3 w-3 rounded-full bg-red-400" />
                   <div className="h-3 w-3 rounded-full bg-amber-400" />
                   <div className="h-3 w-3 rounded-full bg-green-400" />
                 </div>
-                <div className="flex-1 bg-muted/50 px-4 py-1.5 text-xs text-muted-foreground font-mono rounded-[2px]">
+                <div className="flex-1 bg-muted/50 px-4 py-1.5 text-xs text-muted-foreground font-mono rounded-sm">
                   reverbic.ai/demo/dashboard
                 </div>
                 <a
                   href="/demo/dashboard"
-                  className="shrink-0 inline-flex items-center gap-1.5 bg-brand-violet/10 hover:bg-brand-violet/20 text-brand-violet px-3 py-1.5 text-xs font-semibold rounded-[2px] transition-colors"
+                  className="shrink-0 inline-flex items-center gap-1.5 bg-brand-violet/10 hover:bg-brand-violet/20 text-brand-violet px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
@@ -155,14 +155,14 @@ export default function MarketingPage() {
                 </a>
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-[4px] bg-gradient-to-br from-brand-violet/5 to-brand-cyan/5 p-4">
+                <div className="rounded-sm bg-gradient-to-br from-brand-violet/5 to-brand-cyan/5 p-4">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Summary</div>
                   <div className="text-sm text-foreground leading-relaxed">
                     AI features on track for April. Mobile redesign pushed to Q2.
                     Hiring 2 frontend devs approved...
                   </div>
                 </div>
-                <div className="rounded-[4px] bg-gradient-to-br from-brand-emerald/5 to-brand-cyan/5 p-4">
+                <div className="rounded-sm bg-gradient-to-br from-brand-emerald/5 to-brand-cyan/5 p-4">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Action Items</div>
                   <div className="space-y-2">
                     {["Draft 2 frontend JDs", "Finalize pipeline plan", "Update pricing page"].map((item, i) => (
@@ -179,7 +179,7 @@ export default function MarketingPage() {
                     ))}
                   </div>
                 </div>
-                <div className="rounded-[4px] bg-gradient-to-br from-brand-amber/5 to-brand-rose/5 p-4">
+                <div className="rounded-sm bg-gradient-to-br from-brand-amber/5 to-brand-rose/5 p-4">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Decisions</div>
                   <div className="space-y-2">
                     {["Hire 2 frontend developers", "Approve $50K pipeline budget"].map((d, i) => (
@@ -242,21 +242,21 @@ export default function MarketingPage() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
-                <div key={i} className={`group relative rounded-[4px] p-6 hover:shadow-md transition-shadow h-full ${
+                <div key={i} className={`group relative rounded-sm p-6 hover:shadow-md transition-shadow h-full ${
                   f.exclusive
                     ? "border-2 border-brand-violet/30 shadow-sm"
                     : "border border-border/50"
                 }`}
                 >
                   {f.badge && (
-                    <span className="absolute top-4 right-4 px-2.5 py-0.5 rounded-[2px] text-[11px] font-semibold bg-brand-violet/10 text-brand-violet">
+                    <span className="absolute top-4 right-4 px-2.5 py-0.5 rounded-sm text-[11px] font-semibold bg-brand-violet/10 text-brand-violet">
                       {f.badge}
                     </span>
                   )}
-                  <div className={`inline-flex rounded-[4px] p-3 ${colorMap[f.color] || "text-brand-violet bg-brand-violet/10"}`}>
+                  <div className={`inline-flex rounded-sm p-3 ${colorMap[f.color] || "text-brand-violet bg-brand-violet/10"}`}>
                     {f.icon}
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold font-sans text-foreground">{f.title}</h3>
+                  <h3 className="mt-4 text-lg font-semibold text-foreground">{f.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.description}</p>
                   {f.whyItMatters && (
                     <p className="mt-3 text-xs leading-relaxed text-brand-violet font-medium italic">
@@ -286,13 +286,13 @@ export default function MarketingPage() {
           <div className="grid gap-8 md:grid-cols-3">
             {/* Meeting Coach */}
             <div>
-              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
-                <div className="inline-flex rounded-[4px] p-3 bg-brand-emerald/20 text-brand-emerald mb-4">
+              <div className="relative h-full rounded-sm border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
+                <div className="inline-flex rounded-sm p-3 bg-brand-emerald/20 text-brand-emerald mb-4">
                   <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold font-sans text-white">Meeting Coach</h3>
+                <h3 className="text-xl font-semibold text-white">Meeting Coach</h3>
                 <p className="mt-2 text-base font-medium text-brand-cyan">
                   Most tools transcribe. Reverbic coaches.
                 </p>
@@ -302,10 +302,10 @@ export default function MarketingPage() {
                   within the first month.
                 </p>
                 <div className="mt-6 flex items-center gap-4">
-                  <div className="rounded-[3px] bg-brand-emerald/10 px-3 py-1.5">
+                  <div className="rounded-sm bg-brand-emerald/10 px-3 py-1.5">
                     <span className="text-xs font-semibold text-brand-emerald">-40% filler words</span>
                   </div>
-                  <div className="rounded-[3px] bg-brand-cyan/10 px-3 py-1.5">
+                  <div className="rounded-sm bg-brand-cyan/10 px-3 py-1.5">
                     <span className="text-xs font-semibold text-brand-cyan">2x efficiency</span>
                   </div>
                 </div>
@@ -314,13 +314,13 @@ export default function MarketingPage() {
 
             {/* Decision Tracker */}
             <div>
-              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
-                <div className="inline-flex rounded-[4px] p-3 bg-brand-amber/20 text-brand-amber mb-4">
+              <div className="relative h-full rounded-sm border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
+                <div className="inline-flex rounded-sm p-3 bg-brand-amber/20 text-brand-amber mb-4">
                   <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold font-sans text-white">Decision Tracker</h3>
+                <h3 className="text-xl font-semibold text-white">Decision Tracker</h3>
                 <p className="mt-2 text-base font-medium text-brand-amber">
                   Never lose a decision again.
                 </p>
@@ -330,10 +330,10 @@ export default function MarketingPage() {
                   always knows what was agreed and when.
                 </p>
                 <div className="mt-6 flex items-center gap-4">
-                  <div className="rounded-[3px] bg-brand-amber/10 px-3 py-1.5">
+                  <div className="rounded-sm bg-brand-amber/10 px-3 py-1.5">
                     <span className="text-xs font-semibold text-brand-amber">Cross-meeting tracking</span>
                   </div>
-                  <div className="rounded-[3px] bg-brand-violet/10 px-3 py-1.5">
+                  <div className="rounded-sm bg-brand-violet/10 px-3 py-1.5">
                     <span className="text-xs font-semibold text-brand-violet">Auto-linked</span>
                   </div>
                 </div>
@@ -342,13 +342,13 @@ export default function MarketingPage() {
 
             {/* Smart Clips */}
             <div>
-              <div className="relative h-full rounded-[4px] border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
-                <div className="inline-flex rounded-[4px] p-3 bg-brand-rose/20 text-brand-rose mb-4">
+              <div className="relative h-full rounded-sm border border-white/10 bg-white/5 p-8 hover:bg-white/8 transition-colors">
+                <div className="inline-flex rounded-sm p-3 bg-brand-rose/20 text-brand-rose mb-4">
                   <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25H12" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold font-sans text-white">Smart Clips</h3>
+                <h3 className="text-xl font-semibold text-white">Smart Clips</h3>
                 <p className="mt-2 text-base font-medium text-brand-rose">
                   Share the moment, skip the meeting.
                 </p>
@@ -358,10 +358,10 @@ export default function MarketingPage() {
                   or watching full recordings.
                 </p>
                 <div className="mt-6 flex items-center gap-4">
-                  <div className="rounded-[3px] bg-brand-rose/10 px-3 py-1.5">
+                  <div className="rounded-sm bg-brand-rose/10 px-3 py-1.5">
                     <span className="text-xs font-semibold text-brand-rose">5+ hrs saved/week</span>
                   </div>
-                  <div className="rounded-[3px] bg-brand-cyan/10 px-3 py-1.5">
+                  <div className="rounded-sm bg-brand-cyan/10 px-3 py-1.5">
                     <span className="text-xs font-semibold text-brand-cyan">Async-first</span>
                   </div>
                 </div>
@@ -418,14 +418,14 @@ export default function MarketingPage() {
                 color: "brand-emerald",
               },
             ].map((s, i) => (
-                <div key={i} className="relative text-center p-8 rounded-[4px] border border-border/50 bg-card hover:shadow-md transition-shadow">
-                  <div className={`inline-flex rounded-[4px] p-4 mb-4 ${colorMap[s.color] || "text-brand-violet bg-brand-violet/10"}`}>
+                <div key={i} className="relative text-center p-8 rounded-sm border border-border/50 bg-card hover:shadow-md transition-shadow">
+                  <div className={`inline-flex rounded-sm p-4 mb-4 ${colorMap[s.color] || "text-brand-violet bg-brand-violet/10"}`}>
                     {s.icon}
                   </div>
                   <div className="absolute top-4 right-4 text-5xl font-heading text-muted-foreground/10 font-bold">
                     {s.step}
                   </div>
-                  <h3 className="text-xl font-semibold font-sans text-foreground">{s.title}</h3>
+                  <h3 className="text-xl font-semibold text-foreground">{s.title}</h3>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 </div>
             ))}
@@ -448,7 +448,7 @@ export default function MarketingPage() {
             <div className="mt-8">
               <Link
                 href="/pricing"
-                className="inline-flex items-center justify-center bg-brand-violet px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all rounded-[4px]"
+                className="inline-flex items-center justify-center bg-brand-violet px-8 py-3 text-base font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all rounded-sm"
               >
                 View Pricing
                 <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -464,7 +464,7 @@ export default function MarketingPage() {
       <div>
         <section className="py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[4px] bg-brand-deep p-12 sm:p-20 text-center">
+            <div className="rounded-sm bg-brand-deep p-12 sm:p-20 text-center">
               <h2 className="text-3xl font-heading sm:text-4xl lg:text-5xl text-white">
                 Stop losing decisions to bad notes
               </h2>
@@ -474,7 +474,7 @@ export default function MarketingPage() {
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-[4px]"
+                  className="inline-flex items-center justify-center bg-white px-8 py-3 text-base font-semibold text-brand-deep shadow-lg hover:bg-white/90 transition-all rounded-sm"
                 >
                   Start Free Trial
                   <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -510,7 +510,7 @@ export default function MarketingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="X (Twitter)"
-                  className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-muted text-muted-foreground hover:bg-brand-violet hover:text-white transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-sm bg-muted text-muted-foreground hover:bg-brand-violet hover:text-white transition-colors"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -521,7 +521,7 @@ export default function MarketingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn"
-                  className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-muted text-muted-foreground hover:bg-brand-violet hover:text-white transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-sm bg-muted text-muted-foreground hover:bg-brand-violet hover:text-white transition-colors"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
@@ -532,7 +532,7 @@ export default function MarketingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="GitHub"
-                  className="flex h-8 w-8 items-center justify-center rounded-[3px] bg-muted text-muted-foreground hover:bg-brand-violet hover:text-white transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-sm bg-muted text-muted-foreground hover:bg-brand-violet hover:text-white transition-colors"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
@@ -566,7 +566,7 @@ export default function MarketingPage() {
               },
             ].map((col) => (
               <div key={col.title}>
-                <h4 className="text-sm font-semibold font-sans text-foreground mb-4">{col.title}</h4>
+                <h4 className="text-sm font-semibold text-foreground mb-4">{col.title}</h4>
                 <ul className="space-y-2.5">
                   {col.links.map((link) => (
                     <li key={link.label}>

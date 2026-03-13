@@ -137,7 +137,8 @@ function ComparisonChart() {
       </div>
 
       <div className="relative">
-        <div className="overflow-x-auto">
+        <p className="text-xs text-muted-foreground mb-2 sm:hidden">Scroll to see all plans →</p>
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-border">

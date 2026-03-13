@@ -600,7 +600,7 @@ function ShareButton({ meetingId }: { meetingId: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-[min(20rem,calc(100vw-2rem))] bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground">Public share link</h3>
@@ -750,7 +750,7 @@ function SlackButton({ meetingId }: { meetingId: string }) {
         {sent ? `Sent to #${sent}` : "Send to Slack"}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-[min(16rem,calc(100vw-2rem))] bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
           <div className="p-3 border-b border-border">
             <p className="text-xs font-medium text-foreground">Pick a channel</p>
           </div>

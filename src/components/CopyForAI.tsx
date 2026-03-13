@@ -351,7 +351,7 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
         {open && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-full mt-2 z-50 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 z-50 w-[min(20rem,calc(100vw-2rem))] bg-card border border-border rounded-xl shadow-xl overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-muted/30">
                 <p className="text-xs font-semibold text-foreground">Copy for AI</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">

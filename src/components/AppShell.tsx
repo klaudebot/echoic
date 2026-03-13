@@ -508,7 +508,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="fixed inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
-          <aside className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl z-50">
+          <aside className="fixed inset-y-0 left-0 w-[min(16rem,85vw)] bg-card shadow-xl z-50">
             <div className="absolute top-3 right-3">
               <button onClick={() => setSidebarOpen(false)} className="p-2 text-muted-foreground hover:text-foreground" aria-label="Close navigation menu">
                 <X className="w-5 h-5" />
@@ -526,7 +526,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground p-2 -m-2" aria-label="Open navigation menu">
                 <Menu className="w-5 h-5" />
               </button>
-              <div ref={searchRef} className="hidden sm:block relative w-80" role="combobox" aria-expanded={showDropdown} aria-haspopup="listbox" aria-owns="search-results-listbox">
+              <div ref={searchRef} className="hidden sm:block relative w-full max-w-xs lg:max-w-sm" role="combobox" aria-expanded={showDropdown} aria-haspopup="listbox" aria-owns="search-results-listbox">
                 <div className="flex items-center bg-muted rounded-xl px-3 py-1.5">
                   <Search className="w-4 h-4 text-muted-foreground mr-2 shrink-0" aria-hidden="true" />
                   <label htmlFor="global-search" className="sr-only">Search meetings, transcripts, clips</label>

@@ -394,7 +394,7 @@ export async function sendPasswordResetEmail(
   });
 }
 
-/** 7. Subscription Confirmation — sent when a user subscribes */
+/** 7. Subscription Confirmation + Onboarding — sent when a user subscribes */
 export async function sendSubscriptionConfirmationEmail(
   to: string,
   planName: string,
@@ -402,44 +402,101 @@ export async function sendSubscriptionConfirmationEmail(
 ): Promise<void> {
   const settingsUrl = `${APP_URL}/settings`;
 
+  // Plan-specific features and getting-started steps
+  const planFeatures: Record<string, string[]> = {
+    Starter: [
+      "30 hours of transcription / month",
+      "AI summaries + action items",
+      "Decision tracking",
+      "3 integrations (Zoom, Meet, Teams)",
+    ],
+    Pro: [
+      "Unlimited transcription",
+      "AI Meeting Coach — talk ratio, filler words, pace analytics",
+      "Smart Clips — AI-generated shareable audio moments",
+      "Decision Tracker across all meetings",
+      "All integrations + team analytics",
+    ],
+    Team: [
+      "Everything in Pro for your whole team",
+      "SSO / SAML single sign-on",
+      "Admin controls + member management",
+      "API access for custom workflows",
+      "Priority support + dedicated onboarding",
+    ],
+  };
+
+  const planSteps: Record<string, Array<{ title: string; desc: string; color: string }>> = {
+    Starter: [
+      { title: "Record your first meeting", desc: "Click the mic button or press R to start recording. Upload a file if you prefer.", color: `linear-gradient(135deg, ${VIOLET}, ${VIOLET_LIGHT})` },
+      { title: "Review your AI summary", desc: "After transcription, check the Summary tab for key points, action items, and decisions.", color: `linear-gradient(135deg, ${CYAN}, #22d3ee)` },
+      { title: "Connect your calendar", desc: "Link Zoom, Google Meet, or Teams from Settings to auto-record future meetings.", color: `linear-gradient(135deg, ${EMERALD}, #34d399)` },
+    ],
+    Pro: [
+      { title: "Record or upload a meeting", desc: "Click the mic button, press R, or drag-and-drop a recording to get started.", color: `linear-gradient(135deg, ${VIOLET}, ${VIOLET_LIGHT})` },
+      { title: "Check your Meeting Coach", desc: "After your first meeting, visit the Coach tab for talk ratio, filler words, and personalized tips.", color: `linear-gradient(135deg, ${CYAN}, #22d3ee)` },
+      { title: "Share a Smart Clip", desc: "Highlight a key moment and create a shareable audio clip — perfect for async standups.", color: `linear-gradient(135deg, ${EMERALD}, #34d399)` },
+    ],
+    Team: [
+      { title: "Invite your team", desc: "Go to Settings &rarr; Team and invite colleagues. They'll get access to shared transcripts instantly.", color: `linear-gradient(135deg, ${VIOLET}, ${VIOLET_LIGHT})` },
+      { title: "Record your first team meeting", desc: "Start recording or connect your calendar to auto-capture every meeting.", color: `linear-gradient(135deg, ${CYAN}, #22d3ee)` },
+      { title: "Review team analytics", desc: "Check the Team dashboard for meeting patterns, talk ratios, and action item completion across your org.", color: `linear-gradient(135deg, ${EMERALD}, #34d399)` },
+    ],
+  };
+
+  const features = planFeatures[planName] || planFeatures.Starter;
+  const steps = planSteps[planName] || planSteps.Starter;
+
+  const featureRows = features
+    .map(f => `<tr><td style="padding: 5px 0; font-size: 14px; color: #374151; line-height: 1.5;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> ${f}</td></tr>`)
+    .join("");
+
+  const stepRows = steps
+    .map((s, i) => `
+      <tr>
+        <td style="width: 44px; vertical-align: top; padding-bottom: 16px;">
+          <div style="width: 36px; height: 36px; background: ${s.color}; border-radius: 10px; text-align: center; line-height: 36px; font-size: 15px; font-weight: 800; color: white;">${i + 1}</div>
+        </td>
+        <td style="vertical-align: middle; padding-left: 4px; padding-bottom: 16px;">
+          <div style="font-size: 15px; font-weight: 700; color: ${DEEP};">${s.title}</div>
+          <div style="font-size: 13px; color: #6b7280; margin-top: 2px; line-height: 1.5;">${s.desc}</div>
+        </td>
+      </tr>`)
+    .join("");
+
   const body = `
     <div style="display: inline-block; background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-radius: 8px; padding: 6px 12px; margin-bottom: 16px;">
-      <span style="font-size: 12px; font-weight: 700; color: ${EMERALD}; letter-spacing: 0.5px;">&#10003; SUBSCRIPTION CONFIRMED</span>
+      <span style="font-size: 12px; font-weight: 700; color: ${EMERALD}; letter-spacing: 0.5px;">&#10003; YOU'RE ALL SET</span>
     </div>
     ${heading(`Welcome to Reverbic ${esc(planName)}`)}
-    ${paragraph(`Your upgrade is complete! You're now on the <strong style="color: ${DEEP};">${esc(planName)} plan</strong>${price ? ` at <strong style="color: ${DEEP};">${esc(price)}/mo</strong>` : ""}.`)}
+    ${paragraph(`Your ${esc(planName)} plan is active${price ? ` at <strong style="color: ${DEEP};">${esc(price)}/mo</strong>` : ""}. Here's everything you need to get the most out of Reverbic.`)}
 
-    <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-      <p style="font-size: 13px; font-weight: 700; color: ${DEEP}; margin: 0 0 12px;">What's unlocked:</p>
+    <!-- What's unlocked -->
+    <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 28px;">
+      <p style="font-size: 13px; font-weight: 700; color: ${DEEP}; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">Your ${esc(planName)} plan includes</p>
       <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
-        ${planName === "Starter" ? `
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> 30 hours of transcription / month</td></tr>
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> AI summaries + action items</td></tr>
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> 3 integrations</td></tr>
-        ` : planName === "Pro" ? `
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> Unlimited transcription</td></tr>
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> AI Coach + Smart Clips</td></tr>
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> All integrations + analytics</td></tr>
-        ` : `
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> Everything in Pro</td></tr>
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> SSO / SAML + admin controls</td></tr>
-        <tr><td style="padding: 4px 0; font-size: 14px; color: #374151;"><span style="color: ${EMERALD}; margin-right: 8px;">&#10003;</span> API access + priority support</td></tr>
-        `}
+        ${featureRows}
       </table>
     </div>
+
+    <!-- Getting started steps -->
+    <p style="font-size: 13px; font-weight: 700; color: ${DEEP}; margin: 0 0 16px; text-transform: uppercase; letter-spacing: 0.5px;">Get started in 3 steps</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
+      ${stepRows}
+    </table>
 
     ${primaryButton("Go to Dashboard &rarr;", `${APP_URL}/dashboard`)}
 
     <p style="font-size: 13px; color: #9ca3af; margin: 24px 0 0; line-height: 1.6;">
-      Manage your subscription anytime from <a href="${settingsUrl}" style="color: ${VIOLET}; text-decoration: none; font-weight: 600;">Settings</a>.
+      Manage your subscription anytime from <a href="${settingsUrl}" style="color: ${VIOLET}; text-decoration: none; font-weight: 600;">Settings</a>. Questions? Reply to this email — we read every message.
     </p>
   `;
 
   await getResend().emails.send({
     from: FROM_ADDRESS,
     to,
-    subject: `You're on Reverbic ${planName}!`,
-    html: emailShell(body, `Your upgrade to Reverbic ${planName} is confirmed.`),
+    subject: `Welcome to Reverbic ${planName} — here's how to get started`,
+    html: emailShell(body, `Your ${planName} plan is active. Here's how to get the most out of Reverbic.`),
   });
 }
 

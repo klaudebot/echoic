@@ -80,16 +80,8 @@ function SignUpForm() {
       return;
     }
 
-    // Send welcome email (fire and forget)
-    fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "welcome", to: email, name }),
-    })
-      .then((r) => { if (!r.ok) r.json().then((d) => console.error("[signup] Welcome email failed:", d)); })
-      .catch((err) => console.error("[signup] Welcome email error:", err));
-
     // If email confirmation is required, Supabase returns a user but no session
+    // Welcome content is in the Supabase confirmation email template — no separate welcome email
     if (data.user && !data.session) {
       setLoading(false);
       setError(null);

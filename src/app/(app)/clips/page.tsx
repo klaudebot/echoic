@@ -165,11 +165,11 @@ const typeConfig = {
   decision: {
     label: "Decision",
     icon: Target,
-    bg: "bg-brand-violet/10",
-    text: "text-brand-violet",
-    border: "border-brand-violet/20",
-    dot: "bg-brand-violet",
-    gradient: "from-brand-violet/20 to-brand-violet/5",
+    bg: "bg-brand-orange/10",
+    text: "text-brand-orange",
+    border: "border-brand-orange/20",
+    dot: "bg-brand-orange",
+    gradient: "from-brand-orange/20 to-brand-orange/5",
   },
   action_item: {
     label: "Action Item",
@@ -374,14 +374,14 @@ function TimelineView({
                 <div className="w-[39px] flex items-center justify-center shrink-0">
                   <div className={`w-3 h-3 rounded-full border-2 transition-colors ${
                     isExpanded
-                      ? "bg-brand-violet border-brand-violet"
-                      : "bg-card border-border group-hover:border-brand-violet/50"
+                      ? "bg-brand-orange border-brand-orange"
+                      : "bg-card border-border group-hover:border-brand-orange/50"
                   }`} />
                 </div>
 
                 <div className="flex-1 min-w-0 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-brand-violet transition-colors">
+                    <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-brand-orange transition-colors">
                       {group.meetingTitle}
                     </h3>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -392,7 +392,7 @@ function TimelineView({
                   {/* Clip count pills */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     {dCount > 0 && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-brand-violet/10 text-brand-violet text-[10px] font-medium">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-brand-orange/10 text-brand-orange text-[10px] font-medium">
                         <Target className="w-2.5 h-2.5" /> {dCount}
                       </span>
                     )}
@@ -423,12 +423,12 @@ function TimelineView({
                     {/* Flow: Decisions → Action Items → Key Points */}
                     {group.decisions.length > 0 && (
                       <div className="border-b border-border">
-                        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-violet/5 to-transparent">
-                          <Target className="w-3.5 h-3.5 text-brand-violet" />
-                          <span className="text-xs font-semibold text-brand-violet uppercase tracking-wider">
+                        <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-brand-orange/5 to-transparent">
+                          <Target className="w-3.5 h-3.5 text-brand-orange" />
+                          <span className="text-xs font-semibold text-brand-orange uppercase tracking-wider">
                             Decisions
                           </span>
-                          <span className="text-[10px] text-brand-violet/60 ml-auto">{dCount}</span>
+                          <span className="text-[10px] text-brand-orange/60 ml-auto">{dCount}</span>
                         </div>
                         <div className="px-1 py-1">
                           {group.decisions.map((clip) => (
@@ -496,7 +496,7 @@ function TimelineView({
                     <div className="px-4 py-2 bg-muted/30 border-t border-border">
                       <AppLink
                         href={`/meetings/${group.meetingId}`}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-brand-violet hover:underline"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-brand-orange hover:underline"
                       >
                         View full meeting
                         <ExternalLink className="w-3 h-3" />
@@ -700,7 +700,7 @@ export default function ClipsPage() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5 mb-1">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-violet to-brand-rose flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-orange to-brand-rose flex items-center justify-center">
               <Scissors className="w-4.5 h-4.5 text-white" />
             </div>
             <h1 className="font-heading text-2xl text-foreground">Smart Clips</h1>
@@ -735,8 +735,8 @@ export default function ClipsPage() {
       {/* Empty state */}
       {loaded && !hasClips && (
         <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
-            <Scissors className="w-7 h-7 text-brand-violet" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
+            <Scissors className="w-7 h-7 text-brand-orange" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">Smart clips appear here automatically</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
@@ -744,7 +744,7 @@ export default function ClipsPage() {
           </p>
           <AppLink
             href="/meetings/upload"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
           >
             <Mic className="w-4 h-4" />
             Upload a Recording
@@ -760,11 +760,11 @@ export default function ClipsPage() {
             <button
               onClick={() => setTypeFilter(typeFilter === "decision" ? "all" : "decision")}
               className={`bg-card border rounded-xl p-3.5 text-left transition-all ${
-                typeFilter === "decision" ? "border-brand-violet/40 ring-1 ring-brand-violet/20" : "border-border hover:border-brand-violet/20"
+                typeFilter === "decision" ? "border-brand-orange/40 ring-1 ring-brand-orange/20" : "border-border hover:border-brand-orange/20"
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-brand-violet" />
+                <Target className="w-4 h-4 text-brand-orange" />
                 <span className="text-xs text-muted-foreground">Decisions</span>
               </div>
               <div className="text-2xl font-semibold text-foreground">{decisionCount}</div>
@@ -804,7 +804,7 @@ export default function ClipsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search clips, meetings, people..."
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/40 transition-shadow"
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/40 transition-shadow"
               />
             </div>
             {typeFilter !== "all" && (

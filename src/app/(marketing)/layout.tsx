@@ -71,7 +71,7 @@ export default function MarketingLayout({
               {isLoggedIn ? (
                 <Link
                   href="/dashboard"
-                  className="bg-brand-violet px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-violet/90 transition-all shadow-sm rounded-sm"
+                  className="bg-brand-orange px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-orange/90 transition-all shadow-sm rounded-sm"
                 >
                   Dashboard
                 </Link>
@@ -85,7 +85,7 @@ export default function MarketingLayout({
                   </Link>
                   <Link
                     href="/sign-up"
-                    className="bg-brand-violet px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-violet/90 transition-all shadow-sm rounded-sm"
+                    className="bg-brand-orange px-4 py-1.5 text-[13px] font-medium text-white hover:bg-brand-orange/90 transition-all shadow-sm rounded-sm"
                   >
                     Get Started
                   </Link>
@@ -127,7 +127,7 @@ export default function MarketingLayout({
               </a>
               <div className="flex flex-col gap-2 pt-3 border-t border-border/40 mt-2">
                 {isLoggedIn ? (
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="bg-brand-violet px-4 py-2 text-sm font-medium text-white text-center rounded-sm">
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="bg-brand-orange px-4 py-2 text-sm font-medium text-white text-center rounded-sm">
                     Dashboard
                   </Link>
                 ) : (
@@ -135,7 +135,7 @@ export default function MarketingLayout({
                     <Link href="/sign-in" className="text-sm font-medium text-muted-foreground text-center py-2">
                       Sign In
                     </Link>
-                    <Link href="/sign-up" className="bg-brand-violet px-4 py-2 text-sm font-medium text-white text-center rounded-sm">
+                    <Link href="/sign-up" className="bg-brand-orange px-4 py-2 text-sm font-medium text-white text-center rounded-sm">
                       Get Started
                     </Link>
                   </>

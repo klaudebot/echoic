@@ -37,8 +37,8 @@ function formatDate(iso: string): string {
 }
 
 const statusAccent: Record<Meeting["status"], { icon: string; border: string; bg: string }> = {
-  uploading: { icon: "text-brand-violet", border: "border-l-brand-violet", bg: "bg-brand-violet/10" },
-  processing: { icon: "text-brand-violet", border: "border-l-brand-violet", bg: "bg-brand-violet/10" },
+  uploading: { icon: "text-brand-orange", border: "border-l-brand-orange", bg: "bg-brand-orange/10" },
+  processing: { icon: "text-brand-orange", border: "border-l-brand-orange", bg: "bg-brand-orange/10" },
   completed: { icon: "text-brand-emerald", border: "border-l-brand-emerald", bg: "bg-brand-emerald/10" },
   failed: { icon: "text-brand-rose", border: "border-l-brand-rose", bg: "bg-brand-rose/10" },
   silent: { icon: "text-brand-amber", border: "border-l-brand-amber", bg: "bg-brand-amber/10" },
@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status: Meeting["status"] }) {
     case "uploading":
     case "processing":
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-brand-violet/10 text-brand-violet">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-brand-orange/10 text-brand-orange">
           <Loader2 className="w-3 h-3 animate-spin" /> Processing
         </span>
       );
@@ -101,8 +101,8 @@ export default function LibraryPage() {
 
       {loaded && meetings.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
-            <FolderOpen className="w-7 h-7 text-brand-violet" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
+            <FolderOpen className="w-7 h-7 text-brand-orange" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">Your library starts here</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
@@ -111,7 +111,7 @@ export default function LibraryPage() {
           <div className="flex items-center gap-3">
             <AppLink
               href="/meetings/upload"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
             >
               <Upload className="w-4 h-4" />
               Upload Recording
@@ -132,14 +132,14 @@ export default function LibraryPage() {
           {/* Stats summary */}
           <div className="flex items-center gap-6 text-sm">
             <span className="text-muted-foreground">
-              <span className="font-semibold text-brand-violet">{meetings.length}</span> recording{meetings.length === 1 ? "" : "s"}
+              <span className="font-semibold text-brand-orange">{meetings.length}</span> recording{meetings.length === 1 ? "" : "s"}
             </span>
             <span className="text-muted-foreground">
               <span className="font-semibold text-brand-emerald">{meetings.filter(m => m.status === "completed").length}</span> ready
             </span>
             {meetings.some(m => m.status === "processing") && (
               <span className="text-muted-foreground">
-                <span className="font-semibold text-brand-cyan">{meetings.filter(m => m.status === "processing").length}</span> processing
+                <span className="font-semibold text-brand-teal">{meetings.filter(m => m.status === "processing").length}</span> processing
               </span>
             )}
           </div>
@@ -152,7 +152,7 @@ export default function LibraryPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by title, transcript, or tag..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
             />
           </div>
 
@@ -180,11 +180,11 @@ export default function LibraryPage() {
                     </h3>
                     <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-brand-violet/60" />
+                        <Calendar className="w-3 h-3 text-brand-orange/60" />
                         {formatDate(meeting.createdAt)}
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-brand-cyan/60" />
+                        <Clock className="w-3 h-3 text-brand-teal/60" />
                         {formatDuration(meeting.duration)}
                       </span>
                     </div>

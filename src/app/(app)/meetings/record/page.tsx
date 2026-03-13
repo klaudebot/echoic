@@ -83,7 +83,7 @@ export default function RecordPage() {
         const x = i * (barWidth + 2);
         const y = height - barHeight;
 
-        ctx.fillStyle = "rgb(124, 58, 237)"; // brand-violet
+        ctx.fillStyle = "rgb(124, 58, 237)"; // brand-orange
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, barHeight, 2);
         ctx.fill();
@@ -507,7 +507,7 @@ export default function RecordPage() {
               <span className="text-sm text-brand-amber font-medium">Compressing audio...</span>
             )}
             {status === "uploading" && (
-              <span className="text-sm text-brand-violet font-medium">Uploading recording...</span>
+              <span className="text-sm text-brand-orange font-medium">Uploading recording...</span>
             )}
             {status === "idle" && (
               <span className="text-sm text-muted-foreground">Ready to record</span>
@@ -525,7 +525,7 @@ export default function RecordPage() {
                   key={i}
                   className={`w-[4px] rounded-full transition-all duration-150 ${
                     status === "recording"
-                      ? "bg-brand-violet"
+                      ? "bg-brand-orange"
                       : status === "paused"
                         ? "bg-brand-amber/40"
                         : "bg-muted"
@@ -565,7 +565,7 @@ export default function RecordPage() {
           <div className="mb-6 px-4">
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full bg-brand-violet transition-all duration-100"
+                className="h-full rounded-full bg-brand-orange transition-all duration-100"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -631,7 +631,7 @@ export default function RecordPage() {
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Take notes during the recording..."
             rows={6}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30 resize-none"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30 resize-none"
           />
           <p className="text-[11px] text-muted-foreground mt-1">Notes will be saved alongside the transcript</p>
         </div>
@@ -665,14 +665,14 @@ export default function RecordPage() {
             {recordingId && (
               <AppLink
                 href={`/meetings/${recordingId}`}
-                className="px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
+                className="px-4 py-2 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors"
               >
                 View Meeting
               </AppLink>
             )}
             <AppLink
               href="/meetings"
-              className="px-4 py-2 border border-brand-violet text-brand-violet rounded-lg text-sm font-medium hover:bg-brand-violet/5 transition-colors"
+              className="px-4 py-2 border border-brand-orange text-brand-orange rounded-lg text-sm font-medium hover:bg-brand-orange/5 transition-colors"
             >
               View Meetings
             </AppLink>

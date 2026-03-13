@@ -129,7 +129,7 @@ function ComparisonChart() {
     <div className="mt-20">
       <div className="text-center mb-10">
         <h3 className="text-2xl font-heading sm:text-3xl">
-          Compare all <span className="text-brand-violet">features</span>
+          Compare all <span className="text-brand-orange">features</span>
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
           See exactly what you get with each plan
@@ -144,7 +144,7 @@ function ComparisonChart() {
               <tr className="border-b border-border">
                 <th className="py-4 px-4 text-left font-semibold text-foreground w-[40%]">Feature</th>
                 <th className="py-4 px-4 text-center font-semibold text-foreground">Starter</th>
-                <th className="py-4 px-4 text-center font-semibold text-brand-violet">Pro</th>
+                <th className="py-4 px-4 text-center font-semibold text-brand-orange">Pro</th>
                 <th className="py-4 px-4 text-center font-semibold text-foreground">Team</th>
               </tr>
             </thead>
@@ -153,7 +153,7 @@ function ComparisonChart() {
                 if ("category" in row && !("feature" in row)) {
                   return (
                     <tr key={i} className="border-b border-border/50">
-                      <td colSpan={4} className="pt-8 pb-3 px-4 text-xs font-bold uppercase tracking-wider text-brand-violet">
+                      <td colSpan={4} className="pt-8 pb-3 px-4 text-xs font-bold uppercase tracking-wider text-brand-orange">
                         {row.category}
                       </td>
                     </tr>
@@ -164,7 +164,7 @@ function ComparisonChart() {
                   <tr key={i} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
                     <td className="py-3.5 px-4 text-muted-foreground">{r.feature}</td>
                     <td className="py-3.5 px-4 text-center">{renderCell(r.starter)}</td>
-                    <td className="py-3.5 px-4 text-center bg-brand-violet/[0.03]">{renderCell(r.pro)}</td>
+                    <td className="py-3.5 px-4 text-center bg-brand-orange/[0.03]">{renderCell(r.pro)}</td>
                     <td className="py-3.5 px-4 text-center">{renderCell(r.team)}</td>
                   </tr>
                 );
@@ -181,7 +181,7 @@ function ComparisonChart() {
       <div className="mt-4 text-center">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-2 text-sm font-medium text-brand-violet hover:text-brand-violet/80 transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-medium text-brand-orange hover:text-brand-orange/80 transition-colors"
         >
           {expanded ? "Show less" : `Show all ${comparisonRows.filter(r => "feature" in r).length} features`}
           <svg
@@ -244,7 +244,7 @@ function FAQSection() {
             onClick={() => setOpenIndex(openIndex === i ? null : i)}
             className="w-full flex items-center justify-between py-5 text-left group"
           >
-            <span className="text-base font-semibold text-foreground group-hover:text-brand-violet transition-colors pr-4">
+            <span className="text-base font-semibold text-foreground group-hover:text-brand-orange transition-colors pr-4">
               {faq.question}
             </span>
             <svg
@@ -289,10 +289,10 @@ export default function PricingPage() {
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-sm font-semibold text-brand-violet mb-2">Pricing</p>
+            <p className="text-sm font-semibold text-brand-orange mb-2">Pricing</p>
             <h1 className="text-4xl font-heading sm:text-5xl lg:text-6xl">
               Plans that scale with{" "}
-              <span className="text-brand-violet">your team</span>
+              <span className="text-brand-orange">your team</span>
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               From early-stage startups to enterprise organizations, Reverbic has a plan
@@ -345,12 +345,12 @@ export default function PricingPage() {
                   <div
                     className={`relative flex flex-col h-full rounded-sm p-8 transition-all duration-300 ${
                       plan.highlighted
-                        ? "border-2 border-brand-violet bg-card shadow-xl shadow-brand-violet/10 scale-[1.02]"
+                        ? "border-2 border-brand-orange bg-card shadow-xl shadow-brand-orange/10 scale-[1.02]"
                         : "border border-border/50 bg-card hover:shadow-lg"
                     }`}
                   >
                     {plan.highlighted && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-violet px-4 py-1 text-xs font-semibold text-white rounded-sm">
+                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-orange px-4 py-1 text-xs font-semibold text-white rounded-sm">
                         Most Popular
                       </div>
                     )}
@@ -390,7 +390,7 @@ export default function PricingPage() {
                       href={`/sign-up?plan=${plan.tier}&interval=${billingInterval}`}
                       className={`mt-8 block rounded-sm py-3 text-center text-sm font-semibold transition-all ${
                         plan.highlighted
-                          ? "bg-brand-violet text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90"
+                          ? "bg-brand-orange text-white shadow-lg shadow-brand-orange/25 hover:bg-brand-orange/90"
                           : "bg-muted text-foreground hover:bg-muted/70"
                       }`}
                     >
@@ -449,10 +449,10 @@ export default function PricingPage() {
       <section className="py-24 sm:py-32 bg-muted/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-brand-violet mb-2">FAQ</p>
+            <p className="text-sm font-semibold text-brand-orange mb-2">FAQ</p>
             <h2 className="text-3xl font-heading sm:text-4xl">
               Frequently asked{" "}
-              <span className="text-brand-violet">questions</span>
+              <span className="text-brand-orange">questions</span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Everything you need to know about Reverbic pricing and plans.

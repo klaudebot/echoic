@@ -112,41 +112,81 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 // --- Processing state ---
-function ProcessingState({ step, progress }: { step?: string; progress?: string }) {
-  const stepLabels: Record<string, { title: string; pct: number }> = {
-    preparing: { title: "Preparing audio", pct: 20 },
-    transcribing: { title: "Transcribing", pct: 55 },
-    summarizing: { title: "Generating insights", pct: 85 },
-  };
+const processingMessages = [
+  "We're transcribing and analyzing your meeting.",
+  "Listening carefully to every word.",
+  "Extracting the key moments from your conversation.",
+  "Almost there — pulling together your insights.",
+];
 
-  const current = step ? stepLabels[step] : null;
+function ProcessingState({ step, progress }: { step?: string; progress?: string }) {
+  const [msgIdx, setMsgIdx] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIdx((prev) => (prev + 1) % processingMessages.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const steps = [
+    { key: "preparing", label: "Prepare", pct: 20 },
+    { key: "transcribing", label: "Transcribe", pct: 55 },
+    { key: "summarizing", label: "Summarize", pct: 85 },
+  ];
+
+  const currentIdx = steps.findIndex((s) => s.key === step);
+  const current = currentIdx >= 0 ? steps[currentIdx] : null;
 
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <Loader2 className="w-10 h-10 text-brand-violet animate-spin mb-5" />
+    <div className="flex flex-col items-center justify-center py-24 text-center fade-up">
+      <div className="w-14 h-14 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-6 glow-pulse">
+        <Loader2 className="w-7 h-7 text-brand-violet animate-spin" />
+      </div>
       <h2 className="font-heading text-2xl text-foreground mb-2">
-        {current?.title ?? "Processing your recording"}...
+        {current ? `${steps[currentIdx].label === "Prepare" ? "Preparing audio" : steps[currentIdx].label === "Transcribe" ? "Transcribing" : "Generating insights"}` : "Processing your recording"}...
       </h2>
-      <p className="text-muted-foreground text-sm max-w-md">
-        {progress ?? "We're transcribing and analyzing your meeting. This usually takes a few minutes."}
+      <p className="text-muted-foreground text-sm max-w-md transition-opacity duration-500">
+        {progress ?? processingMessages[msgIdx]}
       </p>
 
-      {/* Step progress bar */}
-      {current && (
-        <div className="w-full max-w-xs mt-6">
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-brand-violet transition-all duration-700"
-              style={{ width: `${current.pct}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-2 text-[11px] text-muted-foreground">
-            <span className={step === "preparing" ? "text-brand-violet font-medium" : ""}>Prepare</span>
-            <span className={step === "transcribing" ? "text-brand-violet font-medium" : ""}>Transcribe</span>
-            <span className={step === "summarizing" ? "text-brand-violet font-medium" : ""}>Summarize</span>
-          </div>
+      {/* Step timeline */}
+      <div className="w-full max-w-sm mt-8">
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full progress-shimmer transition-all duration-700"
+            style={{ width: `${current?.pct ?? 10}%` }}
+          />
         </div>
-      )}
+        <div className="flex justify-between mt-3">
+          {steps.map((s, i) => {
+            const isDone = currentIdx > i;
+            const isActive = currentIdx === i;
+            return (
+              <div key={s.key} className="flex flex-col items-center gap-1.5">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isDone ? "bg-brand-emerald/15" : isActive ? "bg-brand-violet/15" : "bg-muted"
+                }`}>
+                  {isDone ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-brand-emerald">
+                      <path d="M2.5 6.5L5 9L9.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="check-draw" />
+                    </svg>
+                  ) : isActive ? (
+                    <div className="w-2 h-2 rounded-full bg-brand-violet recording-dot" />
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
+                  )}
+                </div>
+                <span className={`text-[11px] font-medium transition-colors duration-300 ${
+                  isDone ? "text-brand-emerald" : isActive ? "text-brand-violet" : "text-muted-foreground"
+                }`}>
+                  {s.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -842,6 +882,36 @@ function NotionButton({ meetingId }: { meetingId: string }) {
   );
 }
 
+// --- Success celebration banner (shown briefly after processing completes) ---
+function SuccessBanner({ meeting }: { meeting: Meeting }) {
+  const actionCount = meeting.actionItems?.length ?? 0;
+  const decisionCount = meeting.decisions?.length ?? 0;
+  const keyPointCount = meeting.keyPoints?.length ?? 0;
+
+  const parts: string[] = [];
+  if (keyPointCount > 0) parts.push(`${keyPointCount} key point${keyPointCount !== 1 ? "s" : ""}`);
+  if (actionCount > 0) parts.push(`${actionCount} action item${actionCount !== 1 ? "s" : ""}`);
+  if (decisionCount > 0) parts.push(`${decisionCount} decision${decisionCount !== 1 ? "s" : ""}`);
+
+  return (
+    <div className="flex items-center gap-3 p-4 bg-brand-emerald/[0.06] border border-brand-emerald/20 rounded-xl fade-up">
+      <div className="w-8 h-8 rounded-full bg-brand-emerald/15 flex items-center justify-center shrink-0 circle-fill">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-brand-emerald">
+          <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="check-draw" />
+        </svg>
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">Your meeting is ready</p>
+        {parts.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Extracted {parts.join(", ")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
@@ -1093,6 +1163,18 @@ export default function MeetingDetailPage() {
   const { meeting, loading, refresh, setMeeting } = useMeeting(id);
   const { user } = useUser();
   const resumedRef = useRef(false);
+  const prevStatusRef = useRef<string | undefined>(undefined);
+  const [justCompleted, setJustCompleted] = useState(false);
+
+  // Detect processing → completed transition for celebration
+  useEffect(() => {
+    if (prevStatusRef.current === "processing" && meeting?.status === "completed") {
+      setJustCompleted(true);
+      const timer = setTimeout(() => setJustCompleted(false), 4000);
+      return () => clearTimeout(timer);
+    }
+    prevStatusRef.current = meeting?.status;
+  }, [meeting?.status]);
 
   // Auto-resume orphaned pipeline (e.g. after page refresh)
   useEffect(() => {
@@ -1171,9 +1253,11 @@ export default function MeetingDetailPage() {
         />
       )}
       {meeting.status === "completed" && (
-        <CompletedView
-          meeting={meeting}
-          onRestore={refresh}
+        <>
+          {justCompleted && <SuccessBanner meeting={meeting} />}
+          <CompletedView
+            meeting={meeting}
+            onRestore={refresh}
           onReprocess={async () => {
             const label = meeting.audioAnalysis
               ? `Transcript (peak: ${meeting.audioAnalysis.peakDb}dB)`
@@ -1192,6 +1276,7 @@ export default function MeetingDetailPage() {
             );
           }}
         />
+        </>
       )}
     </div>
   );

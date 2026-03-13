@@ -257,46 +257,31 @@ export default function MarketingPage() {
               {
                 title: "Meeting Coach",
                 tagline: "Most tools transcribe. Reverbic coaches.",
-                taglineColor: "text-brand-cyan",
                 description: "Real-time feedback on talk-to-listen ratio, filler words, and speaking pace. Teams see a 40% reduction in filler words within the first month.",
-                iconColor: "bg-brand-emerald/20 text-brand-emerald",
-                stats: [
-                  { label: "-40% filler words", color: "text-brand-emerald bg-brand-emerald/10" },
-                  { label: "2x efficiency", color: "text-brand-cyan bg-brand-cyan/10" },
-                ],
+                stats: ["-40% filler words", "2x efficiency"],
                 icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>,
               },
               {
                 title: "Decision Tracker",
                 tagline: "Never lose a decision again.",
-                taglineColor: "text-brand-amber",
                 description: "Every decision is automatically extracted, timestamped, and linked to its meeting context. Cross-meeting search means your team always knows what was agreed.",
-                iconColor: "bg-brand-amber/20 text-brand-amber",
-                stats: [
-                  { label: "Cross-meeting", color: "text-brand-amber bg-brand-amber/10" },
-                  { label: "Auto-linked", color: "text-brand-violet bg-brand-violet/10" },
-                ],
+                stats: ["Cross-meeting", "Auto-linked"],
                 icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
               },
               {
                 title: "Smart Clips",
                 tagline: "Share the moment, skip the meeting.",
-                taglineColor: "text-brand-rose",
                 description: "AI identifies key moments and generates shareable 30-second audio clips. Async teams save 5+ hours per week by sharing clips instead of scheduling recap calls.",
-                iconColor: "bg-brand-rose/20 text-brand-rose",
-                stats: [
-                  { label: "5+ hrs saved/wk", color: "text-brand-rose bg-brand-rose/10" },
-                  { label: "Async-first", color: "text-brand-cyan bg-brand-cyan/10" },
-                ],
+                stats: ["5+ hrs saved/wk", "Async-first"],
                 icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25H12" /></svg>,
               },
             ].map((card, i) => (
               <div key={i} className="rounded-sm border border-white/10 bg-white/[0.03] p-10 flex flex-col">
-                <div className={`inline-flex w-fit rounded-sm p-3 ${card.iconColor} mb-6`}>
+                <div className="inline-flex w-fit rounded-sm p-3 bg-brand-violet-light/15 text-brand-violet-light mb-6">
                   {card.icon}
                 </div>
                 <h3 className="text-2xl font-semibold text-white">{card.title}</h3>
-                <p className={`mt-2 text-base font-medium ${card.taglineColor}`}>
+                <p className="mt-2 text-base font-medium text-brand-violet-light">
                   {card.tagline}
                 </p>
                 <p className="mt-4 text-sm text-white/50 leading-relaxed flex-1">
@@ -304,8 +289,8 @@ export default function MarketingPage() {
                 </p>
                 <div className="mt-8 flex items-center gap-3">
                   {card.stats.map((stat, j) => (
-                    <span key={j} className={`rounded-sm px-3 py-1.5 text-xs font-semibold ${stat.color}`}>
-                      {stat.label}
+                    <span key={j} className="rounded-sm px-3 py-1.5 text-xs font-semibold text-white/70 bg-white/[0.06]">
+                      {stat}
                     </span>
                   ))}
                 </div>

@@ -417,13 +417,13 @@ export default function CoachPage() {
 
       {/* Empty state */}
       {loaded && !hasMeetings && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
           <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
             <Sparkles className="w-7 h-7 text-brand-violet" />
           </div>
-          <h2 className="font-heading text-2xl text-foreground mb-2">No coaching insights yet</h2>
+          <h2 className="font-heading text-2xl text-foreground mb-2">Coaching insights unlock with your first meeting</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
-            Record meetings to unlock AI coaching insights. Reverbic analyzes your meeting patterns, productivity, and communication to help you improve.
+            Reverbic analyzes your meeting patterns, communication style, and productivity to surface personalized coaching.
           </p>
           <AppLink
             href="/meetings/upload"

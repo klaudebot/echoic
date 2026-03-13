@@ -734,13 +734,13 @@ export default function ClipsPage() {
 
       {/* Empty state */}
       {loaded && !hasClips && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
           <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
             <Scissors className="w-7 h-7 text-brand-violet" />
           </div>
-          <h2 className="font-heading text-2xl text-foreground mb-2">No smart clips yet</h2>
+          <h2 className="font-heading text-2xl text-foreground mb-2">Smart clips appear here automatically</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
-            Smart clips are automatically generated from your meetings, highlighting key decisions, action items, and important moments.
+            Reverbic highlights key decisions, action items, and important moments from your meetings as shareable clips.
           </p>
           <AppLink
             href="/meetings/upload"

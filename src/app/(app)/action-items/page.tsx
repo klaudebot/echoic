@@ -207,13 +207,13 @@ export default function ActionItemsPage() {
       </div>
 
       {loaded && totalItems === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
           <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
             <ListChecks className="w-7 h-7 text-brand-violet" />
           </div>
-          <h2 className="font-heading text-2xl text-foreground mb-2">No action items yet</h2>
+          <h2 className="font-heading text-2xl text-foreground mb-2">Action items appear here automatically</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
-            Record or upload a meeting and Reverbic will automatically extract action items from the conversation.
+            When you process a meeting, Reverbic extracts action items with assignees and priorities — no manual work needed.
           </p>
           <AppLink
             href="/meetings/record"
@@ -344,7 +344,7 @@ export default function ActionItemsPage() {
                               className="shrink-0 mt-0.5"
                             >
                               {item.completed ? (
-                                <CheckCircle2 className="w-4.5 h-4.5 text-brand-emerald" />
+                                <CheckCircle2 className="w-4.5 h-4.5 text-brand-emerald check-pop" />
                               ) : (
                                 <Circle className="w-4.5 h-4.5 text-muted-foreground/40 hover:text-brand-violet transition-colors" />
                               )}

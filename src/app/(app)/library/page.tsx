@@ -100,13 +100,13 @@ export default function LibraryPage() {
       </div>
 
       {loaded && meetings.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
           <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
             <FolderOpen className="w-7 h-7 text-brand-violet" />
           </div>
-          <h2 className="font-heading text-2xl text-foreground mb-2">Your library is empty</h2>
+          <h2 className="font-heading text-2xl text-foreground mb-2">Your library starts here</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
-            Upload recordings or start recording meetings to build your library.
+            Every meeting you process becomes a searchable record — transcripts, summaries, and insights all in one place.
           </p>
           <div className="flex items-center gap-3">
             <AppLink

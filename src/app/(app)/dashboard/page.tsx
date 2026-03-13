@@ -330,8 +330,23 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Onboarding complete celebration */}
+      {completedSteps.length === onboardingSteps.length && !hasMeetings && (
+        <div className="flex items-center gap-3 p-4 bg-brand-emerald/[0.06] border border-brand-emerald/20 rounded-xl fade-up">
+          <div className="w-8 h-8 rounded-full bg-brand-emerald/15 flex items-center justify-center shrink-0 circle-fill">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-brand-emerald">
+              <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="check-draw" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">All set up</p>
+            <p className="text-xs text-muted-foreground">You&apos;re ready to start capturing meeting intelligence.</p>
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
         <QuickAction
           href="/meetings/upload"
           icon={Upload}
@@ -391,7 +406,7 @@ export default function DashboardPage() {
                 <div
                   key={step.id}
                   className={`bg-card border rounded-xl p-5 transition-all ${
-                    done ? "border-brand-emerald/30 bg-brand-emerald/[0.02]" : "border-border"
+                    done ? "border-brand-emerald/30 bg-brand-emerald/[0.02] step-complete" : "border-border"
                   }`}
                 >
                   <div className="flex items-start gap-4">
@@ -400,9 +415,9 @@ export default function DashboardPage() {
                       className="mt-0.5 shrink-0"
                     >
                       {done ? (
-                        <CheckCircle2 className="w-5 h-5 text-brand-emerald" />
+                        <CheckCircle2 className="w-5 h-5 text-brand-emerald check-pop" />
                       ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground/40" />
+                        <Circle className="w-5 h-5 text-muted-foreground/40 hover:text-brand-violet/50 transition-colors" />
                       )}
                     </button>
                     <div className="flex-1 min-w-0">

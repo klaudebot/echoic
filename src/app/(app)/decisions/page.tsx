@@ -221,7 +221,7 @@ export default function DecisionsPage() {
                           ))}
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan shrink-0">
                         {group.decisions.length} {group.decisions.length === 1 ? "decision" : "decisions"}
                       </span>
                     </button>
@@ -232,18 +232,18 @@ export default function DecisionsPage() {
                         {group.decisions.map((decision, idx) => (
                           <div
                             key={idx}
-                            className="flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-muted/10 transition-colors"
+                            className="flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-brand-violet/[0.02] transition-colors border-l-[3px] border-l-brand-cyan/40"
                           >
-                            <div className="w-5 h-5 rounded-md bg-brand-violet/10 flex items-center justify-center shrink-0 mt-0.5">
-                              <Target className="w-3 h-3 text-brand-violet" />
+                            <div className="w-5 h-5 rounded-md bg-brand-cyan/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <Target className="w-3 h-3 text-brand-cyan" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-foreground">{decision.text}</p>
                               {decision.madeBy && (
-                                <p className="text-xs text-muted-foreground mt-1 inline-flex items-center gap-1">
+                                <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-violet/8 text-brand-violet">
                                   <User className="w-3 h-3" />
                                   {decision.madeBy}
-                                </p>
+                                </span>
                               )}
                             </div>
                           </div>

@@ -35,6 +35,9 @@ import {
   Link2,
   Check,
   Globe,
+  MessageSquare,
+  FileText as FileTextIcon,
+  ExternalLink,
 } from "lucide-react";
 import AudioPlayer from "@/components/AudioPlayer";
 import CopyForAI, { type MeetingContext } from "@/components/CopyForAI";
@@ -402,6 +405,7 @@ function VersionHistory({
     <div className="bg-card border border-border rounded-xl p-5">
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         className="flex items-center gap-2 w-full text-left"
       >
         <History className="w-4 h-4 text-muted-foreground" />
@@ -601,14 +605,17 @@ function ShareButton({ meetingId }: { meetingId: string }) {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-foreground">Public share link</h3>
               <button
+                role="switch"
+                aria-checked={isPublic}
+                aria-label="Make meeting publicly shareable"
                 onClick={() => toggleSharing(!isPublic)}
                 disabled={sharing}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
+                className={`relative inline-flex h-6 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${
                   isPublic ? "bg-brand-emerald" : "bg-muted"
                 } ${sharing ? "opacity-50 cursor-wait" : ""}`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
                     isPublic ? "translate-x-4" : "translate-x-0"
                   }`}
                 />
@@ -669,6 +676,166 @@ function ShareButton({ meetingId }: { meetingId: string }) {
   );
 }
 
+// --- Slack send button ---
+function SlackButton({ meetingId }: { meetingId: string }) {
+  const [open, setOpen] = useState(false);
+  const [channels, setChannels] = useState<{ id: string; name: string }[]>([]);
+  const [loadingChannels, setLoadingChannels] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState<string | null>(null);
+  const [connected, setConnected] = useState<boolean | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch("/api/integrations/slack/status")
+      .then((r) => r.json())
+      .then((d) => setConnected(!!d.connected))
+      .catch(() => setConnected(false));
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  async function loadChannels() {
+    setOpen(true);
+    if (channels.length > 0) return;
+    setLoadingChannels(true);
+    try {
+      const res = await fetch("/api/integrations/slack/channels");
+      const data = await res.json();
+      setChannels(data.channels || []);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingChannels(false);
+    }
+  }
+
+  async function sendToChannel(channelId: string, channelName: string) {
+    setSending(true);
+    try {
+      const res = await fetch("/api/integrations/slack/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meetingId, channelId }),
+      });
+      if (res.ok) {
+        setSent(channelName);
+        setTimeout(() => { setSent(null); setOpen(false); }, 2000);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (connected === null || connected === false) return null;
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={loadChannels}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 border border-purple-500/30 bg-purple-500/5 rounded-lg hover:bg-purple-500/10 transition-colors"
+      >
+        <MessageSquare className="w-3.5 h-3.5" />
+        {sent ? `Sent to #${sent}` : "Send to Slack"}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="p-3 border-b border-border">
+            <p className="text-xs font-medium text-foreground">Pick a channel</p>
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {loadingChannels ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : channels.length === 0 ? (
+              <p className="text-xs text-muted-foreground p-3">No channels found</p>
+            ) : (
+              channels.map((ch) => (
+                <button
+                  key={ch.id}
+                  onClick={() => sendToChannel(ch.id, ch.name)}
+                  disabled={sending}
+                  className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  #{ch.name}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Notion export button ---
+function NotionButton({ meetingId }: { meetingId: string }) {
+  const [exporting, setExporting] = useState(false);
+  const [exported, setExported] = useState<string | null>(null);
+  const [connected, setConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/integrations/notion/status")
+      .then((r) => r.json())
+      .then((d) => setConnected(!!d.connected))
+      .catch(() => setConnected(false));
+  }, []);
+
+  async function exportToNotion() {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/integrations/notion/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meetingId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        setExported(data.url);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  if (connected === null || connected === false) return null;
+
+  return exported ? (
+    <a
+      href={exported}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 bg-emerald-500/5 rounded-lg hover:bg-emerald-500/10 transition-colors"
+    >
+      <ExternalLink className="w-3.5 h-3.5" />
+      Open in Notion
+    </a>
+  ) : (
+    <button
+      onClick={exportToNotion}
+      disabled={exporting}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-600 dark:text-stone-400 border border-stone-500/30 bg-stone-500/5 rounded-lg hover:bg-stone-500/10 transition-colors disabled:opacity-50"
+    >
+      {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileTextIcon className="w-3.5 h-3.5" />}
+      Export to Notion
+    </button>
+  );
+}
+
 function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
@@ -706,10 +873,12 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
               <AudioBadge analysis={meeting.audioAnalysis} />
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {(meeting.summary || meeting.actionItems.length > 0 || meeting.decisions.length > 0) && (
               <>
                 <CopyForAI context={aiContext} />
+                <SlackButton meetingId={meeting.id} />
+                <NotionButton meetingId={meeting.id} />
                 <ShareButton meetingId={meeting.id} />
               </>
             )}

@@ -22,20 +22,23 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
     <button
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
       onClick={() => onChange(!checked)}
       className={`relative rounded-full transition-colors ${
         checked ? "bg-brand-violet" : "bg-muted"
       }`}
-      style={{ minWidth: 40, height: 22 }}
+      style={{ minWidth: 44, height: 24 }}
     >
       <div
         className={`absolute top-0.5 rounded-full bg-white shadow transition-transform ${
-          checked ? "translate-x-5" : "translate-x-0.5"
+          checked ? "translate-x-[22px]" : "translate-x-0.5"
         }`}
-        style={{ width: 18, height: 18 }}
+        style={{ width: 20, height: 20 }}
       />
     </button>
   );
@@ -271,7 +274,7 @@ export default function SettingsPage() {
                 <div className="text-sm font-medium text-foreground">{item.label}</div>
                 <div className="text-xs text-muted-foreground">{item.desc}</div>
               </div>
-              <ToggleSwitch checked={item.checked} onChange={item.onChange} />
+              <ToggleSwitch checked={item.checked} onChange={item.onChange} label={item.label} />
             </div>
           ))}
         </div>
@@ -334,7 +337,7 @@ export default function SettingsPage() {
         </div>
 
         {billingMessage && (
-          <div className={`rounded-lg p-3 text-sm font-medium ${
+          <div role="alert" aria-live="polite" className={`rounded-lg p-3 text-sm font-medium ${
             billingMessage.type === "success"
               ? "bg-brand-emerald/10 text-brand-emerald border border-brand-emerald/20"
               : "bg-brand-rose/10 text-brand-rose border border-brand-rose/20"
@@ -474,12 +477,14 @@ export default function SettingsPage() {
             <button
               onClick={() => setShowApiKey(!showApiKey)}
               className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showApiKey ? "Hide API key" : "Show API key"}
             >
               {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
             <button
               onClick={handleCopyApiKey}
               className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Copy API key"
             >
               <Copy className="w-4 h-4" />
             </button>

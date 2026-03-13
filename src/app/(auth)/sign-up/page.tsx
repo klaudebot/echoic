@@ -119,7 +119,7 @@ function SignUpForm() {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Back to home */}
-      <Link href="/" className="fixed top-5 left-5 z-50 flex items-center gap-1 text-sm text-white/50 hover:text-white/80 lg:text-white/40 lg:hover:text-white/70 max-lg:text-muted-foreground max-lg:hover:text-foreground transition-colors">
+      <Link href="/" aria-label="Back to homepage" className="fixed top-5 left-5 z-50 flex items-center gap-1 text-sm text-white/50 hover:text-white/80 lg:text-white/40 lg:hover:text-white/70 max-lg:text-muted-foreground max-lg:hover:text-foreground transition-colors">
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
         </svg>
@@ -218,7 +218,7 @@ function SignUpForm() {
 
           {/* Error */}
           {error && (
-            <div className="mt-4 rounded-xl border border-brand-rose/20 bg-brand-rose/5 px-4 py-3">
+            <div className="mt-4 rounded-xl border border-brand-rose/20 bg-brand-rose/5 px-4 py-3" role="alert" aria-live="polite">
               <p className="text-sm text-brand-rose">{error}</p>
             </div>
           )}
@@ -297,7 +297,8 @@ function SignUpForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -313,8 +314,8 @@ function SignUpForm() {
               </div>
               {/* Password strength */}
               {password.length > 0 && (
-                <div className="mt-2">
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                <div className="mt-2" aria-live="polite" role="status">
+                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden" aria-hidden="true">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color}`}
                       style={{ width: passwordStrength.width }}

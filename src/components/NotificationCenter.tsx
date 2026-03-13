@@ -96,8 +96,11 @@ export function NotificationCenter() {
       <button
         onClick={() => setOpen(!open)}
         className="relative text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted"
+        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+        aria-expanded={open}
+        aria-haspopup="dialog"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-5 h-5" aria-hidden="true" />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-brand-rose text-white text-[10px] font-bold rounded-full px-1">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -106,7 +109,7 @@ export function NotificationCenter() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[480px] bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
+        <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-[min(380px,calc(100vw-2rem))] max-h-[480px] bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h3 className="font-heading text-sm font-semibold text-foreground">Notifications</h3>
@@ -115,7 +118,7 @@ export function NotificationCenter() {
                 <button
                   onClick={markAllAsRead}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
-                  title="Mark all as read"
+                  aria-label="Mark all as read"
                 >
                   <Check className="w-3.5 h-3.5" />
                 </button>
@@ -124,7 +127,7 @@ export function NotificationCenter() {
                 <button
                   onClick={clearAll}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
-                  title="Clear all"
+                  aria-label="Clear all notifications"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

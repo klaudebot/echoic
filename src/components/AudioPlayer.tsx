@@ -345,10 +345,10 @@ export default function AudioPlayer({
   // Error state
   if (error) {
     return (
-      <div className="bg-card border border-brand-rose/20 rounded-xl p-6">
+      <div className="bg-card border border-brand-rose/20 rounded-xl p-6" role="alert">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-brand-rose/10 flex items-center justify-center">
-            <AlertCircle className="w-5 h-5 text-brand-rose" />
+            <AlertCircle className="w-5 h-5 text-brand-rose" aria-hidden="true" />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">Audio unavailable</p>
@@ -390,12 +390,14 @@ export default function AudioPlayer({
         <div className="relative">
           <button
             onClick={cycleSpeed}
-            className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
               playbackRate !== 1
                 ? "bg-brand-violet/10 text-brand-violet"
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
-            aria-label="Playback speed"
+            aria-label={`Playback speed: ${playbackRate}x`}
+            aria-expanded={showSpeedMenu}
+            aria-haspopup="menu"
           >
             {playbackRate}x
           </button>
@@ -406,10 +408,11 @@ export default function AudioPlayer({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowSpeedMenu(false)}
               />
-              <div className="absolute bottom-full right-0 mb-2 bg-card border border-border rounded-lg shadow-lg py-1 z-20 min-w-[80px]">
+              <div role="menu" aria-label="Playback speed options" className="absolute bottom-full right-0 mb-2 bg-card border border-border rounded-lg shadow-lg py-1 z-20 min-w-[80px]">
                 {PLAYBACK_SPEEDS.map((speed) => (
                   <button
                     key={speed}
+                    role="menuitem"
                     onClick={() => selectSpeed(speed)}
                     className={`w-full px-3 py-1.5 text-xs text-left transition-colors ${
                       playbackRate === speed
@@ -429,7 +432,7 @@ export default function AudioPlayer({
         <div className="flex items-center gap-2">
           <button
             onClick={toggleMute}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-1"
             aria-label={isMuted ? "Unmute" : "Mute"}
           >
             <VolumeIcon className="w-4 h-4" />

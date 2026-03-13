@@ -489,10 +489,12 @@ export default function AnalyticsPage() {
 
         {/* Chart */}
         <div className="flex items-end gap-[3px] h-36">
-          {analytics.dailyCounts.map((day) => {
+          {analytics.dailyCounts.map((day, i) => {
             const heightPct =
               day.count > 0 ? Math.max((day.count / maxDaily) * 100, 6) : 0;
             const isToday = day.key === dayKey(new Date().toISOString());
+            // Gradient: older bars are more transparent, recent are more opaque
+            const opacity = 0.3 + (i / 29) * 0.7;
             return (
               <div
                 key={day.key}
@@ -510,10 +512,11 @@ export default function AnalyticsPage() {
                       ? "bg-muted/50"
                       : isToday
                         ? "bg-brand-violet"
-                        : "bg-brand-violet/60 group-hover:bg-brand-violet"
+                        : "bg-brand-violet group-hover:bg-brand-violet"
                   }`}
                   style={{
                     height: day.count === 0 ? "2px" : `${heightPct}%`,
+                    opacity: day.count === 0 ? undefined : (isToday ? 1 : opacity),
                   }}
                 />
               </div>
@@ -572,17 +575,27 @@ export default function AnalyticsPage() {
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {analytics.topTags.map((t) => (
+              {analytics.topTags.map((t, i) => {
+                const tagColors = [
+                  { bg: "bg-brand-violet/10", text: "text-brand-violet", badge: "bg-brand-violet/20" },
+                  { bg: "bg-brand-cyan/10", text: "text-brand-cyan", badge: "bg-brand-cyan/20" },
+                  { bg: "bg-brand-emerald/10", text: "text-brand-emerald", badge: "bg-brand-emerald/20" },
+                  { bg: "bg-brand-amber/10", text: "text-brand-amber", badge: "bg-brand-amber/20" },
+                  { bg: "bg-brand-rose/10", text: "text-brand-rose", badge: "bg-brand-rose/20" },
+                ];
+                const c = tagColors[i % tagColors.length];
+                return (
                 <span
                   key={t.tag}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-brand-violet/10 text-brand-violet"
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg ${c.bg} ${c.text}`}
                 >
                   {t.tag}
-                  <span className="w-5 h-5 rounded-full bg-brand-violet/20 flex items-center justify-center text-[10px] font-bold">
+                  <span className={`w-5 h-5 rounded-full ${c.badge} flex items-center justify-center text-[10px] font-bold`}>
                     {t.count}
                   </span>
                 </span>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -113,11 +113,11 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
           </h3>
           <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
+              <Calendar className="w-3 h-3 text-brand-violet/50" />
               {formatDate(meeting.createdAt)}
             </span>
             <span className="inline-flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+              <Clock className="w-3 h-3 text-brand-cyan/50" />
               {formatDuration(meeting.duration)}
             </span>
           </div>
@@ -128,11 +128,11 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
       {/* Tags */}
       {meeting.tags.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mt-3">
-          <Tag className="w-3 h-3 text-muted-foreground" />
+          <Tag className="w-3 h-3 text-brand-violet/50" />
           {meeting.tags.map((tag) => (
             <span
               key={tag}
-              className="px-1.5 py-0.5 text-[11px] font-medium rounded bg-muted text-muted-foreground"
+              className="px-1.5 py-0.5 text-[11px] font-medium rounded bg-brand-violet/8 text-brand-violet"
             >
               {tag}
             </span>

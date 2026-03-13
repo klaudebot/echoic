@@ -185,6 +185,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -202,6 +203,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       if (!user?.organizationId) return;
       const results = await searchMeetings(value, user.organizationId);
       setSearchResults(results);
+      setSelectedResultIndex(-1);
       setShowDropdown(true);
     }, 300);
   }, [user]);
@@ -257,6 +259,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [pathname, router, isDemo]);
+
+  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showDropdown || searchResults.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedResultIndex((prev) => Math.min(prev + 1, searchResults.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedResultIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter" && selectedResultIndex >= 0) {
+      e.preventDefault();
+      navigateToResult(searchResults[selectedResultIndex].meeting.id);
+    }
+  }, [showDropdown, searchResults, selectedResultIndex]);
 
   function navigateToResult(meetingId: string) {
     setShowDropdown(false);
@@ -316,6 +332,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="px-3 py-3" ref={newMenuRef}>
         <button
           onClick={() => setNewMenuOpen((v) => !v)}
+          aria-expanded={newMenuOpen}
+          aria-haspopup="menu"
           className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
@@ -378,6 +396,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div key={item.href}>
                 <button
                   onClick={() => toggleSection(item.href)}
+                  aria-expanded={expanded}
                   className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                     active
                       ? "bg-brand-violet/10 text-brand-violet font-medium"
@@ -469,8 +488,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 await signOut();
                 router.replace("/sign-in");
               }}
-              className="text-muted-foreground hover:text-foreground transition-colors p-1"
-              title="Sign out"
+              className="text-muted-foreground hover:text-foreground transition-colors p-2 -m-1"
+              aria-label="Sign out"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -491,7 +510,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="fixed inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
           <aside className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl z-50">
             <div className="absolute top-3 right-3">
-              <button onClick={() => setSidebarOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+              <button onClick={() => setSidebarOpen(false)} className="p-2 text-muted-foreground hover:text-foreground" aria-label="Close navigation menu">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -504,19 +523,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="bg-card border-b border-border sticky top-0 z-20">
           <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground">
+              <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-muted-foreground hover:text-foreground p-2 -m-2" aria-label="Open navigation menu">
                 <Menu className="w-5 h-5" />
               </button>
-              <div ref={searchRef} className="hidden sm:block relative w-80">
+              <div ref={searchRef} className="hidden sm:block relative w-80" role="combobox" aria-expanded={showDropdown} aria-haspopup="listbox" aria-owns="search-results-listbox">
                 <div className="flex items-center bg-muted rounded-xl px-3 py-1.5">
-                  <Search className="w-4 h-4 text-muted-foreground mr-2 shrink-0" />
+                  <Search className="w-4 h-4 text-muted-foreground mr-2 shrink-0" aria-hidden="true" />
+                  <label htmlFor="global-search" className="sr-only">Search meetings, transcripts, clips</label>
                   <input
+                    id="global-search"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => { if (searchQuery.trim() && searchResults.length > 0) setShowDropdown(true); }}
+                    onKeyDown={handleSearchKeyDown}
                     placeholder="Search meetings, transcripts, clips..."
-                    className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none"
+                    aria-autocomplete="list"
+                    aria-controls="search-results-listbox"
+                    aria-activedescendant={selectedResultIndex >= 0 ? `search-result-${selectedResultIndex}` : undefined}
                   />
                   {!searchQuery && (
                     <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-background border border-border rounded ml-1 shrink-0">/</kbd>
@@ -525,25 +550,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <button
                       onClick={() => { setSearchQuery(""); setSearchResults([]); setShowDropdown(false); }}
                       className="text-muted-foreground hover:text-foreground transition-colors ml-1"
+                      aria-label="Clear search"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
                 {showDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div id="search-results-listbox" role="listbox" aria-label="Search results" className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                     {searchResults.length === 0 ? (
-                      <div className="px-4 py-6 text-center">
-                        <Search className="w-5 h-5 text-muted-foreground mx-auto mb-2" />
+                      <div className="px-4 py-6 text-center" role="status">
+                        <Search className="w-5 h-5 text-muted-foreground mx-auto mb-2" aria-hidden="true" />
                         <p className="text-sm text-muted-foreground">No results for &ldquo;{searchQuery}&rdquo;</p>
                       </div>
                     ) : (
                       <div className="max-h-[380px] overflow-y-auto py-1">
-                        {searchResults.map((result) => (
+                        {searchResults.map((result, idx) => (
                           <button
+                            id={`search-result-${idx}`}
                             key={result.meeting.id}
+                            role="option"
+                            aria-selected={idx === selectedResultIndex}
                             onClick={() => navigateToResult(result.meeting.id)}
-                            className="w-full text-left px-3 py-2.5 hover:bg-muted/60 transition-colors flex items-start gap-3 group"
+                            className={`w-full text-left px-3 py-2.5 hover:bg-muted/60 transition-colors flex items-start gap-3 group ${idx === selectedResultIndex ? "bg-muted/60" : ""}`}
                           >
                             <div className="w-8 h-8 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0 mt-0.5">
                               <FolderOpen className="w-3.5 h-3.5 text-brand-violet" />
@@ -582,7 +611,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                 className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted"
-                title="Toggle theme"
+                aria-label={mounted && resolvedTheme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {mounted && resolvedTheme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>

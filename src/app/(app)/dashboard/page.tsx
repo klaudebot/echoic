@@ -434,6 +434,14 @@ export default function DashboardPage() {
   );
 }
 
+const colorMap: Record<string, { bg: string; text: string; border: string }> = {
+  "brand-violet": { bg: "bg-brand-violet/10", text: "text-brand-violet", border: "hover:border-brand-violet/30" },
+  "brand-cyan": { bg: "bg-brand-cyan/10", text: "text-brand-cyan", border: "hover:border-brand-cyan/30" },
+  "brand-rose": { bg: "bg-brand-rose/10", text: "text-brand-rose", border: "hover:border-brand-rose/30" },
+  "brand-emerald": { bg: "bg-brand-emerald/10", text: "text-brand-emerald", border: "hover:border-brand-emerald/30" },
+  "brand-amber": { bg: "bg-brand-amber/10", text: "text-brand-amber", border: "hover:border-brand-amber/30" },
+};
+
 function QuickAction({
   href,
   icon: Icon,
@@ -447,13 +455,14 @@ function QuickAction({
   description: string;
   color: string;
 }) {
+  const c = colorMap[color] || colorMap["brand-violet"];
   return (
     <AppLink
       href={href}
-      className={`bg-card border border-border rounded-xl p-5 hover:shadow-md hover:border-${color}/30 transition-all group`}
+      className={`bg-card border border-border rounded-xl p-5 hover:shadow-md ${c.border} transition-all group`}
     >
-      <div className={`w-10 h-10 rounded-lg bg-${color}/10 flex items-center justify-center mb-3`}>
-        <Icon className={`w-5 h-5 text-${color}`} />
+      <div className={`w-10 h-10 rounded-lg ${c.bg} flex items-center justify-center mb-3`}>
+        <Icon className={`w-5 h-5 ${c.text}`} />
       </div>
       <h3 className="text-sm font-semibold text-foreground group-hover:text-brand-violet transition-colors">{label}</h3>
       <p className="text-xs text-muted-foreground mt-1">{description}</p>
@@ -472,11 +481,12 @@ function StatCard({
   icon: React.ElementType;
   accent: string;
 }) {
+  const c = colorMap[accent] || colorMap["brand-violet"];
   return (
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className={`w-9 h-9 rounded-lg bg-${accent}/10 flex items-center justify-center`}>
-          <Icon className={`w-4.5 h-4.5 text-${accent}`} />
+        <div className={`w-9 h-9 rounded-lg ${c.bg} flex items-center justify-center`}>
+          <Icon className={`w-4.5 h-4.5 ${c.text}`} />
         </div>
       </div>
       <div className="text-2xl font-semibold text-foreground">{value}</div>

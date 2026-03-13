@@ -36,6 +36,14 @@ function formatDate(iso: string): string {
   }
 }
 
+const statusAccent: Record<Meeting["status"], { icon: string; border: string; bg: string }> = {
+  uploading: { icon: "text-brand-violet", border: "border-l-brand-violet", bg: "bg-brand-violet/10" },
+  processing: { icon: "text-brand-violet", border: "border-l-brand-violet", bg: "bg-brand-violet/10" },
+  completed: { icon: "text-brand-emerald", border: "border-l-brand-emerald", bg: "bg-brand-emerald/10" },
+  failed: { icon: "text-brand-rose", border: "border-l-brand-rose", bg: "bg-brand-rose/10" },
+  silent: { icon: "text-brand-amber", border: "border-l-brand-amber", bg: "bg-brand-amber/10" },
+};
+
 function StatusBadge({ status }: { status: Meeting["status"] }) {
   switch (status) {
     case "uploading":
@@ -121,6 +129,21 @@ export default function LibraryPage() {
 
       {loaded && meetings.length > 0 && (
         <>
+          {/* Stats summary */}
+          <div className="flex items-center gap-6 text-sm">
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-brand-violet">{meetings.length}</span> recording{meetings.length === 1 ? "" : "s"}
+            </span>
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-brand-emerald">{meetings.filter(m => m.status === "completed").length}</span> ready
+            </span>
+            {meetings.some(m => m.status === "processing") && (
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-brand-cyan">{meetings.filter(m => m.status === "processing").length}</span> processing
+              </span>
+            )}
+          </div>
+
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -140,14 +163,16 @@ export default function LibraryPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {filtered.map((meeting) => (
+              {filtered.map((meeting) => {
+                const accent = statusAccent[meeting.status] || statusAccent.completed;
+                return (
                 <AppLink
                   key={meeting.id}
                   href={`/meetings/${meeting.id}`}
-                  className="flex items-center gap-4 bg-card border border-border rounded-xl p-4 hover:shadow-md hover:border-brand-violet/30 transition-all"
+                  className={`flex items-center gap-4 bg-card border border-border border-l-[3px] ${accent.border} rounded-xl p-4 hover:shadow-md transition-all`}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0">
-                    <FolderOpen className="w-4.5 h-4.5 text-brand-violet" />
+                  <div className={`w-10 h-10 rounded-lg ${accent.bg} flex items-center justify-center shrink-0`}>
+                    <FolderOpen className={`w-4.5 h-4.5 ${accent.icon}`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold text-foreground truncate">
@@ -155,18 +180,19 @@ export default function LibraryPage() {
                     </h3>
                     <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="w-3 h-3 text-brand-violet/60" />
                         {formatDate(meeting.createdAt)}
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
+                        <Clock className="w-3 h-3 text-brand-cyan/60" />
                         {formatDuration(meeting.duration)}
                       </span>
                     </div>
                   </div>
                   <StatusBadge status={meeting.status} />
                 </AppLink>
-              ))}
+                );
+              })}
             </div>
           )}
         </>

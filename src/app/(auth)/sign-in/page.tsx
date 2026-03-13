@@ -70,6 +70,14 @@ function SignInForm() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Back to home */}
+      <Link href="/" className="fixed top-4 left-4 z-50 flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Home
+      </Link>
+
       {/* Left: Branding Panel */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] items-center justify-center p-12">
         <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-3xl" />

@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function SignUpPage() {
   return (
@@ -111,6 +118,14 @@ function SignUpForm() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Back to home */}
+      <Link href="/" className="fixed top-4 left-4 z-50 flex items-center gap-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        Home
+      </Link>
+
       {/* Left: Branding Panel */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#0a0c10] via-[#111318] to-[#0a0c10] items-center justify-center p-12">
         <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-white/[0.02] blur-3xl" />
@@ -348,9 +363,27 @@ function SignUpForm() {
 
           <p className="mt-4 text-center text-xs text-muted-foreground">
             By creating an account, you agree to our{" "}
-            <Link href="/terms" className="underline hover:text-foreground transition-colors">Terms of Service</Link>
+            <Dialog>
+              <DialogTrigger className="underline hover:text-foreground transition-colors cursor-pointer">Terms of Service</DialogTrigger>
+              <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Terms of Service</DialogTitle>
+                  <p className="text-xs text-muted-foreground">Last updated: March 12, 2026</p>
+                </DialogHeader>
+                <TermsContent />
+              </DialogContent>
+            </Dialog>
             {" "}and{" "}
-            <Link href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Dialog>
+              <DialogTrigger className="underline hover:text-foreground transition-colors cursor-pointer">Privacy Policy</DialogTrigger>
+              <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Privacy Policy</DialogTitle>
+                  <p className="text-xs text-muted-foreground">Last updated: March 12, 2026</p>
+                </DialogHeader>
+                <PrivacyContent />
+              </DialogContent>
+            </Dialog>
           </p>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -362,6 +395,97 @@ function SignUpForm() {
           </>)}
         </div>
       </div>
+    </div>
+  );
+}
+
+function TermsContent() {
+  return (
+    <div className="prose prose-sm max-w-none text-foreground [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_p]:text-sm [&_p]:text-muted-foreground [&_p]:leading-relaxed [&_p]:mb-3 [&_li]:text-sm [&_li]:text-muted-foreground [&_li]:leading-relaxed [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5">
+      <h2>1. Acceptance of Terms</h2>
+      <p>By accessing or using Reverbic (&quot;the Service&quot;), operated by Reverbic (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;), you agree to be bound by these Terms of Service. If you are using the Service on behalf of an organization, you represent that you have the authority to bind that organization to these terms.</p>
+
+      <h2>2. Description of Service</h2>
+      <p>Reverbic is an AI-powered meeting transcription and intelligence platform. The Service provides audio/video recording, automated transcription, AI-generated summaries, action item extraction, decision tracking, meeting coaching, and related collaboration features.</p>
+
+      <h2>3. Account Registration</h2>
+      <p>To use the Service, you must create an account with accurate and complete information. You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account.</p>
+
+      <h2>4. Recording Consent & Legal Compliance</h2>
+      <p><strong>You are solely responsible for ensuring that your use of Reverbic complies with all applicable laws regarding the recording and transcription of conversations.</strong></p>
+      <ol>
+        <li><strong>Consent requirements vary by jurisdiction.</strong> Some jurisdictions require the consent of all parties before recording.</li>
+        <li><strong>You must notify participants</strong> that the session will be recorded and processed by AI.</li>
+        <li><strong>You must obtain consent</strong> where required by law before recording begins.</li>
+        <li><strong>Reverbic is not liable.</strong> We provide a tool; you are responsible for how you use it.</li>
+      </ol>
+
+      <h2>5. Acceptable Use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Record conversations without proper consent</li>
+        <li>Upload illegal or harmful content</li>
+        <li>Reverse-engineer our AI models or proprietary technology</li>
+        <li>Harass, surveil, or monitor individuals without consent</li>
+        <li>Exceed your plan&apos;s usage limits through circumvention</li>
+      </ul>
+
+      <h2>6. Subscription Plans & Billing</h2>
+      <p>Paid subscriptions are billed in advance through Stripe. You may cancel at any time. Upon cancellation, your subscription remains active until the end of the current billing period.</p>
+
+      <h2>7. Your Content</h2>
+      <p>You retain ownership of all content you upload. We do not use your content to train AI models.</p>
+
+      <h2>8. Disclaimers</h2>
+      <p>The Service is provided &quot;as is&quot; without warranties. We do not warrant that transcriptions will be 100% accurate.</p>
+
+      <h2>9. Limitation of Liability</h2>
+      <p>Our total liability shall not exceed the amount you paid us in the twelve months preceding the claim.</p>
+
+      <h2>10. Contact</h2>
+      <p>Contact us at <a href="mailto:legal@reverbic.ai" className="text-brand-violet hover:underline">legal@reverbic.ai</a>.</p>
+    </div>
+  );
+}
+
+function PrivacyContent() {
+  return (
+    <div className="prose prose-sm max-w-none text-foreground [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_p]:text-sm [&_p]:text-muted-foreground [&_p]:leading-relaxed [&_p]:mb-3 [&_li]:text-sm [&_li]:text-muted-foreground [&_li]:leading-relaxed [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5">
+      <h2>1. Introduction</h2>
+      <p>Reverbic operates the platform at reverbic.ai. This Privacy Policy explains how we collect, use, disclose, and safeguard your information.</p>
+
+      <h2>2. Information We Collect</h2>
+      <h3>Account Information</h3>
+      <p>Name, email, organization name, password (hashed), and billing information (processed by Stripe).</p>
+      <h3>Meeting & Recording Data</h3>
+      <p>Audio/video recordings, transcriptions, AI-generated summaries, action items, decisions, coaching insights, and meeting metadata.</p>
+      <h3>Usage Data</h3>
+      <p>IP address, browser type, pages visited, features used, and device identifiers.</p>
+
+      <h2>3. How We Use Your Information</h2>
+      <ul>
+        <li>Provide, maintain, and improve the Service</li>
+        <li>Process transcriptions and deliver AI features</li>
+        <li>Process payments and manage subscriptions</li>
+        <li>Send transactional emails</li>
+        <li>Detect and prevent fraud</li>
+      </ul>
+      <p>We do <strong>not</strong> sell your personal information. We do <strong>not</strong> use your recordings to train AI models.</p>
+
+      <h2>4. Recording Consent</h2>
+      <p><strong>You are solely responsible for complying with all applicable laws regarding recording conversations.</strong></p>
+
+      <h2>5. Data Sharing</h2>
+      <p>We share information only with service providers (Supabase, AWS, Stripe, OpenAI, Resend), within your organization&apos;s workspace, when required by law, or in business transfers.</p>
+
+      <h2>6. Data Security & Retention</h2>
+      <p>We implement encryption in transit and at rest. We retain data while your account is active. Upon deletion, personal data is removed within 30 days.</p>
+
+      <h2>7. Your Rights</h2>
+      <p>You may have the right to access, correct, delete, or port your data. Contact <a href="mailto:privacy@reverbic.ai" className="text-brand-violet hover:underline">privacy@reverbic.ai</a>.</p>
+
+      <h2>8. Contact Us</h2>
+      <p>For questions, contact <a href="mailto:privacy@reverbic.ai" className="text-brand-violet hover:underline">privacy@reverbic.ai</a>.</p>
     </div>
   );
 }

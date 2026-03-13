@@ -134,15 +134,7 @@ function SignUpForm() {
         <div className="relative max-w-md text-center">
           {/* Logo */}
           <div className="flex items-center justify-center gap-2.5 mb-8">
-            <div className="flex items-end gap-[2px] h-7">
-              {[10, 18, 14, 22, 12].map((h, i) => (
-                <div
-                  key={i}
-                  className="wave-bar w-[3px] rounded-full bg-white/80"
-                  style={{ height: `${h}px` }}
-                />
-              ))}
-            </div>
+            <img src="/icon-transparent.svg" alt="" width={28} height={28} className="shrink-0" />
             <span className="font-heading text-3xl tracking-tight text-white">
               Reverbic
             </span>
@@ -192,15 +184,7 @@ function SignUpForm() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="flex items-end gap-[2px] h-6">
-              {[10, 18, 14, 22, 12].map((h, i) => (
-                <div
-                  key={i}
-                  className="wave-bar w-[3px] rounded-full bg-brand-violet"
-                  style={{ height: `${h}px` }}
-                />
-              ))}
-            </div>
+            <img src="/icon-transparent.svg" alt="" width={22} height={22} className="shrink-0" />
             <span className="font-heading text-2xl tracking-tight text-foreground">
               Reverbic
             </span>

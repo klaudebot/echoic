@@ -283,15 +283,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Waveform logo
   const WaveformLogo = () => (
-    <div className="flex items-end gap-[2px] h-6 w-6">
-      {[10, 18, 14, 22, 12].map((h, i) => (
-        <div
-          key={i}
-          className="wave-bar w-[3px] rounded-full bg-brand-violet"
-          style={{ height: `${h}px` }}
-        />
-      ))}
-    </div>
+    <img src="/icon-transparent.svg" alt="" width={22} height={22} className="shrink-0" />
   );
 
   const [newMenuOpen, setNewMenuOpen] = useState(false);

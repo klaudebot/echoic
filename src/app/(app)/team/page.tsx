@@ -332,13 +332,13 @@ export default function TeamPage() {
               onChange={(e) => { setInviteEmail(e.target.value); setInviteError(null); }}
               pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
               title="Please include a domain extension (e.g. .com, .io)"
-              className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+              className="w-full bg-background border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
             />
           </div>
           <button
             type="submit"
             disabled={inviteLoading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange text-white text-sm font-medium rounded-lg hover:bg-brand-orange/90 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white text-sm font-medium rounded-lg hover:bg-brand-violet/90 transition-colors disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             {inviteLoading ? "Sending..." : "Send Invite"}
@@ -368,7 +368,7 @@ export default function TeamPage() {
                       ? "bg-gradient-to-br from-brand-emerald to-emerald-400"
                       : member.status === "declined"
                         ? "bg-gradient-to-br from-brand-rose to-rose-400"
-                        : "bg-gradient-to-br from-brand-orange to-violet-400"
+                        : "bg-gradient-to-br from-brand-violet to-violet-400"
                   }`}
                 >
                   {member.email.charAt(0).toUpperCase()}
@@ -384,7 +384,7 @@ export default function TeamPage() {
                   )}
                   <p className="text-[11px] text-muted-foreground mt-0.5">
                     {resendingId === member.id ? (
-                      <span className="text-brand-orange">Resending invite...</span>
+                      <span className="text-brand-violet">Resending invite...</span>
                     ) : resendResult?.id === member.id ? (
                       resendResult.ok ? (
                         <span className="text-brand-emerald">Invite resent!</span>
@@ -429,8 +429,8 @@ export default function TeamPage() {
       ) : (
         /* Empty state */
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
-            <Users className="w-7 h-7 text-brand-orange" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
+            <Users className="w-7 h-7 text-brand-violet" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">Invite your team</h2>
           <p className="text-muted-foreground text-sm max-w-md">

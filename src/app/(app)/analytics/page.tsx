@@ -77,13 +77,13 @@ const statusConfig: Record<
 > = {
   uploading: {
     label: "Uploading",
-    dotClass: "bg-brand-orange",
-    bgClass: "bg-brand-orange/10",
+    dotClass: "bg-brand-violet",
+    bgClass: "bg-brand-violet/10",
   },
   processing: {
     label: "Processing",
-    dotClass: "bg-brand-orange",
-    bgClass: "bg-brand-orange/10",
+    dotClass: "bg-brand-violet",
+    bgClass: "bg-brand-violet/10",
   },
   completed: {
     label: "Completed",
@@ -234,13 +234,13 @@ function StatCard({
   color: string;
 }) {
   const bgMap: Record<string, string> = {
-    violet: "bg-brand-orange/10",
+    violet: "bg-brand-violet/10",
     emerald: "bg-brand-emerald/10",
     amber: "bg-brand-amber/10",
     rose: "bg-brand-rose/10",
   };
   const textMap: Record<string, string> = {
-    violet: "text-brand-orange",
+    violet: "text-brand-violet",
     emerald: "text-brand-emerald",
     amber: "text-brand-amber",
     rose: "text-brand-rose",
@@ -326,8 +326,8 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
-            <BarChart3 className="w-7 h-7 text-brand-orange" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
+            <BarChart3 className="w-7 h-7 text-brand-violet" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">
             No analytics data yet
@@ -339,7 +339,7 @@ export default function AnalyticsPage() {
           </p>
           <AppLink
             href="/meetings/record"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
           >
             <Mic className="w-4 h-4" />
             Record a Meeting
@@ -434,7 +434,7 @@ export default function AnalyticsPage() {
         {/* Status breakdown */}
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <Activity className="w-4 h-4 text-brand-orange" />
+            <Activity className="w-4 h-4 text-brand-violet" />
             <h3 className="text-sm font-semibold text-foreground">
               Meetings by Status
             </h3>
@@ -480,7 +480,7 @@ export default function AnalyticsPage() {
       {/* Meeting frequency chart */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center gap-2 mb-1">
-          <BarChart3 className="w-4 h-4 text-brand-orange" />
+          <BarChart3 className="w-4 h-4 text-brand-violet" />
           <h3 className="text-sm font-semibold text-foreground">
             Meeting Frequency
           </h3>
@@ -511,8 +511,8 @@ export default function AnalyticsPage() {
                     day.count === 0
                       ? "bg-muted/50"
                       : isToday
-                        ? "bg-brand-orange"
-                        : "bg-brand-orange group-hover:bg-brand-orange"
+                        ? "bg-brand-violet"
+                        : "bg-brand-violet group-hover:bg-brand-violet"
                   }`}
                   style={{
                     height: day.count === 0 ? "2px" : `${heightPct}%`,
@@ -577,8 +577,8 @@ export default function AnalyticsPage() {
             <div className="flex flex-wrap gap-2">
               {analytics.topTags.map((t, i) => {
                 const tagColors = [
-                  { bg: "bg-brand-orange/10", text: "text-brand-orange", badge: "bg-brand-orange/20" },
-                  { bg: "bg-brand-teal/10", text: "text-brand-teal", badge: "bg-brand-teal/20" },
+                  { bg: "bg-brand-violet/10", text: "text-brand-violet", badge: "bg-brand-violet/20" },
+                  { bg: "bg-brand-cyan/10", text: "text-brand-cyan", badge: "bg-brand-cyan/20" },
                   { bg: "bg-brand-emerald/10", text: "text-brand-emerald", badge: "bg-brand-emerald/20" },
                   { bg: "bg-brand-amber/10", text: "text-brand-amber", badge: "bg-brand-amber/20" },
                   { bg: "bg-brand-rose/10", text: "text-brand-rose", badge: "bg-brand-rose/20" },

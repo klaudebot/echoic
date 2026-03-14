@@ -434,7 +434,7 @@ export default function UploadPage() {
         <>
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center gap-2 mb-3">
-              <Link className="w-4 h-4 text-brand-orange" />
+              <Link className="w-4 h-4 text-brand-violet" />
               <h3 className="text-sm font-semibold text-foreground">Paste Loom Link</h3>
             </div>
             <p className="text-xs text-muted-foreground mb-4">
@@ -446,11 +446,11 @@ export default function UploadPage() {
               onChange={(e) => { setLoomUrl(e.target.value); setError(null); }}
               placeholder="https://www.loom.com/share/73cb6e11a519404..."
               disabled={loomImporting}
-              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30 disabled:opacity-50"
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30 disabled:opacity-50"
             />
             {loomImporting && (
               <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin text-brand-orange" />
+                <Loader2 className="w-4 h-4 animate-spin text-brand-violet" />
                 <span>{loomStep}</span>
               </div>
             )}
@@ -467,7 +467,7 @@ export default function UploadPage() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
                 >
                   {languages.map((l) => (
                     <option key={l} value={l}>{l}</option>
@@ -483,7 +483,7 @@ export default function UploadPage() {
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="e.g. loom, product-review, walkthrough"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">Separate tags with commas</p>
               </div>
@@ -494,7 +494,7 @@ export default function UploadPage() {
           {!loomImporting && loomUrl && isLoomUrl(loomUrl) && (
             <button
               onClick={startLoomImport}
-              className="w-full py-3 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors inline-flex items-center justify-center gap-2"
+              className="w-full py-3 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors inline-flex items-center justify-center gap-2"
             >
               <Video className="w-4 h-4" />
               Import & Transcribe
@@ -513,16 +513,16 @@ export default function UploadPage() {
             onClick={!file ? handleFileSelect : undefined}
             className={`bg-card border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
               dragActive
-                ? "border-brand-orange bg-brand-orange/5"
+                ? "border-brand-violet bg-brand-violet/5"
                 : file
                   ? "border-border cursor-default"
-                  : "border-border hover:border-brand-orange/40 hover:bg-muted/30"
+                  : "border-border hover:border-brand-violet/40 hover:bg-muted/30"
             }`}
           >
             {!file ? (
               <div className="flex flex-col items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-brand-orange/10 flex items-center justify-center">
-                  <Upload className="w-6 h-6 text-brand-orange" />
+                <div className="w-14 h-14 rounded-2xl bg-brand-violet/10 flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-brand-violet" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
@@ -535,11 +535,11 @@ export default function UploadPage() {
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
                   {file.type.startsWith("video") ? (
-                    <FileVideo className="w-5 h-5 text-brand-orange" />
+                    <FileVideo className="w-5 h-5 text-brand-violet" />
                   ) : (
-                    <FileAudio className="w-5 h-5 text-brand-orange" />
+                    <FileAudio className="w-5 h-5 text-brand-violet" />
                   )}
                 </div>
                 <div className="flex-1 text-left min-w-0">
@@ -552,7 +552,7 @@ export default function UploadPage() {
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-100 ${
-                            done ? "bg-brand-emerald" : compressing ? "bg-brand-amber" : "bg-brand-orange"
+                            done ? "bg-brand-emerald" : compressing ? "bg-brand-amber" : "bg-brand-violet"
                           }`}
                           style={{ width: `${compressing ? compressProgress : progress}%` }}
                         />
@@ -604,7 +604,7 @@ export default function UploadPage() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
                 >
                   {languages.map((l) => (
                     <option key={l} value={l}>{l}</option>
@@ -619,7 +619,7 @@ export default function UploadPage() {
                 <select
                   value={speakerCount}
                   onChange={(e) => setSpeakerCount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
                 >
                   <option value="auto">Auto-detect</option>
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -637,7 +637,7 @@ export default function UploadPage() {
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="e.g. standup, engineering, weekly"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">Separate tags with commas</p>
               </div>
@@ -648,7 +648,7 @@ export default function UploadPage() {
           {file && !done && !uploading && !compressing && (
             <button
               onClick={startUpload}
-              className="w-full py-3 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+              className="w-full py-3 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
             >
               Upload & Transcribe
             </button>
@@ -667,11 +667,11 @@ export default function UploadPage() {
           <p className="text-sm text-muted-foreground mb-4">
             Your recording is being processed. You can track progress on the{" "}
             {recordingId ? (
-              <AppLink href={`/meetings/${recordingId}`} className="text-brand-orange hover:underline">
+              <AppLink href={`/meetings/${recordingId}`} className="text-brand-violet hover:underline">
                 meeting detail page
               </AppLink>
             ) : (
-              <AppLink href="/meetings" className="text-brand-orange hover:underline">
+              <AppLink href="/meetings" className="text-brand-violet hover:underline">
                 meetings page
               </AppLink>
             )}
@@ -686,7 +686,7 @@ export default function UploadPage() {
             {recordingId && (
               <AppLink
                 href={`/meetings/${recordingId}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
               >
                 View Meeting
               </AppLink>

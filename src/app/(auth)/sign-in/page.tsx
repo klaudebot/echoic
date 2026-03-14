@@ -183,7 +183,7 @@ function SignInForm() {
                 placeholder="you@company.com"
                 required
                 aria-invalid={error ? "true" : undefined}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20 outline-none transition-all"
               />
             </div>
             <div>
@@ -191,7 +191,7 @@ function SignInForm() {
                 <label htmlFor="password" className="block text-sm font-medium text-foreground">
                   Password
                 </label>
-                <a href="#" className="text-xs font-medium text-brand-orange hover:text-brand-orange/80 transition-colors">
+                <a href="#" className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -203,7 +203,7 @@ function SignInForm() {
                   onChange={(e) => { setPassword(e.target.value); setError(null); }}
                   placeholder="Enter your password"
                   required
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20 outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -227,7 +227,7 @@ function SignInForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand-orange px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-orange/25 hover:bg-brand-orange/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-xl bg-brand-violet px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -245,7 +245,7 @@ function SignInForm() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="font-semibold text-brand-orange hover:text-brand-orange/80 transition-colors">
+            <Link href="/sign-up" className="font-semibold text-brand-violet hover:text-brand-violet/80 transition-colors">
               Create an account
             </Link>
           </p>

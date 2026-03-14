@@ -100,7 +100,7 @@ export default function TermsPage() {
 
           <h2>9. Privacy</h2>
           <p>
-            Your use of the Service is also governed by our <a href="/privacy" className="text-brand-orange hover:underline">Privacy Policy</a>, which describes how we collect, use, and protect your information.
+            Your use of the Service is also governed by our <a href="/privacy" className="text-brand-violet hover:underline">Privacy Policy</a>, which describes how we collect, use, and protect your information.
           </p>
 
           <h2>10. Disclaimers</h2>
@@ -153,7 +153,7 @@ export default function TermsPage() {
             For questions about these Terms, contact us at:
           </p>
           <p>
-            <strong>Email:</strong> <a href="mailto:legal@reverbic.ai" className="text-brand-orange hover:underline">legal@reverbic.ai</a>
+            <strong>Email:</strong> <a href="mailto:legal@reverbic.ai" className="text-brand-violet hover:underline">legal@reverbic.ai</a>
           </p>
         </div>
       </div>

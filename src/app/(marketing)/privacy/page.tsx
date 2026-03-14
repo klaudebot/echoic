@@ -116,7 +116,7 @@ export default function PrivacyPage() {
             <li>Withdraw consent at any time</li>
           </ul>
           <p>
-            To exercise any of these rights, contact us at <a href="mailto:privacy@reverbic.ai" className="text-brand-orange hover:underline">privacy@reverbic.ai</a>.
+            To exercise any of these rights, contact us at <a href="mailto:privacy@reverbic.ai" className="text-brand-violet hover:underline">privacy@reverbic.ai</a>.
           </p>
 
           <h2>9. International Data Transfers</h2>
@@ -139,7 +139,7 @@ export default function PrivacyPage() {
             If you have questions about this Privacy Policy or our data practices, contact us at:
           </p>
           <p>
-            <strong>Email:</strong> <a href="mailto:privacy@reverbic.ai" className="text-brand-orange hover:underline">privacy@reverbic.ai</a>
+            <strong>Email:</strong> <a href="mailto:privacy@reverbic.ai" className="text-brand-violet hover:underline">privacy@reverbic.ai</a>
           </p>
         </div>
       </div>

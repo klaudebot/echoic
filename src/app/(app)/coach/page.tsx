@@ -405,7 +405,7 @@ export default function CoachPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-orange via-brand-teal to-brand-emerald flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-violet via-brand-cyan to-brand-emerald flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <h1 className="font-heading text-2xl text-foreground">AI Meeting Coach</h1>
@@ -418,8 +418,8 @@ export default function CoachPage() {
       {/* Empty state */}
       {loaded && !hasMeetings && (
         <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
-            <Sparkles className="w-7 h-7 text-brand-orange" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
+            <Sparkles className="w-7 h-7 text-brand-violet" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">Coaching insights unlock with your first meeting</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
@@ -427,7 +427,7 @@ export default function CoachPage() {
           </p>
           <AppLink
             href="/meetings/upload"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
           >
             <Mic className="w-4 h-4" />
             Upload a Recording
@@ -484,14 +484,14 @@ export default function CoachPage() {
               value={String(aggregateStats.meetings)}
               subtext="All time"
               icon={Calendar}
-              accent="brand-orange"
+              accent="brand-violet"
             />
             <MetricCard
               label="Hours"
               value={`${aggregateStats.hours}h`}
               subtext="Recorded"
               icon={Clock}
-              accent="brand-teal"
+              accent="brand-cyan"
             />
             <MetricCard
               label="Completion Rate"
@@ -563,8 +563,8 @@ export default function CoachPage() {
                             href={`/meetings/${m.meetingId}`}
                             className="flex items-center gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-muted/10 transition-colors"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-brand-orange/10 flex items-center justify-center shrink-0">
-                              <MessageSquare className="w-3.5 h-3.5 text-brand-orange" />
+                            <div className="w-8 h-8 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0">
+                              <MessageSquare className="w-3.5 h-3.5 text-brand-violet" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="text-sm font-medium text-foreground truncate">
@@ -580,7 +580,7 @@ export default function CoachPage() {
                             <div className="flex items-center gap-4 shrink-0 text-xs text-muted-foreground">
                               {m.decisionCount > 0 && (
                                 <span className="inline-flex items-center gap-1">
-                                  <Target className="w-3 h-3 text-brand-orange" />
+                                  <Target className="w-3 h-3 text-brand-violet" />
                                   {m.decisionCount}
                                 </span>
                               )}
@@ -592,7 +592,7 @@ export default function CoachPage() {
                               )}
                               {m.wordsPerMinute > 0 && (
                                 <span className="inline-flex items-center gap-1">
-                                  <Activity className="w-3 h-3 text-brand-teal" />
+                                  <Activity className="w-3 h-3 text-brand-cyan" />
                                   {m.wordsPerMinute} wpm
                                 </span>
                               )}
@@ -610,7 +610,7 @@ export default function CoachPage() {
           {/* Tips Section */}
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Brain className="w-4 h-4 text-brand-orange" />
+              <Brain className="w-4 h-4 text-brand-violet" />
               <h2 className="text-sm font-semibold text-foreground">Coaching Tips</h2>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -654,8 +654,8 @@ function TipCard({
 }) {
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-      <div className="w-7 h-7 rounded-md bg-brand-orange/10 flex items-center justify-center shrink-0 mt-0.5">
-        <Icon className="w-3.5 h-3.5 text-brand-orange" />
+      <div className="w-7 h-7 rounded-md bg-brand-violet/10 flex items-center justify-center shrink-0 mt-0.5">
+        <Icon className="w-3.5 h-3.5 text-brand-violet" />
       </div>
       <div>
         <h3 className="text-sm font-medium text-foreground">{title}</h3>

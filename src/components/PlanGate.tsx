@@ -90,8 +90,8 @@ function UpgradePrompt({ name, description, requiredPlan }: { name: string; desc
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="max-w-md text-center space-y-6">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center">
-          <Lock className="w-8 h-8 text-brand-orange" />
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center">
+          <Lock className="w-8 h-8 text-brand-violet" />
         </div>
 
         <div>
@@ -108,7 +108,7 @@ function UpgradePrompt({ name, description, requiredPlan }: { name: string; desc
 
         <AppLink
           href="/settings"
-          className="inline-flex items-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-lg text-sm font-semibold hover:bg-brand-orange/90 transition-colors"
+          className="inline-flex items-center gap-2 bg-brand-violet text-white px-6 py-3 rounded-lg text-sm font-semibold hover:bg-brand-violet/90 transition-colors"
         >
           Upgrade Now
           <ArrowRight className="w-4 h-4" />
@@ -151,7 +151,7 @@ export function TranscriptionLimitBanner() {
       </div>
       <AppLink
         href="/settings"
-        className="text-xs font-semibold px-3 py-1 rounded-md bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors whitespace-nowrap ml-3"
+        className="text-xs font-semibold px-3 py-1 rounded-md bg-brand-violet text-white hover:bg-brand-violet/90 transition-colors whitespace-nowrap ml-3"
       >
         Upgrade
       </AppLink>

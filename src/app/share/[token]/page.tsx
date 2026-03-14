@@ -103,7 +103,7 @@ export default function SharedMeetingPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 text-brand-orange animate-spin" />
+        <Loader2 className="w-8 h-8 text-brand-violet animate-spin" />
       </div>
     );
   }
@@ -173,7 +173,7 @@ export default function SharedMeetingPage() {
           {content.summary && (
             <div className="bg-card border border-border rounded-xl overflow-hidden">
               <div className="flex items-center gap-2 p-5 border-b border-border">
-                <Sparkles className="w-4 h-4 text-brand-orange" />
+                <Sparkles className="w-4 h-4 text-brand-violet" />
                 <h2 className="font-heading text-lg text-foreground">Summary</h2>
               </div>
               <div className="p-5">
@@ -206,7 +206,7 @@ export default function SharedMeetingPage() {
           {content.actionItems.length > 0 && (
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex items-center gap-2 mb-4">
-                <ListChecks className="w-4 h-4 text-brand-orange" />
+                <ListChecks className="w-4 h-4 text-brand-violet" />
                 <h2 className="font-heading text-lg text-foreground">Action Items</h2>
               </div>
               <div className="space-y-3">
@@ -234,7 +234,7 @@ export default function SharedMeetingPage() {
           {content.decisions.length > 0 && (
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex items-center gap-2 mb-4">
-                <Gavel className="w-4 h-4 text-brand-teal" />
+                <Gavel className="w-4 h-4 text-brand-cyan" />
                 <h2 className="font-heading text-lg text-foreground">Decisions</h2>
               </div>
               <div className="space-y-3">
@@ -261,7 +261,7 @@ export default function SharedMeetingPage() {
             Shared via{" "}
             <a
               href="/"
-              className="text-brand-orange hover:underline inline-flex items-center gap-0.5"
+              className="text-brand-violet hover:underline inline-flex items-center gap-0.5"
             >
               Reverbic
               <ExternalLink className="w-3 h-3" />

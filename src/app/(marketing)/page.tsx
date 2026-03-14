@@ -11,7 +11,7 @@ const features = [
     ),
     title: "AI Transcription",
     description: "99.2% accuracy across 50+ languages with speaker identification.",
-    color: "brand-orange",
+    color: "brand-violet",
   },
   {
     icon: (
@@ -21,7 +21,7 @@ const features = [
     ),
     title: "Smart Summaries",
     description: "Key points, decisions, and action items auto-extracted instantly.",
-    color: "brand-teal",
+    color: "brand-cyan",
   },
   {
     icon: (
@@ -64,14 +64,14 @@ const features = [
     ),
     title: "Copy for AI",
     description: "One-click exports for ChatGPT, Claude, standup notes, exec briefs.",
-    color: "brand-orange",
+    color: "brand-violet",
     badge: "Exclusive",
   },
 ];
 
 const colorMap: Record<string, string> = {
-  "brand-orange": "text-brand-orange bg-brand-orange/10",
-  "brand-teal": "text-brand-teal bg-brand-teal/10",
+  "brand-violet": "text-brand-violet bg-brand-violet/10",
+  "brand-cyan": "text-brand-cyan bg-brand-cyan/10",
   "brand-emerald": "text-brand-emerald bg-brand-emerald/10",
   "brand-amber": "text-brand-amber bg-brand-amber/10",
   "brand-rose": "text-brand-rose bg-brand-rose/10",
@@ -89,7 +89,7 @@ export default function MarketingPage() {
             {/* Badge */}
             <ScrollReveal delay={100}>
               <div className="mb-8 inline-flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-muted-foreground">
-                <span className="recording-dot inline-block h-1.5 w-1.5 rounded-full bg-brand-orange" />
+                <span className="recording-dot inline-block h-1.5 w-1.5 rounded-full bg-brand-violet" />
                 Meeting Intelligence
               </div>
             </ScrollReveal>
@@ -98,7 +98,7 @@ export default function MarketingPage() {
             <ScrollReveal delay={200}>
               <h1 className="max-w-5xl text-6xl font-heading tracking-tight sm:text-7xl lg:text-8xl xl:text-[6.5rem] leading-[0.9]">
                 Your meetings,{" "}
-                <span className="text-brand-orange">remembered.</span>
+                <span className="text-brand-violet">remembered.</span>
               </h1>
             </ScrollReveal>
 
@@ -115,7 +115,7 @@ export default function MarketingPage() {
               <div className="mt-12 flex flex-col gap-4 sm:flex-row">
                 <Link
                   href="/sign-up"
-                  className="inline-flex items-center justify-center bg-brand-orange px-10 py-4 text-base font-semibold text-white hover:bg-brand-orange/90 transition-colors rounded-sm"
+                  className="inline-flex items-center justify-center bg-brand-violet px-10 py-4 text-base font-semibold text-white hover:bg-brand-violet/90 transition-colors rounded-sm"
                 >
                   Start Free Trial
                   <svg className="ml-2.5 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -142,7 +142,7 @@ export default function MarketingPage() {
                   </div>
                   <a
                     href="/demo/dashboard"
-                    className="shrink-0 inline-flex items-center gap-1.5 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors"
+                    className="shrink-0 inline-flex items-center gap-1.5 bg-brand-violet/10 hover:bg-brand-violet/20 text-brand-violet px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
@@ -225,7 +225,7 @@ export default function MarketingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="max-w-2xl mb-20">
-              <p className="text-xs font-semibold tracking-widest uppercase text-brand-orange mb-3">Capabilities</p>
+              <p className="text-xs font-semibold tracking-widest uppercase text-brand-violet mb-3">Capabilities</p>
               <h2 className="text-4xl font-heading sm:text-5xl lg:text-6xl leading-[0.95]">
                 Everything your team needs
               </h2>
@@ -240,11 +240,11 @@ export default function MarketingPage() {
               <ScrollReveal key={i} delay={i * 100} variant="fade-up">
                 <div className="relative bg-card p-8 sm:p-10 hover:bg-muted/30 transition-colors h-full">
                   {f.badge && (
-                    <span className="absolute top-6 right-6 text-[10px] font-semibold tracking-widest uppercase text-brand-orange">
+                    <span className="absolute top-6 right-6 text-[10px] font-semibold tracking-widest uppercase text-brand-violet">
                       {f.badge}
                     </span>
                   )}
-                  <div className={`inline-flex rounded-sm p-3 ${colorMap[f.color] || "text-brand-orange bg-brand-orange/10"}`}>
+                  <div className={`inline-flex rounded-sm p-3 ${colorMap[f.color] || "text-brand-violet bg-brand-violet/10"}`}>
                     {f.icon}
                   </div>
                   <h3 className="mt-5 text-lg font-semibold text-foreground">{f.title}</h3>
@@ -261,7 +261,7 @@ export default function MarketingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="max-w-2xl mb-20">
-              <p className="text-xs font-semibold tracking-widest uppercase text-brand-teal mb-3">Only on Reverbic</p>
+              <p className="text-xs font-semibold tracking-widest uppercase text-brand-cyan mb-3">Only on Reverbic</p>
               <h2 className="text-4xl font-heading sm:text-5xl lg:text-6xl text-white leading-[0.95]">
                 Beyond transcription
               </h2>
@@ -297,11 +297,11 @@ export default function MarketingPage() {
             ].map((card, i) => (
               <ScrollReveal key={i} delay={i * 150} variant="fade-up">
                 <div className="rounded-sm border border-white/10 bg-white/[0.03] p-10 flex flex-col h-full">
-                  <div className="inline-flex w-fit rounded-sm p-3 bg-brand-orange-light/15 text-brand-orange-light mb-6">
+                  <div className="inline-flex w-fit rounded-sm p-3 bg-brand-violet-light/15 text-brand-violet-light mb-6">
                     {card.icon}
                   </div>
                   <h3 className="text-2xl font-semibold text-white">{card.title}</h3>
-                  <p className="mt-2 text-base font-medium text-brand-orange-light">
+                  <p className="mt-2 text-base font-medium text-brand-violet-light">
                     {card.tagline}
                   </p>
                   <p className="mt-4 text-sm text-white/50 leading-relaxed flex-1">
@@ -326,7 +326,7 @@ export default function MarketingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="max-w-2xl mb-20">
-              <p className="text-xs font-semibold tracking-widest uppercase text-brand-teal mb-3">How It Works</p>
+              <p className="text-xs font-semibold tracking-widest uppercase text-brand-cyan mb-3">How It Works</p>
               <h2 className="text-4xl font-heading sm:text-5xl lg:text-6xl leading-[0.95]">
                 Three steps to clarity
               </h2>
@@ -335,8 +335,8 @@ export default function MarketingPage() {
 
           <div className="grid gap-0 md:grid-cols-3">
             {[
-              { step: "01", title: "Record", description: "Connect Zoom, Google Meet, or Teams. Reverbic records automatically. Or upload any audio file.", color: "brand-orange" },
-              { step: "02", title: "AI Processes", description: "99.2% accurate transcription with speaker identification. Summaries, action items, and decisions extracted instantly.", color: "brand-teal" },
+              { step: "01", title: "Record", description: "Connect Zoom, Google Meet, or Teams. Reverbic records automatically. Or upload any audio file.", color: "brand-violet" },
+              { step: "02", title: "AI Processes", description: "99.2% accurate transcription with speaker identification. Summaries, action items, and decisions extracted instantly.", color: "brand-cyan" },
               { step: "03", title: "Review & Act", description: "Searchable transcripts, smart clips, action item tracking, and decision logs. Meeting knowledge for everyone.", color: "brand-emerald" },
             ].map((s, i) => (
               <ScrollReveal key={i} delay={i * 200} variant="fade-up">
@@ -357,7 +357,7 @@ export default function MarketingPage() {
       <section id="pricing" className="py-32 sm:py-40 border-t border-border/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            <p className="text-xs font-semibold tracking-widest uppercase text-brand-orange mb-3">Pricing</p>
+            <p className="text-xs font-semibold tracking-widest uppercase text-brand-violet mb-3">Pricing</p>
             <h2 className="text-4xl font-heading sm:text-5xl lg:text-6xl leading-[0.95]">
               Plans that scale with your team
             </h2>
@@ -367,7 +367,7 @@ export default function MarketingPage() {
             <div className="mt-10">
               <Link
                 href="/pricing"
-                className="inline-flex items-center justify-center bg-brand-orange px-10 py-4 text-base font-semibold text-white hover:bg-brand-orange/90 transition-colors rounded-sm"
+                className="inline-flex items-center justify-center bg-brand-violet px-10 py-4 text-base font-semibold text-white hover:bg-brand-violet/90 transition-colors rounded-sm"
               >
                 View Pricing
                 <svg className="ml-2.5 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

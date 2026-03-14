@@ -111,7 +111,7 @@ export default function DecisionsPage() {
       {/* Page header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-orange to-brand-teal flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-violet to-brand-cyan flex items-center justify-center">
             <Target className="w-4 h-4 text-white" />
           </div>
           <h1 className="font-heading text-2xl text-foreground">Decision Log</h1>
@@ -124,8 +124,8 @@ export default function DecisionsPage() {
       {/* Empty state */}
       {loaded && totalDecisions === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
-            <Target className="w-7 h-7 text-brand-orange" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
+            <Target className="w-7 h-7 text-brand-violet" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">Decisions surface here automatically</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
@@ -133,7 +133,7 @@ export default function DecisionsPage() {
           </p>
           <AppLink
             href="/meetings/record"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
           >
             <Mic className="w-4 h-4" />
             Record a Meeting
@@ -152,7 +152,7 @@ export default function DecisionsPage() {
             </span>
             <span className="text-muted-foreground">
               across{" "}
-              <span className="font-semibold text-brand-orange">{meetingsWithDecisions}</span>{" "}
+              <span className="font-semibold text-brand-violet">{meetingsWithDecisions}</span>{" "}
               {meetingsWithDecisions === 1 ? "meeting" : "meetings"}
             </span>
           </div>
@@ -166,7 +166,7 @@ export default function DecisionsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search decisions, meetings, people..."
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/40 transition-shadow"
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/40 transition-shadow"
               />
             </div>
             <button
@@ -214,14 +214,14 @@ export default function DecisionsPage() {
                           {group.meetingTags.map((tag) => (
                             <span
                               key={tag}
-                              className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-brand-orange/10 text-brand-orange"
+                              className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-brand-violet/10 text-brand-violet"
                             >
                               {tag}
                             </span>
                           ))}
                         </div>
                       </div>
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-teal/10 text-brand-teal shrink-0">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan shrink-0">
                         {group.decisions.length} {group.decisions.length === 1 ? "decision" : "decisions"}
                       </span>
                     </button>
@@ -232,15 +232,15 @@ export default function DecisionsPage() {
                         {group.decisions.map((decision, idx) => (
                           <div
                             key={idx}
-                            className="flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-brand-orange/[0.02] transition-colors border-l-[3px] border-l-brand-teal/40"
+                            className="flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-brand-violet/[0.02] transition-colors border-l-[3px] border-l-brand-cyan/40"
                           >
-                            <div className="w-5 h-5 rounded-md bg-brand-teal/10 flex items-center justify-center shrink-0 mt-0.5">
-                              <Target className="w-3 h-3 text-brand-teal" />
+                            <div className="w-5 h-5 rounded-md bg-brand-cyan/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <Target className="w-3 h-3 text-brand-cyan" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm text-foreground">{decision.text}</p>
                               {decision.madeBy && (
-                                <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-orange/8 text-brand-orange">
+                                <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-brand-violet/8 text-brand-violet">
                                   <User className="w-3 h-3" />
                                   {decision.madeBy}
                                 </span>

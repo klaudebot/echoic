@@ -330,8 +330,8 @@ export default function AudioPlayer({
     return (
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center">
-            <Loader2 className="w-5 h-5 text-brand-orange animate-spin" />
+          <div className="w-10 h-10 rounded-full bg-brand-violet/10 flex items-center justify-center">
+            <Loader2 className="w-5 h-5 text-brand-violet animate-spin" />
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">Loading audio...</p>
@@ -366,7 +366,7 @@ export default function AudioPlayer({
         {/* Play / Pause */}
         <button
           onClick={togglePlay}
-          className="w-11 h-11 rounded-full bg-brand-orange text-white flex items-center justify-center hover:bg-brand-orange/90 transition-all active:scale-95 shadow-sm shrink-0"
+          className="w-11 h-11 rounded-full bg-brand-violet text-white flex items-center justify-center hover:bg-brand-violet/90 transition-all active:scale-95 shadow-sm shrink-0"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
@@ -392,7 +392,7 @@ export default function AudioPlayer({
             onClick={cycleSpeed}
             className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
               playbackRate !== 1
-                ? "bg-brand-orange/10 text-brand-orange"
+                ? "bg-brand-violet/10 text-brand-violet"
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
             aria-label={`Playback speed: ${playbackRate}x`}
@@ -416,7 +416,7 @@ export default function AudioPlayer({
                     onClick={() => selectSpeed(speed)}
                     className={`w-full px-3 py-1.5 text-xs text-left transition-colors ${
                       playbackRate === speed
-                        ? "bg-brand-orange/10 text-brand-orange font-medium"
+                        ? "bg-brand-violet/10 text-brand-violet font-medium"
                         : "text-foreground hover:bg-muted"
                     }`}
                   >
@@ -443,11 +443,11 @@ export default function AudioPlayer({
             onMouseDown={handleVolumeMouseDown}
           >
             <div
-              className="absolute left-0 top-0 h-full bg-brand-orange/60 rounded-full transition-all"
+              className="absolute left-0 top-0 h-full bg-brand-violet/60 rounded-full transition-all"
               style={{ width: `${volumePercent}%` }}
             />
             <div
-              className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-brand-orange rounded-full shadow-sm transition-opacity ${
+              className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-brand-violet rounded-full shadow-sm transition-opacity ${
                 isDraggingVolume ? "opacity-100" : "opacity-0 group-hover:opacity-100"
               }`}
               style={{ left: `calc(${volumePercent}% - 6px)` }}
@@ -469,12 +469,12 @@ export default function AudioPlayer({
         />
         {/* Progress */}
         <div
-          className="absolute left-0 top-0 h-full bg-brand-orange rounded-full transition-[width] duration-75"
+          className="absolute left-0 top-0 h-full bg-brand-violet rounded-full transition-[width] duration-75"
           style={{ width: `${progressPercent}%` }}
         />
         {/* Thumb */}
         <div
-          className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-brand-orange rounded-full shadow-md border-2 border-white transition-opacity ${
+          className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-brand-violet rounded-full shadow-md border-2 border-white transition-opacity ${
             isDraggingProgress ? "opacity-100 scale-110" : "opacity-0 group-hover:opacity-100"
           }`}
           style={{ left: `calc(${progressPercent}% - 7px)` }}

@@ -140,7 +140,7 @@ function SearchStatusBadge({ status }: { status: Meeting["status"] }) {
     case "uploading":
     case "processing":
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-brand-orange/10 text-brand-orange whitespace-nowrap">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-brand-violet/10 text-brand-violet whitespace-nowrap">
           <Loader2 className="w-2.5 h-2.5 animate-spin" /> Processing
         </span>
       );
@@ -334,7 +334,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onClick={() => setNewMenuOpen((v) => !v)}
           aria-expanded={newMenuOpen}
           aria-haspopup="menu"
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-orange text-white rounded-lg text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-brand-violet text-white rounded-lg text-sm font-medium hover:bg-brand-violet/90 transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Meeting
@@ -347,8 +347,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={() => { setNewMenuOpen(false); closeMobile(); }}
               className="flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
             >
-              <div className="w-7 h-7 rounded-md bg-brand-orange/10 flex items-center justify-center">
-                <Upload className="w-3.5 h-3.5 text-brand-orange" />
+              <div className="w-7 h-7 rounded-md bg-brand-violet/10 flex items-center justify-center">
+                <Upload className="w-3.5 h-3.5 text-brand-violet" />
               </div>
               <div>
                 <div className="font-medium text-[13px]">Upload File</div>
@@ -373,8 +373,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={() => { setNewMenuOpen(false); closeMobile(); }}
               className="flex items-center gap-3 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
             >
-              <div className="w-7 h-7 rounded-md bg-brand-teal/10 flex items-center justify-center">
-                <Video className="w-3.5 h-3.5 text-brand-teal" />
+              <div className="w-7 h-7 rounded-md bg-brand-cyan/10 flex items-center justify-center">
+                <Video className="w-3.5 h-3.5 text-brand-cyan" />
               </div>
               <div>
                 <div className="font-medium text-[13px]">Import Loom</div>
@@ -399,7 +399,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   aria-expanded={expanded}
                   className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                     active
-                      ? "bg-brand-orange/10 text-brand-orange font-medium"
+                      ? "bg-brand-violet/10 text-brand-violet font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
@@ -420,7 +420,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           href={childPath}
                           onClick={closeMobile}
                           className={`block px-2 py-1.5 text-[13px] rounded-md transition-colors ${
-                            childActive ? "text-brand-orange font-medium bg-brand-orange/5" : "text-muted-foreground hover:text-foreground"
+                            childActive ? "text-brand-violet font-medium bg-brand-violet/5" : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
                           {child.label}
@@ -440,7 +440,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={closeMobile}
               className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors ${
                 active
-                  ? "bg-brand-orange/10 text-brand-orange font-medium"
+                  ? "bg-brand-violet/10 text-brand-violet font-medium"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
@@ -449,7 +449,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {item.label}
               </span>
               {item.badge && (
-                <span className="bg-brand-orange/10 text-brand-orange text-[11px] font-semibold px-1.5 py-0.5 rounded-full">
+                <span className="bg-brand-violet/10 text-brand-violet text-[11px] font-semibold px-1.5 py-0.5 rounded-full">
                   {item.badge}
                 </span>
               )}
@@ -460,8 +460,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {isDemo && (
         <div className="px-3 py-3 border-t border-border shrink-0">
-          <div className="bg-brand-orange/5 border border-brand-orange/10 rounded-lg px-3 py-2">
-            <div className="text-xs font-semibold text-brand-orange">Demo Mode</div>
+          <div className="bg-brand-violet/5 border border-brand-violet/10 rounded-lg px-3 py-2">
+            <div className="text-xs font-semibold text-brand-violet">Demo Mode</div>
             <div className="text-[11px] text-muted-foreground mt-0.5">Sample data. No login required.</div>
           </div>
         </div>
@@ -470,8 +470,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {!isDemo && (
         <div className="px-3 py-3 border-t border-border shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-brand-orange/10 flex items-center justify-center">
-              <span className="text-xs font-medium text-brand-orange">
+            <div className="w-8 h-8 rounded-full bg-brand-violet/10 flex items-center justify-center">
+              <span className="text-xs font-medium text-brand-violet">
                 {user?.name?.[0]?.toUpperCase() || "U"}
               </span>
             </div>
@@ -574,12 +574,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             onClick={() => navigateToResult(result.meeting.id)}
                             className={`w-full text-left px-3 py-2.5 hover:bg-muted/60 transition-colors flex items-start gap-3 group ${idx === selectedResultIndex ? "bg-muted/60" : ""}`}
                           >
-                            <div className="w-8 h-8 rounded-lg bg-brand-orange/10 flex items-center justify-center shrink-0 mt-0.5">
-                              <FolderOpen className="w-3.5 h-3.5 text-brand-orange" />
+                            <div className="w-8 h-8 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0 mt-0.5">
+                              <FolderOpen className="w-3.5 h-3.5 text-brand-violet" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-foreground truncate group-hover:text-brand-orange transition-colors">
+                                <span className="text-sm font-medium text-foreground truncate group-hover:text-brand-violet transition-colors">
                                   {result.meeting.title}
                                 </span>
                                 <SearchStatusBadge status={result.meeting.status} />
@@ -589,7 +589,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                   <Calendar className="w-2.5 h-2.5" />
                                   {formatSearchDate(result.meeting.createdAt)}
                                 </span>
-                                <span className="text-[10px] text-brand-orange/70 bg-brand-orange/5 px-1.5 py-0.5 rounded">
+                                <span className="text-[10px] text-brand-violet/70 bg-brand-violet/5 px-1.5 py-0.5 rounded">
                                   {result.matchField}
                                 </span>
                               </div>
@@ -617,7 +617,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
               <NotificationCenter />
               {isDemo && (
-                <span className="text-xs bg-brand-orange/10 text-brand-orange px-2 py-1 rounded-lg font-medium">DEMO</span>
+                <span className="text-xs bg-brand-violet/10 text-brand-violet px-2 py-1 rounded-lg font-medium">DEMO</span>
               )}
             </div>
           </div>

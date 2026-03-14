@@ -30,7 +30,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
       aria-label={label}
       onClick={() => onChange(!checked)}
       className={`relative rounded-full transition-colors ${
-        checked ? "bg-brand-orange" : "bg-muted"
+        checked ? "bg-brand-violet" : "bg-muted"
       }`}
       style={{ minWidth: 44, height: 24 }}
     >
@@ -183,7 +183,7 @@ export default function SettingsPage() {
       {/* Profile */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
-          <User className="w-4 h-4 text-brand-orange" />
+          <User className="w-4 h-4 text-brand-violet" />
           <h2 className="font-heading text-lg text-foreground">Profile</h2>
         </div>
 
@@ -195,7 +195,7 @@ export default function SettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
             />
           </div>
           <div>
@@ -205,7 +205,7 @@ export default function SettingsPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
             />
           </div>
           <div>
@@ -243,7 +243,7 @@ export default function SettingsPage() {
 
         <button
           onClick={handleSaveProfile}
-          className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 bg-brand-orange text-white rounded-lg hover:bg-brand-orange/90 transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 bg-brand-violet text-white rounded-lg hover:bg-brand-violet/90 transition-colors"
         >
           {saved ? (
             <>
@@ -259,7 +259,7 @@ export default function SettingsPage() {
       {/* Notifications */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
-          <Bell className="w-4 h-4 text-brand-teal" />
+          <Bell className="w-4 h-4 text-brand-cyan" />
           <h2 className="font-heading text-lg text-foreground">Notifications</h2>
         </div>
 
@@ -311,7 +311,7 @@ export default function SettingsPage() {
             onChange={(e) => setCustomVocab(e.target.value)}
             rows={3}
             placeholder="Add company names, product names, or jargon (comma-separated)"
-            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-orange/30 resize-none"
+            className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30 resize-none"
           />
           <p className="text-[11px] text-muted-foreground mt-1">
             Words added here will improve transcription accuracy for domain-specific terms.
@@ -329,7 +329,7 @@ export default function SettingsPage() {
           <button
             onClick={handleManageBilling}
             disabled={openingPortal}
-            className="text-xs text-brand-orange hover:text-brand-orange/80 font-medium flex items-center gap-1 transition-colors disabled:opacity-50"
+            className="text-xs text-brand-violet hover:text-brand-violet/80 font-medium flex items-center gap-1 transition-colors disabled:opacity-50"
           >
             {openingPortal ? <Loader2 className="w-3 h-3 animate-spin" /> : <ExternalLink className="w-3 h-3" />}
             Manage Billing
@@ -348,7 +348,7 @@ export default function SettingsPage() {
 
         <div className="bg-muted rounded-lg p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-brand-orange/10 flex items-center justify-center text-brand-orange">
+            <div className="w-10 h-10 rounded-lg bg-brand-violet/10 flex items-center justify-center text-brand-violet">
               <Crown className="w-5 h-5" />
             </div>
             <div>
@@ -418,7 +418,7 @@ export default function SettingsPage() {
               key={plan.name}
               className={`border rounded-lg p-3 text-center ${
                 isCurrentPlan
-                  ? "border-brand-orange bg-brand-orange/5"
+                  ? "border-brand-violet bg-brand-violet/5"
                   : "border-border"
               }`}
             >
@@ -439,9 +439,9 @@ export default function SettingsPage() {
                 disabled={upgradingTier !== null || isCurrentPlan || !isUpgrade}
                 className={`mt-3 w-full text-xs font-medium py-1.5 rounded-md transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 ${
                   isCurrentPlan
-                    ? "bg-brand-orange/10 text-brand-orange cursor-default"
+                    ? "bg-brand-violet/10 text-brand-violet cursor-default"
                     : isUpgrade
-                      ? "bg-brand-orange text-white hover:bg-brand-orange/90"
+                      ? "bg-brand-violet text-white hover:bg-brand-violet/90"
                       : "border border-border text-muted-foreground cursor-default"
                 }`}
               >

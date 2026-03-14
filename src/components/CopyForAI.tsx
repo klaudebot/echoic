@@ -341,7 +341,7 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => { setOpen(!open); setPreview(null); }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-gradient-to-r from-brand-orange to-brand-teal text-white hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-gradient-to-r from-brand-violet to-brand-cyan text-white hover:opacity-90 transition-opacity"
         >
           <Wand2 className="w-3.5 h-3.5" />
           Copy for AI
@@ -373,13 +373,13 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
                       disabled={isLoading}
                       className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-muted/50 transition-colors disabled:opacity-60"
                     >
-                      <div className="w-7 h-7 rounded-md bg-brand-orange/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-7 h-7 rounded-md bg-brand-violet/10 flex items-center justify-center shrink-0 mt-0.5">
                         {isLoading ? (
-                          <Loader2 className="w-3.5 h-3.5 text-brand-orange animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 text-brand-violet animate-spin" />
                         ) : isCopied ? (
                           <Check className="w-3.5 h-3.5 text-brand-emerald" />
                         ) : (
-                          <Icon className="w-3.5 h-3.5 text-brand-orange" />
+                          <Icon className="w-3.5 h-3.5 text-brand-violet" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -388,7 +388,7 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
                             {preset.label}
                           </span>
                           {preset.needsAI && (
-                            <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-brand-orange/10 text-brand-orange leading-none">
+                            <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-brand-violet/10 text-brand-violet leading-none">
                               AI
                             </span>
                           )}
@@ -419,7 +419,7 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
             {/* Modal header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-orange to-brand-teal flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-violet to-brand-cyan flex items-center justify-center">
                   <Wand2 className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div>
@@ -446,7 +446,7 @@ export default function CopyForAI({ context }: { context: MeetingContext }) {
                   onClick={async () => {
                     await copyToClipboard(preview.text, "preview");
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-brand-violet text-white hover:bg-brand-violet/90 transition-colors"
                 >
                   {copied === "preview" ? (
                     <>

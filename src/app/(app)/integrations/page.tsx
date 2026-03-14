@@ -46,7 +46,7 @@ const categories: Category[] = [
     title: "Meeting Platforms",
     description:
       "Automatically capture, transcribe, and analyze every conversation",
-    accentColor: "brand-teal",
+    accentColor: "brand-cyan",
     integrations: [
       {
         id: "zoom",
@@ -83,7 +83,7 @@ const categories: Category[] = [
     title: "Productivity",
     description:
       "Push insights and action items where your team already works",
-    accentColor: "brand-orange",
+    accentColor: "brand-violet",
     integrations: [
       {
         id: "slack",
@@ -204,7 +204,7 @@ function IntegrationCard({
   };
 
   return (
-    <div className="group bg-card border border-border rounded-xl p-5 flex flex-col gap-4 hover:border-brand-orange/30 hover:shadow-sm transition-all duration-200">
+    <div className="group bg-card border border-border rounded-xl p-5 flex flex-col gap-4 hover:border-brand-violet/30 hover:shadow-sm transition-all duration-200">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3.5">
           <div
@@ -220,7 +220,7 @@ function IntegrationCard({
               {integration.howItWorks && (
                 <button
                   onClick={() => setShowInfo(!showInfo)}
-                  className="text-muted-foreground/50 hover:text-brand-orange transition-colors"
+                  className="text-muted-foreground/50 hover:text-brand-violet transition-colors"
                   title="How it works"
                 >
                   {showInfo ? <X className="w-3.5 h-3.5" /> : <Info className="w-3.5 h-3.5" />}
@@ -235,8 +235,8 @@ function IntegrationCard({
       </div>
 
       {showInfo && integration.howItWorks && (
-        <div className="bg-brand-orange/5 border border-brand-orange/10 rounded-lg px-3.5 py-3 text-xs text-foreground/80 leading-relaxed">
-          <span className="font-medium text-brand-orange">How it works:</span>{" "}
+        <div className="bg-brand-violet/5 border border-brand-violet/10 rounded-lg px-3.5 py-3 text-xs text-foreground/80 leading-relaxed">
+          <span className="font-medium text-brand-violet">How it works:</span>{" "}
           {integration.howItWorks}
         </div>
       )}
@@ -263,13 +263,13 @@ function IntegrationCard({
           </>
         ) : isLive ? (
           <>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-brand-orange/10 text-brand-orange">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-brand-violet/10 text-brand-violet">
               <Zap className="w-3 h-3" />
               Available
             </span>
             <a
               href={integration.connectPath}
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3.5 py-1.5 rounded-lg bg-brand-orange text-white hover:bg-brand-orange/90 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-3.5 py-1.5 rounded-lg bg-brand-violet text-white hover:bg-brand-violet/90 transition-colors"
             >
               <Plug className="w-3 h-3" />
               Connect
@@ -359,12 +359,12 @@ export default function IntegrationsPage() {
   return (
     <div className="space-y-10">
       {/* Hero header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-orange/10 via-card to-card border border-border p-8 md:p-10">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-violet/10 via-card to-card border border-border p-8 md:p-10">
         <div className="absolute top-4 right-4 opacity-[0.04]">
           <Zap className="w-40 h-40" />
         </div>
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-violet/10 text-brand-violet text-xs font-medium mb-4">
             <Sparkles className="w-3.5 h-3.5" />
             {liveCount} integrations live &middot; {connectedCount} connected
           </div>
@@ -388,11 +388,11 @@ export default function IntegrationsPage() {
           {/* Category sections */}
           {categories.map((category) => {
             const accentMap: Record<string, string> = {
-              "brand-teal": "from-brand-teal/20",
-              "brand-orange": "from-brand-orange/20",
+              "brand-cyan": "from-brand-cyan/20",
+              "brand-violet": "from-brand-violet/20",
               "brand-amber": "from-brand-amber/20",
             };
-            const accentGrad = accentMap[category.accentColor || "brand-orange"] || "from-brand-orange/20";
+            const accentGrad = accentMap[category.accentColor || "brand-violet"] || "from-brand-violet/20";
             return (
             <section key={category.title} className="space-y-4">
               <div className="flex items-start gap-3">
@@ -422,8 +422,8 @@ export default function IntegrationsPage() {
 
           {/* Request integration CTA */}
           <div className="rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
-            <div className="w-12 h-12 rounded-xl bg-brand-orange/10 flex items-center justify-center mx-auto mb-4">
-              <Send className="w-5 h-5 text-brand-orange" />
+            <div className="w-12 h-12 rounded-xl bg-brand-violet/10 flex items-center justify-center mx-auto mb-4">
+              <Send className="w-5 h-5 text-brand-violet" />
             </div>
             <h3 className="font-heading text-lg text-foreground mb-1.5">
               Missing an integration?
@@ -432,7 +432,7 @@ export default function IntegrationsPage() {
               We&apos;re building integrations based on what our users need
               most. Let us know which tools you&apos;d like to see connected.
             </p>
-            <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors">
+            <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors">
               Request an Integration
               <ArrowRight className="w-4 h-4" />
             </button>

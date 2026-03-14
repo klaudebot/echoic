@@ -54,7 +54,7 @@ function SignUpForm() {
     if (password.length < 10) return { label: "Fair", width: "50%", color: "bg-brand-amber" };
     if (/[A-Z]/.test(password) && /[0-9]/.test(password) && password.length >= 10)
       return { label: "Strong", width: "100%", color: "bg-brand-emerald" };
-    return { label: "Good", width: "75%", color: "bg-brand-teal" };
+    return { label: "Good", width: "75%", color: "bg-brand-cyan" };
   })();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +167,7 @@ function SignUpForm() {
               { icon: "M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342", text: "Meeting Coach with personalized tips" },
             ].map((f, i) => (
               <div key={i} className="flex items-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3">
-                <svg className="w-5 h-5 text-brand-teal shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-5 h-5 text-brand-cyan shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d={f.icon} />
                 </svg>
                 <span className="text-sm text-white/80">{f.text}</span>
@@ -260,7 +260,7 @@ function SignUpForm() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Jane Smith"
                 required
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20 outline-none transition-all"
               />
             </div>
             <div>
@@ -274,7 +274,7 @@ function SignUpForm() {
                 onChange={(e) => { setEmail(e.target.value); setError(null); }}
                 placeholder="you@company.com"
                 required
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20 outline-none transition-all"
               />
             </div>
             <div>
@@ -290,7 +290,7 @@ function SignUpForm() {
                   placeholder="Min. 8 characters"
                   required
                   minLength={8}
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all"
+                  className="w-full rounded-xl border border-border bg-card px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20 outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -328,7 +328,7 @@ function SignUpForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand-orange px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-orange/25 hover:bg-brand-orange/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-xl bg-brand-violet px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-violet/25 hover:bg-brand-violet/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -375,7 +375,7 @@ function SignUpForm() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/sign-in" className="font-semibold text-brand-orange hover:text-brand-orange/80 transition-colors">
+            <Link href="/sign-in" className="font-semibold text-brand-violet hover:text-brand-violet/80 transition-colors">
               Sign in
             </Link>
           </p>
@@ -430,7 +430,7 @@ function TermsContent() {
       <p>Our total liability shall not exceed the amount you paid us in the twelve months preceding the claim.</p>
 
       <h2>10. Contact</h2>
-      <p>Contact us at <a href="mailto:legal@reverbic.ai" className="text-brand-orange hover:underline">legal@reverbic.ai</a>.</p>
+      <p>Contact us at <a href="mailto:legal@reverbic.ai" className="text-brand-violet hover:underline">legal@reverbic.ai</a>.</p>
     </div>
   );
 }
@@ -469,10 +469,10 @@ function PrivacyContent() {
       <p>We implement encryption in transit and at rest. We retain data while your account is active. Upon deletion, personal data is removed within 30 days.</p>
 
       <h2>7. Your Rights</h2>
-      <p>You may have the right to access, correct, delete, or port your data. Contact <a href="mailto:privacy@reverbic.ai" className="text-brand-orange hover:underline">privacy@reverbic.ai</a>.</p>
+      <p>You may have the right to access, correct, delete, or port your data. Contact <a href="mailto:privacy@reverbic.ai" className="text-brand-violet hover:underline">privacy@reverbic.ai</a>.</p>
 
       <h2>8. Contact Us</h2>
-      <p>For questions, contact <a href="mailto:privacy@reverbic.ai" className="text-brand-orange hover:underline">privacy@reverbic.ai</a>.</p>
+      <p>For questions, contact <a href="mailto:privacy@reverbic.ai" className="text-brand-violet hover:underline">privacy@reverbic.ai</a>.</p>
     </div>
   );
 }

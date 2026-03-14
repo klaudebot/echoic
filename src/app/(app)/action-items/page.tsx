@@ -208,8 +208,8 @@ export default function ActionItemsPage() {
 
       {loaded && totalItems === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
-          <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
-            <ListChecks className="w-7 h-7 text-brand-orange" />
+          <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
+            <ListChecks className="w-7 h-7 text-brand-violet" />
           </div>
           <h2 className="font-heading text-2xl text-foreground mb-2">Action items appear here automatically</h2>
           <p className="text-muted-foreground text-sm max-w-md mb-6">
@@ -217,7 +217,7 @@ export default function ActionItemsPage() {
           </p>
           <AppLink
             href="/meetings/record"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
           >
             <Mic className="w-4 h-4" />
             Record a Meeting
@@ -234,7 +234,7 @@ export default function ActionItemsPage() {
                 <span className="font-semibold text-foreground">{totalItems}</span> total
               </span>
               <span className="text-muted-foreground">
-                <span className="font-semibold text-brand-orange">{openItems}</span> open
+                <span className="font-semibold text-brand-violet">{openItems}</span> open
               </span>
               <span className="text-muted-foreground">
                 <span className="font-semibold text-brand-emerald">{completedItems}</span> done
@@ -251,7 +251,7 @@ export default function ActionItemsPage() {
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                   filter === f
-                    ? "bg-brand-orange text-white"
+                    ? "bg-brand-violet text-white"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -265,7 +265,7 @@ export default function ActionItemsPage() {
                 onClick={() => setPriorityFilter(p)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                   priorityFilter === p
-                    ? "bg-brand-orange text-white"
+                    ? "bg-brand-violet text-white"
                     : "bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -310,7 +310,7 @@ export default function ActionItemsPage() {
                           {group.meetingTags.map((tag) => (
                             <span
                               key={tag}
-                              className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-brand-orange/10 text-brand-orange"
+                              className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-brand-violet/10 text-brand-violet"
                             >
                               {tag}
                             </span>
@@ -346,7 +346,7 @@ export default function ActionItemsPage() {
                               {item.completed ? (
                                 <CheckCircle2 className="w-4.5 h-4.5 text-brand-emerald check-pop" />
                               ) : (
-                                <Circle className="w-4.5 h-4.5 text-muted-foreground/40 hover:text-brand-orange transition-colors" />
+                                <Circle className="w-4.5 h-4.5 text-muted-foreground/40 hover:text-brand-violet transition-colors" />
                               )}
                             </button>
                             <div className="flex-1 min-w-0">

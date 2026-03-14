@@ -24,14 +24,14 @@ const typeIcon: Record<string, typeof CheckCircle2> = {
 
 const typeColor: Record<string, string> = {
   success: "text-brand-emerald",
-  info: "text-brand-orange",
+  info: "text-brand-violet",
   warning: "text-brand-amber",
   error: "text-brand-rose",
 };
 
 const typeBg: Record<string, string> = {
   success: "bg-brand-emerald/10",
-  info: "bg-brand-orange/10",
+  info: "bg-brand-violet/10",
   warning: "bg-brand-amber/10",
   error: "bg-brand-rose/10",
 };
@@ -165,7 +165,7 @@ export function NotificationCenter() {
                           {n.title}
                         </p>
                         {!n.read && (
-                          <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
+                          <span className="w-2 h-2 rounded-full bg-brand-violet shrink-0" />
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">

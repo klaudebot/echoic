@@ -131,9 +131,9 @@ function statusLabel(status: Meeting["status"]): { text: string; className: stri
     case "completed":
       return { text: "Completed", className: "bg-brand-emerald/10 text-brand-emerald" };
     case "processing":
-      return { text: "Processing", className: "bg-brand-teal/10 text-brand-teal" };
+      return { text: "Processing", className: "bg-brand-cyan/10 text-brand-cyan" };
     case "uploading":
-      return { text: "Uploading", className: "bg-brand-orange/10 text-brand-orange" };
+      return { text: "Uploading", className: "bg-brand-violet/10 text-brand-violet" };
     case "failed":
       return { text: "Failed", className: "bg-brand-rose/10 text-brand-rose" };
     case "silent":
@@ -189,13 +189,13 @@ export default function DashboardPage() {
           label="Meetings"
           value={mounted ? String(stats.totalMeetings) : "0"}
           icon={Calendar}
-          accent="brand-orange"
+          accent="brand-violet"
         />
         <StatCard
           label="Hours Recorded"
           value={mounted ? formatDuration(stats.totalHours) : "0h"}
           icon={Clock}
-          accent="brand-teal"
+          accent="brand-cyan"
         />
         <StatCard
           label="Open Actions"
@@ -213,7 +213,7 @@ export default function DashboardPage() {
           label="Decisions"
           value={mounted ? String(stats.totalDecisions) : "0"}
           icon={Target}
-          accent="brand-orange"
+          accent="brand-violet"
         />
       </div>
 
@@ -226,7 +226,7 @@ export default function DashboardPage() {
               <h2 className="text-sm font-semibold text-foreground">Recent Meetings</h2>
               <AppLink
                 href="/meetings"
-                className="text-xs font-medium text-brand-orange hover:text-brand-orange/80 transition-colors flex items-center gap-1"
+                className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors flex items-center gap-1"
               >
                 View all
                 <ArrowRight className="w-3 h-3" />
@@ -241,8 +241,8 @@ export default function DashboardPage() {
                     href={`/meetings/${meeting.id}`}
                     className="flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4 text-brand-orange" />
+                    <div className="w-9 h-9 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4 text-brand-violet" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-foreground truncate">
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                       ) : meeting.status === "failed" ? (
                         <AlertCircle className="w-4 h-4 text-brand-rose" />
                       ) : meeting.status === "processing" ? (
-                        <Clock className="w-4 h-4 text-brand-teal" />
+                        <Clock className="w-4 h-4 text-brand-cyan" />
                       ) : (
                         <Circle className="w-4 h-4 text-muted-foreground" />
                       )}
@@ -352,7 +352,7 @@ export default function DashboardPage() {
           icon={Upload}
           label="Upload Recording"
           description="Drag & drop any audio or video file"
-          color="brand-orange"
+          color="brand-violet"
         />
         <QuickAction
           href="/meetings/record"
@@ -366,7 +366,7 @@ export default function DashboardPage() {
           icon={Plug}
           label="Integrations"
           description="Connect Zoom, Meet, Teams & more"
-          color="brand-teal"
+          color="brand-cyan"
         />
         <QuickAction
           href="/settings"
@@ -384,11 +384,11 @@ export default function DashboardPage() {
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-foreground">Setup Progress</h2>
-              <span className="text-sm font-medium text-brand-orange">{progress}%</span>
+              <span className="text-sm font-medium text-brand-violet">{progress}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full bg-brand-orange rounded-full transition-all duration-500"
+                className="h-full bg-brand-violet rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -417,12 +417,12 @@ export default function DashboardPage() {
                       {done ? (
                         <CheckCircle2 className="w-5 h-5 text-brand-emerald check-pop" />
                       ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground/40 hover:text-brand-orange/50 transition-colors" />
+                        <Circle className="w-5 h-5 text-muted-foreground/40 hover:text-brand-violet/50 transition-colors" />
                       )}
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Icon className={`w-4 h-4 ${done ? "text-brand-emerald" : "text-brand-orange"}`} />
+                        <Icon className={`w-4 h-4 ${done ? "text-brand-emerald" : "text-brand-violet"}`} />
                         <h3 className={`text-sm font-semibold ${done ? "text-muted-foreground line-through" : "text-foreground"}`}>
                           {step.title}
                         </h3>
@@ -431,7 +431,7 @@ export default function DashboardPage() {
                       {!done && (
                         <AppLink
                           href={step.href}
-                          className="inline-flex items-center gap-1 mt-3 text-sm font-medium text-brand-orange hover:text-brand-orange/80 transition-colors"
+                          className="inline-flex items-center gap-1 mt-3 text-sm font-medium text-brand-violet hover:text-brand-violet/80 transition-colors"
                         >
                           {step.cta}
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -450,8 +450,8 @@ export default function DashboardPage() {
 }
 
 const colorMap: Record<string, { bg: string; text: string; border: string }> = {
-  "brand-orange": { bg: "bg-brand-orange/10", text: "text-brand-orange", border: "hover:border-brand-orange/30" },
-  "brand-teal": { bg: "bg-brand-teal/10", text: "text-brand-teal", border: "hover:border-brand-teal/30" },
+  "brand-violet": { bg: "bg-brand-violet/10", text: "text-brand-violet", border: "hover:border-brand-violet/30" },
+  "brand-cyan": { bg: "bg-brand-cyan/10", text: "text-brand-cyan", border: "hover:border-brand-cyan/30" },
   "brand-rose": { bg: "bg-brand-rose/10", text: "text-brand-rose", border: "hover:border-brand-rose/30" },
   "brand-emerald": { bg: "bg-brand-emerald/10", text: "text-brand-emerald", border: "hover:border-brand-emerald/30" },
   "brand-amber": { bg: "bg-brand-amber/10", text: "text-brand-amber", border: "hover:border-brand-amber/30" },
@@ -470,7 +470,7 @@ function QuickAction({
   description: string;
   color: string;
 }) {
-  const c = colorMap[color] || colorMap["brand-orange"];
+  const c = colorMap[color] || colorMap["brand-violet"];
   return (
     <AppLink
       href={href}
@@ -479,7 +479,7 @@ function QuickAction({
       <div className={`w-10 h-10 rounded-lg ${c.bg} flex items-center justify-center mb-3`}>
         <Icon className={`w-5 h-5 ${c.text}`} />
       </div>
-      <h3 className="text-sm font-semibold text-foreground group-hover:text-brand-orange transition-colors">{label}</h3>
+      <h3 className="text-sm font-semibold text-foreground group-hover:text-brand-violet transition-colors">{label}</h3>
       <p className="text-xs text-muted-foreground mt-1">{description}</p>
     </AppLink>
   );
@@ -496,7 +496,7 @@ function StatCard({
   icon: React.ElementType;
   accent: string;
 }) {
-  const c = colorMap[accent] || colorMap["brand-orange"];
+  const c = colorMap[accent] || colorMap["brand-violet"];
   return (
     <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center justify-between mb-2">

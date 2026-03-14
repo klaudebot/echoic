@@ -43,7 +43,7 @@ function StatusBadge({ status }: { status: Meeting["status"] }) {
     case "uploading":
     case "processing":
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-brand-orange/10 text-brand-orange">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-brand-violet/10 text-brand-violet">
           <Loader2 className="w-3 h-3 animate-spin" /> Processing
         </span>
       );
@@ -73,8 +73,8 @@ function StatusBadge({ status }: { status: Meeting["status"] }) {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center fade-up">
-      <div className="w-16 h-16 rounded-2xl bg-brand-orange/10 flex items-center justify-center mb-5">
-        <Video className="w-7 h-7 text-brand-orange" />
+      <div className="w-16 h-16 rounded-2xl bg-brand-violet/10 flex items-center justify-center mb-5">
+        <Video className="w-7 h-7 text-brand-violet" />
       </div>
       <h2 className="font-heading text-2xl text-foreground mb-2">Your meetings will live here</h2>
       <p className="text-muted-foreground text-sm max-w-md mb-2">
@@ -86,7 +86,7 @@ function EmptyState() {
       <div className="flex items-center gap-3 stagger-children">
         <AppLink
           href="/meetings/upload"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
         >
           <Upload className="w-4 h-4" />
           Upload Recording
@@ -107,7 +107,7 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
   return (
     <AppLink
       href={`/meetings/${meeting.id}`}
-      className="block bg-card border border-border rounded-xl p-5 hover:shadow-md hover:border-brand-orange/30 transition-all"
+      className="block bg-card border border-border rounded-xl p-5 hover:shadow-md hover:border-brand-violet/30 transition-all"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
@@ -116,11 +116,11 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
           </h3>
           <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-brand-orange/50" />
+              <Calendar className="w-3 h-3 text-brand-violet/50" />
               {formatDate(meeting.createdAt)}
             </span>
             <span className="inline-flex items-center gap-1">
-              <Clock className="w-3 h-3 text-brand-teal/50" />
+              <Clock className="w-3 h-3 text-brand-cyan/50" />
               {formatDuration(meeting.duration)}
             </span>
           </div>
@@ -131,11 +131,11 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
       {/* Tags */}
       {meeting.tags.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mt-3">
-          <Tag className="w-3 h-3 text-brand-orange/50" />
+          <Tag className="w-3 h-3 text-brand-violet/50" />
           {meeting.tags.map((tag) => (
             <span
               key={tag}
-              className="px-1.5 py-0.5 text-[11px] font-medium rounded bg-brand-orange/8 text-brand-orange"
+              className="px-1.5 py-0.5 text-[11px] font-medium rounded bg-brand-violet/8 text-brand-violet"
             >
               {tag}
             </span>
@@ -170,7 +170,7 @@ export default function MeetingsPage() {
           <div className="flex items-center gap-2 shrink-0">
             <AppLink
               href="/meetings/upload"
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-orange text-white rounded-xl text-sm font-medium hover:bg-brand-orange/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors"
             >
               <Upload className="w-4 h-4" />
               Upload

@@ -199,6 +199,7 @@ export default function MarketingPage() {
       <ScrollReveal variant="fade-in">
         <section className="border-y border-border/30 py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-xs font-medium tracking-widest uppercase text-muted-foreground/40 mb-6">Works with the tools you already use</p>
             <div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-6">
               {[
                 { name: "Zoom", icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M1.5 6a2.25 2.25 0 012.25-2.25h10.5A2.25 2.25 0 0116.5 6v4.5l4.72-3.14a.75.75 0 011.28.53v8.22a.75.75 0 01-1.28.53L16.5 13.5V18a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6z"/></svg> },

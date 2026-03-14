@@ -178,7 +178,7 @@ function SignUpForm() {
       </div>
 
       {/* Right: Sign Up Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12 bg-background overflow-y-auto">
+      <div className="flex w-full lg:w-1/2 items-start lg:items-center justify-center p-6 pt-16 sm:p-12 sm:pt-16 lg:pt-12 bg-background overflow-y-auto">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">

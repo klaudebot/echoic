@@ -57,6 +57,6 @@ create policy "Users can view meetings in their org"
     and (
       visibility = 'team'
       or visibility is null
-      or user_id = auth.uid()
+      or created_by = auth.uid()
     )
   );

@@ -66,11 +66,11 @@ function emailShell(body: string, preheader?: string): string {
           <td class="email-header-bg" style="background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%); padding: 32px 40px;">
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="padding-right: 10px; vertical-align: middle;">
+                <td style="padding-right: 10px; vertical-align: middle; background-color: ${DEEP};">
                   <img src="${APP_URL}/icon-transparent.png" alt="" width="24" height="24" style="display:block;" />
                 </td>
-                <td style="vertical-align: middle;">
-                  <span class="email-header-text" style="font-size: 22px; font-weight: 800; color: #ffffff !important; letter-spacing: -0.5px;">Reverbic Team</span>
+                <td style="vertical-align: middle; background-color: ${DEEP}; color: #ffffff;">
+                  <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; background-color: ${DEEP}; display: inline;">Reverbic Team</div>
                 </td>
               </tr>
             </table>

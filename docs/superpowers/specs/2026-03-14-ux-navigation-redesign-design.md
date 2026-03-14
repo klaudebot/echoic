@@ -35,7 +35,7 @@ Dashboard, Meetings, Library, Action Items, Decision Log, AI Coach, Smart Clips,
 
 | Nav Item | Icon | Route | Description |
 |----------|------|-------|-------------|
-| Home | LayoutDashboard | `/home` | Activity hub — what needs attention |
+| Home | LayoutDashboard | `/dashboard` | Activity hub — what needs attention (keeps existing route) |
 | Meetings | Mic | `/meetings` | All recordings + upload/record (expandable sub-menu) |
 | AI Coach | Sparkles | `/coach` | Score, analytics, tips — "how am I doing" |
 | Team | Users | `/team` | Members, invites |
@@ -47,15 +47,15 @@ Meetings sub-menu (expandable): All Meetings, Upload Recording, Record.
 
 ## Page Designs
 
-### Home (`/home`)
+### Home (`/dashboard`)
 
-Replaces the current Dashboard. Answers "what do I need to do?" and "what just happened?"
+Keeps the existing `/dashboard` route (preserving middleware redirect for authenticated users). Label changes from "Dashboard" to "Home" in the sidebar. Full page rewrite. Answers "what do I need to do?" and "what just happened?"
 
 **Layout (top to bottom):**
 
 **1. Greeting + Quick Stats Bar**
 - "Good morning, {name}" with inline stat pills: open action items count, meetings this week, coach score
-- Upload and Record buttons top-right for quick access
+- Upload and Record buttons top-right for quick access (these supplement the sidebar Meetings sub-menu — same actions, faster access from Home)
 
 **2. My Action Items (primary section)**
 - Open action items assigned to the user, across all meetings
@@ -78,7 +78,7 @@ Replaces the current Dashboard. Answers "what do I need to do?" and "what just h
 
 **Not on Home:** charts, analytics, meeting frequency graphs, team activity. Those belong in Coach.
 
-**Feature gating:** Action items section available to all plans. Decisions section shows blurred/limited content on Free with a subtle upgrade nudge overlay — visible enough to motivate upgrading, not distracting enough to annoy.
+**Feature gating:** Action items section available to all plans. Decisions section uses a soft gate on Free: a new `SoftPlanGate` component that wraps the section content with `filter: blur(4px)` and `pointer-events: none`, overlaid with an absolutely-positioned centered nudge ("Unlock decisions — Upgrade to Pro" with a subtle upgrade button). This is distinct from the existing `PlanGate` component which renders a full-page lock screen — `SoftPlanGate` is inline and non-blocking. Create as a new component at `src/components/SoftPlanGate.tsx`.
 
 ### Meetings (`/meetings`)
 
@@ -158,10 +158,23 @@ Unchanged.
 - `src/app/(app)/settings/page.tsx` → gains Integrations tab
 - `src/components/AppShell.tsx` → sidebar reduced to 5 items
 
-### Component cleanup:
-- Remove Smart Clips feature gate from `PlanGate.tsx`
-- Remove clips, decisions, analytics, library, integrations nav entries from `AppShell.tsx`
-- Remove demo clips page (`src/app/demo/clips/page.tsx`)
+### Demo pages removed:
+- `src/app/demo/library/page.tsx`
+- `src/app/demo/action-items/page.tsx`
+- `src/app/demo/decisions/page.tsx`
+- `src/app/demo/clips/page.tsx`
+- `src/app/demo/analytics/page.tsx`
+- `src/app/demo/integrations/page.tsx`
+
+The demo Home page (`src/app/demo/dashboard/`) needs the same rewrite as the real Home, using fixture data from `lib/demo-data.ts`.
+
+### Other files modified:
+- `src/middleware.ts` — remove deleted routes from `protectedPaths` array
+- `src/components/AppShell.tsx` — sidebar reduced to 5 items, update global search placeholder (remove "clips" reference), update logo link if needed
+- `src/components/PlanGate.tsx` — remove `clips` and `analytics` from feature map
+
+### New components:
+- `src/components/SoftPlanGate.tsx` — inline blur + upgrade nudge overlay for gating sections within a page (used for decisions on Home for Free users)
 
 ### Feature gating changes:
 - `PlanGate.tsx` feature map updates:
@@ -206,4 +219,4 @@ The marketing/pricing page currently promotes Smart Clips, Decision Log, and Ana
 - "Decision Log" → "Decisions tracked automatically"
 - "Analytics" → "AI Coach with built-in analytics"
 
-This is a copy change, not a structural change to the marketing pages.
+This is a copy change, not a structural change to the marketing pages. Marketing page updates are out of scope for this implementation plan — they will be handled separately.

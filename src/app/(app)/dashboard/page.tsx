@@ -1,105 +1,39 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AppLink } from "@/components/DemoContext";
+import { SoftPlanGate } from "@/components/SoftPlanGate";
 import { useUser } from "@/components/UserContext";
-import { type Meeting } from "@/lib/meeting-store";
+import { type Meeting, updateMeeting } from "@/lib/meeting-store";
 import { useMeetings } from "@/hooks/use-meetings";
 import {
   Upload,
   Mic,
-  Video,
   CheckCircle2,
   Circle,
   ArrowRight,
-  Plug,
-  Sparkles,
   Calendar,
   Clock,
   ListChecks,
-  BarChart3,
   Target,
   FileText,
-  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
+  Lightbulb,
 } from "lucide-react";
 
-const onboardingSteps = [
-  {
-    id: "connect",
-    title: "Connect your calendar",
-    description: "Link Google Calendar or Outlook so Reverbic can auto-join your meetings.",
-    icon: Calendar,
-    cta: "Connect Calendar",
-    href: "/integrations",
-  },
-  {
-    id: "record",
-    title: "Record your first meeting",
-    description: "Upload a recording, start a live recording, or let Reverbic join your next call.",
-    icon: Mic,
-    cta: "Upload or Record",
-    href: "/meetings/upload",
-  },
-  {
-    id: "integrations",
-    title: "Set up integrations",
-    description: "Connect Zoom, Google Meet, Teams, Slack, or Notion to supercharge your workflow.",
-    icon: Plug,
-    cta: "Browse Integrations",
-    href: "/integrations",
-  },
-  {
-    id: "team",
-    title: "Invite your team",
-    description: "Share meeting insights, action items, and decisions with your whole team.",
-    icon: Video,
-    cta: "Invite Members",
-    href: "/team",
-  },
-];
+/* ─── Helpers ─── */
 
-interface DashboardStats {
-  totalMeetings: number;
-  totalHours: number;
-  openActionItems: number;
-  completedActionItems: number;
-  totalDecisions: number;
-  recentMeetings: Meeting[];
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
 }
 
-function computeStats(meetings: Meeting[]): DashboardStats {
-  let totalSeconds = 0;
-  let openActionItems = 0;
-  let completedActionItems = 0;
-  let totalDecisions = 0;
-
-  for (const m of meetings) {
-    // Duration can come from transcript.duration (seconds) or meeting.duration (seconds)
-    const dur = m.transcript?.duration ?? m.duration ?? 0;
-    totalSeconds += dur;
-
-    for (const item of m.actionItems ?? []) {
-      if (item.completed) {
-        completedActionItems++;
-      } else {
-        openActionItems++;
-      }
-    }
-
-    totalDecisions += (m.decisions ?? []).length;
-  }
-
-  return {
-    totalMeetings: meetings.length,
-    totalHours: totalSeconds / 3600,
-    openActionItems,
-    completedActionItems,
-    totalDecisions,
-    recentMeetings: meetings.slice(0, 5),
-  };
-}
-
-function formatDuration(hours: number): string {
+function formatDuration(seconds: number): string {
+  const hours = seconds / 3600;
   if (hours === 0) return "0h";
   if (hours < 1) {
     const mins = Math.round(hours * 60);
@@ -143,89 +77,480 @@ function statusLabel(status: Meeting["status"]): { text: string; className: stri
   }
 }
 
+function priorityBadge(priority: string): { className: string } {
+  switch (priority.toLowerCase()) {
+    case "high":
+      return { className: "bg-brand-rose/10 text-brand-rose" };
+    case "medium":
+      return { className: "bg-brand-amber/10 text-brand-amber" };
+    case "low":
+      return { className: "bg-brand-emerald/10 text-brand-emerald" };
+    default:
+      return { className: "bg-muted text-muted-foreground" };
+  }
+}
+
+/* ─── Types ─── */
+
+interface FlatActionItem {
+  meetingId: string;
+  meetingTitle: string;
+  itemIdx: number;
+  text: string;
+  assignee: string | null;
+  priority: string;
+  completed: boolean;
+}
+
+interface FlatDecision {
+  meetingId: string;
+  meetingTitle: string;
+  text: string;
+  madeBy: string | null;
+}
+
+/* ─── Main Component ─── */
+
 export default function DashboardPage() {
   const { user } = useUser();
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const { meetings, loading } = useMeetings();
+  const { meetings, loading, refresh } = useMeetings();
+  const [showCompleted, setShowCompleted] = useState(false);
+
+  const firstName = user?.name ? user.name.split(" ")[0] : "there";
+
+  // Compute stats
+  const stats = useMemo(() => {
+    let totalSeconds = 0;
+    let openActions = 0;
+    let totalDecisions = 0;
+
+    for (const m of meetings) {
+      const dur = m.transcript?.duration ?? m.duration ?? 0;
+      totalSeconds += dur;
+      for (const item of m.actionItems ?? []) {
+        if (!item.completed) openActions++;
+      }
+      totalDecisions += (m.decisions ?? []).length;
+    }
+
+    return {
+      totalMeetings: meetings.length,
+      totalSeconds,
+      openActions,
+      totalDecisions,
+    };
+  }, [meetings]);
+
+  // Flat action items across all meetings
+  const allActionItems = useMemo(() => {
+    const items: FlatActionItem[] = [];
+    for (const m of meetings) {
+      (m.actionItems ?? []).forEach((ai, idx) => {
+        items.push({
+          meetingId: m.id,
+          meetingTitle: m.title,
+          itemIdx: idx,
+          text: ai.text,
+          assignee: ai.assignee,
+          priority: ai.priority,
+          completed: !!ai.completed,
+        });
+      });
+    }
+    return items;
+  }, [meetings]);
+
+  const openItems = allActionItems.filter((i) => !i.completed);
+  const completedItems = allActionItems.filter((i) => i.completed);
+
+  // Flat decisions across all meetings, most recent first
+  const allDecisions = useMemo(() => {
+    const decs: FlatDecision[] = [];
+    for (const m of meetings) {
+      (m.decisions ?? []).forEach((d) => {
+        decs.push({
+          meetingId: m.id,
+          meetingTitle: m.title,
+          text: d.text,
+          madeBy: d.madeBy,
+        });
+      });
+    }
+    return decs.slice(0, 5);
+  }, [meetings]);
+
+  // Recent 7 meetings
+  const recentMeetings = meetings.slice(0, 7);
+
+  // Toggle action item completion
+  const toggleActionItem = useCallback(
+    async (meetingId: string, itemIdx: number) => {
+      const meeting = meetings.find((m) => m.id === meetingId);
+      if (!meeting) return;
+
+      const updatedItems = [...(meeting.actionItems ?? [])];
+      if (!updatedItems[itemIdx]) return;
+
+      updatedItems[itemIdx] = {
+        ...updatedItems[itemIdx],
+        completed: !updatedItems[itemIdx].completed,
+      };
+
+      await updateMeeting(meetingId, { actionItems: updatedItems });
+      refresh();
+    },
+    [meetings, refresh]
+  );
+
+  const hasMeetings = meetings.length > 0;
   const mounted = !loading;
 
-  const stats = useMemo(() => computeStats(meetings), [meetings]);
-
-  // Auto-mark "record" step if user has at least one meeting
-  useEffect(() => {
-    if (stats.totalMeetings > 0 && !completedSteps.includes("record")) {
-      setCompletedSteps((prev) =>
-        prev.includes("record") ? prev : [...prev, "record"]
-      );
-    }
-  }, [stats.totalMeetings, completedSteps]);
-
-  const toggleStep = (id: string) => {
-    setCompletedSteps((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+  if (loading) {
+    return (
+      <div className="space-y-8 animate-pulse">
+        <div className="h-10 bg-muted rounded-lg w-64" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-20 bg-muted rounded-xl" />
+          ))}
+        </div>
+        <div className="h-64 bg-muted rounded-xl" />
+      </div>
     );
-  };
+  }
 
-  const progress = Math.round((completedSteps.length / onboardingSteps.length) * 100);
-  const hasMeetings = stats.totalMeetings > 0;
+  /* ─── Empty state for new users ─── */
+  if (!hasMeetings) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="font-heading text-3xl text-foreground">
+            {greeting()}, {firstName}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Welcome to Reverbic. Upload or record your first meeting to get started.
+          </p>
+        </div>
 
+        <div className="bg-card border border-border rounded-xl p-8 text-center space-y-5">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-brand-violet/10 flex items-center justify-center">
+            <Sparkles className="w-7 h-7 text-brand-violet" />
+          </div>
+          <div>
+            <h2 className="font-heading text-xl text-foreground">
+              Capture your first meeting
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+              Upload a recording or start a live recording. Reverbic will transcribe it, extract
+              action items, decisions, and key points automatically.
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3">
+            <AppLink
+              href="/meetings/upload"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-brand-violet text-white text-sm font-semibold hover:bg-brand-violet/90 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              Upload Recording
+            </AppLink>
+            <AppLink
+              href="/meetings/record"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <Mic className="w-4 h-4" />
+              Start Recording
+            </AppLink>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ─── Main home hub ─── */
   return (
     <div className="space-y-8">
-      {/* Welcome */}
-      <div>
-        <h1 className="font-heading text-3xl text-foreground">
-          Welcome{user?.name ? `, ${user.name.split(" ")[0]}` : " to Reverbic"}
-        </h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {hasMeetings
-            ? `You have ${stats.totalMeetings} meeting${stats.totalMeetings === 1 ? "" : "s"} and ${stats.openActionItems} open action item${stats.openActionItems === 1 ? "" : "s"}.`
-            : "Let\u0027s get you set up. Complete these steps to start capturing meeting intelligence."}
-        </p>
+      {/* ── Section 1: Greeting + Quick Stats Bar ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-3xl text-foreground">
+            {greeting()}, {firstName}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Here&apos;s what&apos;s happening across your meetings.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <AppLink
+            href="/meetings/upload"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-violet text-white text-sm font-semibold hover:bg-brand-violet/90 transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            Upload
+          </AppLink>
+          <AppLink
+            href="/meetings/record"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Mic className="w-4 h-4" />
+            Record
+          </AppLink>
+        </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard
-          label="Meetings"
-          value={mounted ? String(stats.totalMeetings) : "0"}
-          icon={Calendar}
-          accent="brand-violet"
-        />
-        <StatCard
-          label="Hours Recorded"
-          value={mounted ? formatDuration(stats.totalHours) : "0h"}
-          icon={Clock}
-          accent="brand-cyan"
-        />
-        <StatCard
-          label="Open Actions"
-          value={mounted ? String(stats.openActionItems) : "0"}
-          icon={ListChecks}
-          accent="brand-rose"
-        />
-        <StatCard
-          label="Completed"
-          value={mounted ? String(stats.completedActionItems) : "0"}
-          icon={CheckCircle2}
-          accent="brand-emerald"
-        />
-        <StatCard
-          label="Decisions"
-          value={mounted ? String(stats.totalDecisions) : "0"}
-          icon={Target}
-          accent="brand-violet"
-        />
+      {/* Stat pills */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-brand-rose/10 flex items-center justify-center shrink-0">
+            <ListChecks className="w-4.5 h-4.5 text-brand-rose" />
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-foreground leading-tight">
+              {stats.openActions}
+            </div>
+            <div className="text-xs text-muted-foreground">Open Actions</div>
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0">
+            <Calendar className="w-4.5 h-4.5 text-brand-violet" />
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-foreground leading-tight">
+              {stats.totalMeetings}
+            </div>
+            <div className="text-xs text-muted-foreground">Meetings</div>
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-brand-cyan/10 flex items-center justify-center shrink-0">
+            <Clock className="w-4.5 h-4.5 text-brand-cyan" />
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-foreground leading-tight">
+              {formatDuration(stats.totalSeconds)}
+            </div>
+            <div className="text-xs text-muted-foreground">Hours Recorded</div>
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-brand-amber/10 flex items-center justify-center shrink-0">
+            <Target className="w-4.5 h-4.5 text-brand-amber" />
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-foreground leading-tight">
+              {stats.totalDecisions}
+            </div>
+            <div className="text-xs text-muted-foreground">Decisions</div>
+          </div>
+        </div>
       </div>
 
-      {/* Recent Meetings + Activity (side by side on large screens) */}
-      {hasMeetings && mounted && (
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Recent Meetings */}
+      {/* ── Section 2: My Action Items ── */}
+      {allActionItems.length > 0 && (
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <h2 className="font-heading text-base text-foreground">My Action Items</h2>
+            <AppLink
+              href="/action-items"
+              className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors flex items-center gap-1"
+            >
+              View all
+              <ArrowRight className="w-3 h-3" />
+            </AppLink>
+          </div>
+
+          {/* Open items */}
+          <div className="divide-y divide-border">
+            {openItems.length === 0 && (
+              <div className="px-5 py-6 text-center">
+                <CheckCircle2 className="w-5 h-5 text-brand-emerald mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">All action items completed!</p>
+              </div>
+            )}
+            {openItems.map((item) => (
+              <div
+                key={`${item.meetingId}-${item.itemIdx}`}
+                className="flex items-start gap-3 px-5 py-3"
+              >
+                <button
+                  onClick={() => toggleActionItem(item.meetingId, item.itemIdx)}
+                  className="mt-0.5 shrink-0"
+                >
+                  <Circle className="w-4.5 h-4.5 text-muted-foreground/40 hover:text-brand-violet transition-colors" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground">{item.text}</p>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <AppLink
+                      href={`/meetings/${item.meetingId}`}
+                      className="text-xs text-muted-foreground hover:text-brand-violet transition-colors truncate max-w-[200px]"
+                    >
+                      {item.meetingTitle}
+                    </AppLink>
+                    {item.assignee && (
+                      <span className="text-xs text-muted-foreground">
+                        &middot; {item.assignee}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${priorityBadge(item.priority).className}`}
+                >
+                  {item.priority}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Completed items (collapsible) */}
+          {completedItems.length > 0 && (
+            <>
+              <button
+                onClick={() => setShowCompleted(!showCompleted)}
+                className="w-full px-5 py-3 border-t border-border flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showCompleted ? (
+                  <ChevronDown className="w-3.5 h-3.5" />
+                ) : (
+                  <ChevronRight className="w-3.5 h-3.5" />
+                )}
+                {completedItems.length} completed item{completedItems.length === 1 ? "" : "s"}
+              </button>
+              {showCompleted && (
+                <div className="divide-y divide-border">
+                  {completedItems.map((item) => (
+                    <div
+                      key={`${item.meetingId}-${item.itemIdx}`}
+                      className="flex items-start gap-3 px-5 py-3 opacity-60"
+                    >
+                      <button
+                        onClick={() => toggleActionItem(item.meetingId, item.itemIdx)}
+                        className="mt-0.5 shrink-0"
+                      >
+                        <CheckCircle2 className="w-4.5 h-4.5 text-brand-emerald" />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-foreground line-through">{item.text}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <AppLink
+                            href={`/meetings/${item.meetingId}`}
+                            className="text-xs text-muted-foreground hover:text-brand-violet transition-colors truncate max-w-[200px]"
+                          >
+                            {item.meetingTitle}
+                          </AppLink>
+                          {item.assignee && (
+                            <span className="text-xs text-muted-foreground">
+                              &middot; {item.assignee}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${priorityBadge(item.priority).className}`}
+                      >
+                        {item.priority}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Section 3: Recent Meetings ── */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <h2 className="font-heading text-base text-foreground">Recent Meetings</h2>
+          <AppLink
+            href="/meetings"
+            className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors flex items-center gap-1"
+          >
+            View all
+            <ArrowRight className="w-3 h-3" />
+          </AppLink>
+        </div>
+        <div className="divide-y divide-border">
+          {recentMeetings.map((meeting) => {
+            const badge = statusLabel(meeting.status);
+            const actionCount = (meeting.actionItems ?? []).length;
+            const decisionCount = (meeting.decisions ?? []).length;
+            const keyPointCount = (meeting.keyPoints ?? []).length;
+
+            return (
+              <AppLink
+                key={meeting.id}
+                href={`/meetings/${meeting.id}`}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-brand-violet" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-foreground truncate">
+                    {meeting.title}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="text-xs text-muted-foreground">
+                      {formatRelativeDate(meeting.createdAt)}
+                    </span>
+                    {meeting.duration != null && meeting.duration > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        &middot; {formatDuration(meeting.duration)}
+                      </span>
+                    )}
+                    {meeting.summary && (
+                      <span className="text-xs text-muted-foreground truncate max-w-[200px] hidden sm:inline">
+                        &middot; {meeting.summary.slice(0, 60)}...
+                      </span>
+                    )}
+                  </div>
+                  {/* Insight pills */}
+                  {meeting.status === "completed" && (actionCount > 0 || decisionCount > 0 || keyPointCount > 0) && (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      {decisionCount > 0 && (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-brand-amber/10 text-brand-amber">
+                          {decisionCount} decision{decisionCount === 1 ? "" : "s"}
+                        </span>
+                      )}
+                      {actionCount > 0 && (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-brand-rose/10 text-brand-rose">
+                          {actionCount} action{actionCount === 1 ? "" : "s"}
+                        </span>
+                      )}
+                      {keyPointCount > 0 && (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan">
+                          {keyPointCount} key point{keyPointCount === 1 ? "" : "s"}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <span
+                  className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${badge.className}`}
+                >
+                  {badge.text}
+                </span>
+              </AppLink>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Section 4: Recent Decisions ── */}
+      {allDecisions.length > 0 && (
+        <SoftPlanGate
+          feature="decisions"
+          title="Unlock Decisions"
+          description="Upgrade to Pro to see decisions extracted from your meetings."
+        >
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground">Recent Meetings</h2>
+              <h2 className="font-heading text-base text-foreground">Recent Decisions</h2>
               <AppLink
-                href="/meetings"
+                href="/decisions"
                 className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors flex items-center gap-1"
               >
                 View all
@@ -233,279 +558,33 @@ export default function DashboardPage() {
               </AppLink>
             </div>
             <div className="divide-y divide-border">
-              {stats.recentMeetings.map((meeting) => {
-                const badge = statusLabel(meeting.status);
-                return (
-                  <AppLink
-                    key={meeting.id}
-                    href={`/meetings/${meeting.id}`}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-brand-violet/10 flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4 text-brand-violet" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-foreground truncate">
-                        {meeting.title}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {formatRelativeDate(meeting.createdAt)}
-                        {meeting.duration != null && meeting.duration > 0 && (
-                          <span> &middot; {formatDuration(meeting.duration / 3600)}</span>
-                        )}
-                      </div>
-                    </div>
-                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${badge.className}`}>
-                      {badge.text}
-                    </span>
-                  </AppLink>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Activity Feed */}
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">Activity</h2>
-            </div>
-            <div className="divide-y divide-border">
-              {stats.recentMeetings.map((meeting) => (
-                <div key={meeting.id} className="px-5 py-3">
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5">
-                      {meeting.status === "completed" ? (
-                        <CheckCircle2 className="w-4 h-4 text-brand-emerald" />
-                      ) : meeting.status === "failed" ? (
-                        <AlertCircle className="w-4 h-4 text-brand-rose" />
-                      ) : meeting.status === "processing" ? (
-                        <Clock className="w-4 h-4 text-brand-cyan" />
-                      ) : (
-                        <Circle className="w-4 h-4 text-muted-foreground" />
+              {allDecisions.map((decision, idx) => (
+                <div key={`${decision.meetingId}-${idx}`} className="flex items-start gap-3 px-5 py-3">
+                  <div className="mt-0.5 shrink-0">
+                    <Lightbulb className="w-4 h-4 text-brand-amber" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground">{decision.text}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <AppLink
+                        href={`/meetings/${decision.meetingId}`}
+                        className="text-xs text-muted-foreground hover:text-brand-violet transition-colors truncate max-w-[200px]"
+                      >
+                        {decision.meetingTitle}
+                      </AppLink>
+                      {decision.madeBy && (
+                        <span className="text-xs text-muted-foreground">
+                          &middot; {decision.madeBy}
+                        </span>
                       )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground">
-                        {meeting.status === "completed" && (
-                          <>
-                            <span className="font-medium">{meeting.title}</span> was processed
-                            {(meeting.actionItems?.length ?? 0) > 0 && (
-                              <> with {meeting.actionItems.length} action item{meeting.actionItems.length === 1 ? "" : "s"}</>
-                            )}
-                            {(meeting.decisions?.length ?? 0) > 0 && (
-                              <> and {meeting.decisions.length} decision{meeting.decisions.length === 1 ? "" : "s"}</>
-                            )}
-                          </>
-                        )}
-                        {meeting.status === "processing" && (
-                          <>
-                            <span className="font-medium">{meeting.title}</span> is being processed...
-                          </>
-                        )}
-                        {meeting.status === "uploading" && (
-                          <>
-                            <span className="font-medium">{meeting.title}</span> is uploading...
-                          </>
-                        )}
-                        {meeting.status === "failed" && (
-                          <>
-                            <span className="font-medium">{meeting.title}</span> processing failed
-                          </>
-                        )}
-                        {meeting.status === "silent" && (
-                          <>
-                            <span className="font-medium">{meeting.title}</span> had no audible speech
-                          </>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {formatRelativeDate(meeting.createdAt)}
-                      </p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </SoftPlanGate>
       )}
-
-      {/* Onboarding complete celebration */}
-      {completedSteps.length === onboardingSteps.length && !hasMeetings && (
-        <div className="flex items-center gap-3 p-4 bg-brand-emerald/[0.06] border border-brand-emerald/20 rounded-xl fade-up">
-          <div className="w-8 h-8 rounded-full bg-brand-emerald/15 flex items-center justify-center shrink-0 circle-fill">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-brand-emerald">
-              <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="check-draw" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">All set up</p>
-            <p className="text-xs text-muted-foreground">You&apos;re ready to start capturing meeting intelligence.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
-        <QuickAction
-          href="/meetings/upload"
-          icon={Upload}
-          label="Upload Recording"
-          description="Drag & drop any audio or video file"
-          color="brand-violet"
-        />
-        <QuickAction
-          href="/meetings/record"
-          icon={Mic}
-          label="Start Recording"
-          description="Record directly in your browser"
-          color="brand-rose"
-        />
-        <QuickAction
-          href="/integrations"
-          icon={Plug}
-          label="Integrations"
-          description="Connect Zoom, Meet, Teams & more"
-          color="brand-cyan"
-        />
-        <QuickAction
-          href="/settings"
-          icon={Sparkles}
-          label="Preferences"
-          description="Customize AI summaries & alerts"
-          color="brand-emerald"
-        />
-      </div>
-
-      {/* Onboarding (show collapsed once user has meetings, always visible until all done) */}
-      {completedSteps.length < onboardingSteps.length && (
-        <>
-          {/* Progress */}
-          <div className="bg-card border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">Setup Progress</h2>
-              <span className="text-sm font-medium text-brand-violet">{progress}%</span>
-            </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-brand-violet rounded-full transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {completedSteps.length} of {onboardingSteps.length} steps completed
-            </p>
-          </div>
-
-          {/* Onboarding Steps */}
-          <div className="space-y-3">
-            {onboardingSteps.map((step) => {
-              const done = completedSteps.includes(step.id);
-              const Icon = step.icon;
-              return (
-                <div
-                  key={step.id}
-                  className={`bg-card border rounded-xl p-5 transition-all ${
-                    done ? "border-brand-emerald/30 bg-brand-emerald/[0.02] step-complete" : "border-border"
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <button
-                      onClick={() => toggleStep(step.id)}
-                      className="mt-0.5 shrink-0"
-                    >
-                      {done ? (
-                        <CheckCircle2 className="w-5 h-5 text-brand-emerald check-pop" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-muted-foreground/40 hover:text-brand-violet/50 transition-colors" />
-                      )}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Icon className={`w-4 h-4 ${done ? "text-brand-emerald" : "text-brand-violet"}`} />
-                        <h3 className={`text-sm font-semibold ${done ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                          {step.title}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
-                      {!done && (
-                        <AppLink
-                          href={step.href}
-                          className="inline-flex items-center gap-1 mt-3 text-sm font-medium text-brand-violet hover:text-brand-violet/80 transition-colors"
-                        >
-                          {step.cta}
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </AppLink>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-const colorMap: Record<string, { bg: string; text: string; border: string }> = {
-  "brand-violet": { bg: "bg-brand-violet/10", text: "text-brand-violet", border: "hover:border-brand-violet/30" },
-  "brand-cyan": { bg: "bg-brand-cyan/10", text: "text-brand-cyan", border: "hover:border-brand-cyan/30" },
-  "brand-rose": { bg: "bg-brand-rose/10", text: "text-brand-rose", border: "hover:border-brand-rose/30" },
-  "brand-emerald": { bg: "bg-brand-emerald/10", text: "text-brand-emerald", border: "hover:border-brand-emerald/30" },
-  "brand-amber": { bg: "bg-brand-amber/10", text: "text-brand-amber", border: "hover:border-brand-amber/30" },
-};
-
-function QuickAction({
-  href,
-  icon: Icon,
-  label,
-  description,
-  color,
-}: {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  description: string;
-  color: string;
-}) {
-  const c = colorMap[color] || colorMap["brand-violet"];
-  return (
-    <AppLink
-      href={href}
-      className={`bg-card border border-border rounded-xl p-5 hover:shadow-md ${c.border} transition-all group`}
-    >
-      <div className={`w-10 h-10 rounded-lg ${c.bg} flex items-center justify-center mb-3`}>
-        <Icon className={`w-5 h-5 ${c.text}`} />
-      </div>
-      <h3 className="text-sm font-semibold text-foreground group-hover:text-brand-violet transition-colors">{label}</h3>
-      <p className="text-xs text-muted-foreground mt-1">{description}</p>
-    </AppLink>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  accent,
-}: {
-  label: string;
-  value: string;
-  icon: React.ElementType;
-  accent: string;
-}) {
-  const c = colorMap[accent] || colorMap["brand-violet"];
-  return (
-    <div className="bg-card border border-border rounded-xl p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className={`w-9 h-9 rounded-lg ${c.bg} flex items-center justify-center`}>
-          <Icon className={`w-4.5 h-4.5 ${c.text}`} />
-        </div>
-      </div>
-      <div className="text-2xl font-semibold text-foreground">{value}</div>
-      <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
     </div>
   );
 }

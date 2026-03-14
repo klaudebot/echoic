@@ -22,6 +22,7 @@ import {
   Activity,
   Timer,
   Award,
+  BarChart3,
 } from "lucide-react";
 import { PlanGate } from "@/components/PlanGate";
 
@@ -326,6 +327,33 @@ function generateInsight(stats: WeeklyStats): string {
   return parts.join(" ") || "Keep recording meetings to unlock more personalized insights.";
 }
 
+function dayKey(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  } catch {
+    return iso;
+  }
+}
+
+function weekdayLabel(key: string): string {
+  try {
+    const d = new Date(key + "T00:00:00");
+    return d.toLocaleDateString("en-US", { weekday: "short" });
+  } catch {
+    return "";
+  }
+}
+
+function shortDay(key: string): string {
+  try {
+    const d = new Date(key + "T00:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  } catch {
+    return key;
+  }
+}
+
 // ─── Main page ───
 
 export default function CoachPage() {
@@ -395,6 +423,25 @@ export default function CoachPage() {
       avgWPM: totalMinutes > 0 ? Math.round(totalWords / totalMinutes) : 0,
     };
   }, [completedMeetings, meetingMetrics]);
+
+  const dailyCounts = useMemo(() => {
+    const now = new Date();
+    const dailyMap: Record<string, number> = {};
+    for (const m of completedMeetings) {
+      const dk = dayKey(m.createdAt);
+      dailyMap[dk] = (dailyMap[dk] || 0) + 1;
+    }
+    const counts: { key: string; count: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const k = dayKey(d.toISOString());
+      counts.push({ key: k, count: dailyMap[k] || 0 });
+    }
+    return counts;
+  }, [completedMeetings]);
+
+  const maxDaily = Math.max(...dailyCounts.map((d) => d.count), 1);
 
   const currentScore = weeklyStats[0]?.score ?? 0;
   const currentTrend = weeklyStats[0]?.trend ?? "stable";
@@ -507,6 +554,45 @@ export default function CoachPage() {
               icon={Target}
               accent="brand-rose"
             />
+          </div>
+
+          {/* Meeting Frequency Chart */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <BarChart3 className="w-4 h-4 text-brand-violet" />
+              <h3 className="text-sm font-semibold text-foreground">Meeting Frequency</h3>
+            </div>
+            <p className="text-xs text-muted-foreground mb-5">Last 30 days</p>
+            <div className="flex items-end gap-[3px] h-36">
+              {dailyCounts.map((day, i) => {
+                const heightPct = day.count > 0 ? Math.max((day.count / maxDaily) * 100, 6) : 0;
+                const isToday = day.key === dayKey(new Date().toISOString());
+                const opacity = 0.3 + (i / 29) * 0.7;
+                return (
+                  <div key={day.key} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:flex items-center bg-foreground text-background text-[10px] font-medium px-2 py-1 rounded-md whitespace-nowrap z-10 pointer-events-none">
+                      {shortDay(day.key)}: {day.count} {day.count === 1 ? "meeting" : "meetings"}
+                    </div>
+                    <div
+                      className={`w-full rounded-t-sm transition-all duration-300 ${
+                        day.count === 0 ? "bg-muted/50" : isToday ? "bg-brand-violet" : "bg-brand-violet group-hover:bg-brand-violet"
+                      }`}
+                      style={{
+                        height: day.count === 0 ? "2px" : `${heightPct}%`,
+                        opacity: day.count === 0 ? undefined : (isToday ? 1 : opacity),
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex gap-[3px] mt-2">
+              {dailyCounts.map((day, i) => (
+                <div key={day.key} className="flex-1 text-center text-[9px] text-muted-foreground">
+                  {i % 5 === 0 ? weekdayLabel(day.key) : ""}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Weekly Breakdown */}

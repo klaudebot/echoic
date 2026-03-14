@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/UserContext";
+import { IntegrationsPanel } from "@/components/IntegrationsPanel";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
 import dynamic from "next/dynamic";
 import {
@@ -50,6 +51,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
 export default function SettingsPage() {
   const { user, setUser, refreshPlan } = useUser();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"general" | "integrations">("general");
 
   // Profile
   const [name, setName] = useState("");
@@ -75,8 +77,15 @@ export default function SettingsPage() {
   const [transcriptionLang, setTranscriptionLang] = useState("en-US");
   const [customVocab, setCustomVocab] = useState("");
 
-  // Billing
+  // Tab navigation
   const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("tab") === "integrations") {
+      setActiveTab("integrations");
+    }
+  }, [searchParams]);
+
+  // Billing
   const [upgradingTier, setUpgradingTier] = useState<string | null>(null);
   const [billingMessage, setBillingMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
@@ -220,6 +229,34 @@ export default function SettingsPage() {
         </p>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex items-center gap-1 border-b border-border mb-8">
+        <button
+          onClick={() => setActiveTab("general")}
+          className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+            activeTab === "general" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          General
+          {activeTab === "general" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-violet rounded-full" />
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("integrations")}
+          className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+            activeTab === "integrations" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Integrations
+          {activeTab === "integrations" && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-violet rounded-full" />
+          )}
+        </button>
+      </div>
+
+      {activeTab === "general" && (
+      <>
       {/* Profile */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2 mb-1">
@@ -555,6 +592,10 @@ export default function SettingsPage() {
           Account deletion is permanent and cannot be undone.
         </p>
       </div>
+      </>
+      )}
+
+      {activeTab === "integrations" && <IntegrationsPanel />}
     </div>
   );
 }

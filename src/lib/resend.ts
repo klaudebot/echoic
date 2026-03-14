@@ -70,7 +70,7 @@ function emailShell(body: string, preheader?: string): string {
                   <img src="${APP_URL}/icon-transparent.png" alt="" width="24" height="24" style="display:block;" />
                 </td>
                 <td style="vertical-align: middle;">
-                  <span class="email-header-text" style="font-size: 22px; font-weight: 800; color: #ffffff !important; letter-spacing: -0.5px;">Reverbic</span>
+                  <span class="email-header-text" style="font-size: 22px; font-weight: 800; color: #ffffff !important; letter-spacing: -0.5px;">Reverbic Team</span>
                 </td>
               </tr>
             </table>

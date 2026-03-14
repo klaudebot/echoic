@@ -433,67 +433,69 @@ export default function TeamPage() {
       Date.now() + 7 * 24 * 60 * 60 * 1000
     ).toISOString();
 
-    const { error } = await sb.from("team_invites").insert({
-      organization_id: user.organizationId,
-      invited_by: user.id,
-      email,
-      role: inviteRole,
-      status: "pending",
-      token,
-      expires_at: expiresAt,
-    });
-
-    if (error) {
-      setInviteError("Failed to create invite. Please try again.");
-      setInviteLoading(false);
-      return;
-    }
-
-    // Audit log
-    await sb.from("audit_log").insert({
-      organization_id: user.organizationId,
-      actor_id: user.id,
-      action: "invite_sent",
-      resource_type: "team_invite",
-      metadata: { email, role: inviteRole },
-    }).catch(() => {});
-
-    // Send invite email
-    let emailOk = false;
     try {
-      const res = await fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "team-invite",
-          to: email,
-          inviterName: user.name,
-          inviterEmail: user.email,
-          inviteToken: token,
-          inviteRole,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        console.error("[team] Invite email failed:", data);
-      } else {
-        emailOk = true;
-      }
-    } catch (err) {
-      console.error("[team] Invite email error:", err);
-    }
+      const { data: inserted, error } = await sb.from("team_invites").insert({
+        organization_id: user.organizationId,
+        invited_by: user.id,
+        email,
+        role: inviteRole,
+        status: "pending",
+        token,
+        expires_at: expiresAt,
+      }).select("id").single();
 
-    await loadMembers();
-    if (emailOk) {
-      setInviteSent(true);
-    } else {
-      setInviteError(
-        "Invite created but email failed to send. Try resending from the menu."
-      );
+      if (error || !inserted) {
+        console.error("[team] Invite insert failed:", error);
+        setInviteError(
+          error?.message?.includes("unique")
+            ? "This email already has a pending invite. Try resending from the menu."
+            : "Failed to create invite. Please try again."
+        );
+        setInviteLoading(false);
+        return;
+      }
+
+      // Send invite email
+      let emailOk = false;
+      try {
+        const res = await fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "team-invite",
+            to: email,
+            inviterName: user.name,
+            inviterEmail: user.email,
+            inviteToken: token,
+            inviteRole,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          console.error("[team] Invite email failed:", data);
+        } else {
+          emailOk = true;
+        }
+      } catch (err) {
+        console.error("[team] Invite email error:", err);
+      }
+
+      await loadMembers();
+      if (emailOk) {
+        setInviteSent(true);
+      } else {
+        setInviteError(
+          "Invite created but email failed to send. Try resending from the menu."
+        );
+      }
+      setInviteEmail("");
+      setTimeout(() => setInviteSent(false), 3000);
+    } catch (err) {
+      console.error("[team] Invite error:", err);
+      setInviteError("Something went wrong. Please try again.");
+    } finally {
+      setInviteLoading(false);
     }
-    setInviteEmail("");
-    setInviteLoading(false);
-    setTimeout(() => setInviteSent(false), 3000);
   }
 
   async function handleResend(member: TeamMember) {

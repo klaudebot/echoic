@@ -20,11 +20,11 @@ export async function GET(request: Request) {
     // Slack sends error param if user denies
     if (errorParam) {
       console.warn("[slack/callback] user denied:", errorParam);
-      return NextResponse.redirect(`${appUrl}/integrations?error=slack_denied`);
+      return NextResponse.redirect(`${appUrl}/settings?tab=integrations&error=slack_denied`);
     }
 
     if (!code || !stateParam) {
-      return NextResponse.redirect(`${appUrl}/integrations?error=slack_missing_params`);
+      return NextResponse.redirect(`${appUrl}/settings?tab=integrations&error=slack_missing_params`);
     }
 
     // Decode state
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     try {
       state = JSON.parse(Buffer.from(stateParam, "base64url").toString("utf-8"));
     } catch {
-      return NextResponse.redirect(`${appUrl}/integrations?error=slack_invalid_state`);
+      return NextResponse.redirect(`${appUrl}/settings?tab=integrations&error=slack_invalid_state`);
     }
 
     // Exchange code for token
@@ -67,13 +67,13 @@ export async function GET(request: Request) {
 
     if (dbError) {
       console.error("[slack/callback] DB upsert error:", dbError);
-      return NextResponse.redirect(`${appUrl}/integrations?error=slack_save_failed`);
+      return NextResponse.redirect(`${appUrl}/settings?tab=integrations&error=slack_save_failed`);
     }
 
-    return NextResponse.redirect(`${appUrl}/integrations?slack=connected`);
+    return NextResponse.redirect(`${appUrl}/settings?tab=integrations&slack=connected`);
   } catch (err) {
     console.error("[slack/callback] error:", err);
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://reverbic.ai";
-    return NextResponse.redirect(`${appUrl}/integrations?error=slack_exchange_failed`);
+    return NextResponse.redirect(`${appUrl}/settings?tab=integrations&error=slack_exchange_failed`);
   }
 }

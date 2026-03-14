@@ -19,13 +19,13 @@ export async function GET(request: NextRequest) {
   if (errorParam) {
     console.error("[notion/callback] OAuth error:", errorParam);
     return NextResponse.redirect(
-      `${appUrl}/integrations?error=notion_denied`
+      `${appUrl}/settings?tab=integrations&error=notion_denied`
     );
   }
 
   if (!code || !stateParam) {
     return NextResponse.redirect(
-      `${appUrl}/integrations?error=missing_params`
+      `${appUrl}/settings?tab=integrations&error=missing_params`
     );
   }
 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     if (!orgId || !userId) throw new Error("Invalid state payload");
   } catch {
     return NextResponse.redirect(
-      `${appUrl}/integrations?error=invalid_state`
+      `${appUrl}/settings?tab=integrations&error=invalid_state`
     );
   }
 
@@ -77,17 +77,17 @@ export async function GET(request: NextRequest) {
     if (upsertError) {
       console.error("[notion/callback] Upsert error:", upsertError);
       return NextResponse.redirect(
-        `${appUrl}/integrations?error=save_failed`
+        `${appUrl}/settings?tab=integrations&error=save_failed`
       );
     }
 
     return NextResponse.redirect(
-      `${appUrl}/integrations?notion=connected`
+      `${appUrl}/settings?tab=integrations&notion=connected`
     );
   } catch (err) {
     console.error("[notion/callback] Token exchange error:", err);
     return NextResponse.redirect(
-      `${appUrl}/integrations?error=token_exchange_failed`
+      `${appUrl}/settings?tab=integrations&error=token_exchange_failed`
     );
   }
 }

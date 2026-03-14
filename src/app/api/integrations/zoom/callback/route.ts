@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const errorParam = searchParams.get("error");
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://reverbic.ai";
-  const redirectBase = `${appUrl}/integrations`;
+  const redirectBase = `${appUrl}/settings?tab=integrations`;
 
   // Handle Zoom returning an error (user denied access, etc.)
   if (errorParam) {

@@ -350,13 +350,9 @@ export default function DashboardPage() {
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <h2 className="font-heading text-base text-foreground">My Action Items</h2>
-            <AppLink
-              href="/action-items"
-              className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors flex items-center gap-1"
-            >
-              View all
-              <ArrowRight className="w-3 h-3" />
-            </AppLink>
+            <span className="text-xs text-muted-foreground">
+              {openItems.length} open
+            </span>
           </div>
 
           {/* Open items */}
@@ -549,13 +545,9 @@ export default function DashboardPage() {
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <h2 className="font-heading text-base text-foreground">Recent Decisions</h2>
-              <AppLink
-                href="/decisions"
-                className="text-xs font-medium text-brand-violet hover:text-brand-violet/80 transition-colors flex items-center gap-1"
-              >
-                View all
-                <ArrowRight className="w-3 h-3" />
-              </AppLink>
+              <span className="text-xs text-muted-foreground">
+                Latest from your meetings
+              </span>
             </div>
             <div className="divide-y divide-border">
               {allDecisions.map((decision, idx) => (

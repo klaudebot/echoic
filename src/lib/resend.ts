@@ -69,8 +69,8 @@ function emailShell(body: string, preheader?: string): string {
                 <td style="padding-right: 10px; vertical-align: middle; background-color: ${DEEP};">
                   <img src="${APP_URL}/icon-transparent.png" alt="" width="24" height="24" style="display:block;" />
                 </td>
-                <td style="vertical-align: middle; background-color: ${DEEP}; color: #ffffff;">
-                  <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; background-color: ${DEEP}; display: inline;">Reverbic Team</div>
+                <td style="vertical-align: middle;">
+                  <font color="#ffffff" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Reverbic Team</font>
                 </td>
               </tr>
             </table>

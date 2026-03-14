@@ -864,9 +864,12 @@ export default function TeamPage() {
                           const btn = menuBtnRefs.current.get(member.id);
                           if (btn) {
                             const rect = btn.getBoundingClientRect();
+                            const spaceBelow = window.innerHeight - rect.bottom;
+                            const menuHeight = 160; // approximate max menu height
+                            const openAbove = spaceBelow < menuHeight;
                             setMenuPos({
-                              top: rect.bottom + 4,
-                              left: rect.right - 176,
+                              top: openAbove ? rect.top - menuHeight : rect.bottom + 4,
+                              left: rect.right - 192,
                             });
                           }
                           setOpenMenu(member.id);

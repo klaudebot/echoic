@@ -43,15 +43,23 @@ export default function InviteAcceptPage() {
       setIsLoggedIn(!!user);
       setUserEmail(user?.email ?? null);
 
-      // Fetch invite details
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: inviteData, error: inviteError } = await (supabase as any)
-        .from("team_invites")
-        .select("id, email, role, status, expires_at, organization_id, invited_by, organizations(name), profiles!team_invites_invited_by_fkey(full_name, email)")
-        .eq("token", token)
-        .single();
+      // Fetch invite details via server API (bypasses RLS for unauthenticated users)
+      let inviteData: {
+        id: string; email: string; role: string; status: string;
+        expiresAt: string; orgName: string | null; inviterName: string | null;
+        inviterEmail: string | null; invitedById: string | null;
+      } | null = null;
 
-      if (inviteError || !inviteData) {
+      try {
+        const res = await fetch(`/api/team/invite-details?token=${encodeURIComponent(token)}`);
+        if (res.ok) {
+          inviteData = await res.json();
+        }
+      } catch {
+        // fetch failed
+      }
+
+      if (!inviteData) {
         setInviteState("invalid");
         setError("This invitation link is invalid or has already been replaced by a newer invite.");
         setLoading(false);
@@ -64,11 +72,11 @@ export default function InviteAcceptPage() {
         email: inviteData.email,
         role: inviteData.role,
         status: inviteData.status,
-        expires_at: inviteData.expires_at,
-        orgName: inviteData.organizations?.name ?? "a team",
-        inviterName: inviteData.profiles?.full_name ?? "A teammate",
-        inviterEmail: inviteData.profiles?.email ?? "",
-        invitedById: inviteData.invited_by,
+        expires_at: inviteData.expiresAt,
+        orgName: inviteData.orgName ?? "a team",
+        inviterName: inviteData.inviterName ?? "A teammate",
+        inviterEmail: inviteData.inviterEmail ?? "",
+        invitedById: inviteData.invitedById,
       };
       setInvite(parsed);
 
@@ -92,7 +100,7 @@ export default function InviteAcceptPage() {
       }
 
       // Check if expired
-      if (inviteData.status === "expired" || (inviteData.expires_at && new Date(inviteData.expires_at) < new Date())) {
+      if (inviteData.status === "expired" || (inviteData.expiresAt && new Date(inviteData.expiresAt) < new Date())) {
         setInviteState("expired");
         setLoading(false);
         return;

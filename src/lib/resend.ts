@@ -32,12 +32,28 @@ function emailShell(body: string, preheader?: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light" />
-  <meta name="supported-color-schemes" content="light" />
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light only" />
   <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
   <style>
+    :root { color-scheme: light only; }
     body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; }
     a { color: ${VIOLET}; }
+    /* Prevent dark mode from inverting critical colors */
+    [data-ogsc] .email-header-text,
+    .email-header-text { color: #ffffff !important; }
+    [data-ogsc] .email-header-bg,
+    .email-header-bg { background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%) !important; }
+    [data-ogsc] .email-body-bg,
+    .email-body-bg { background-color: #ffffff !important; }
+    @media (prefers-color-scheme: dark) {
+      .email-header-text { color: #ffffff !important; }
+      .email-header-bg { background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%) !important; }
+      .email-body-bg { background-color: #ffffff !important; color: ${DEEP} !important; }
+      h1, p, div, td, span { color: inherit !important; }
+      .email-heading { color: ${DEEP} !important; }
+      .email-paragraph { color: #4b5563 !important; }
+    }
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
@@ -47,14 +63,14 @@ function emailShell(body: string, preheader?: string): string {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
         <!-- Header -->
         <tr>
-          <td style="background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%); padding: 32px 40px;">
+          <td class="email-header-bg" style="background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%); padding: 32px 40px;">
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
                 <td style="padding-right: 10px; vertical-align: middle;">
                   <img src="${APP_URL}/icon-transparent.png" alt="" width="24" height="24" style="display:block;" />
                 </td>
                 <td style="vertical-align: middle;">
-                  <span style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Reverbic</span>
+                  <span class="email-header-text" style="font-size: 22px; font-weight: 800; color: #ffffff !important; letter-spacing: -0.5px;">Reverbic</span>
                 </td>
               </tr>
             </table>
@@ -62,19 +78,19 @@ function emailShell(body: string, preheader?: string): string {
         </tr>
         <!-- Body -->
         <tr>
-          <td style="padding: 40px;">
+          <td class="email-body-bg" style="padding: 40px; background-color: #ffffff;">
             ${body}
           </td>
         </tr>
         <!-- Footer -->
         <tr>
-          <td style="padding: 0 40px 32px;">
+          <td class="email-body-bg" style="padding: 0 40px 32px; background-color: #ffffff;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               <tr><td style="border-top: 1px solid #e5e7eb; padding-top: 24px;">
-                <p style="font-size: 12px; color: #9ca3af; margin: 0 0 8px; line-height: 1.5;">
+                <p style="font-size: 12px; color: #9ca3af !important; margin: 0 0 8px; line-height: 1.5;">
                   Sent by <a href="${APP_URL}" style="color: ${VIOLET}; text-decoration: none; font-weight: 600;">Reverbic</a> — AI-powered meeting intelligence
                 </p>
-                <p style="font-size: 11px; color: #d1d5db; margin: 0;">
+                <p style="font-size: 11px; color: #d1d5db !important; margin: 0;">
                   <a href="${APP_URL}/settings" style="color: #9ca3af; text-decoration: underline;">Manage email preferences</a>
                 </p>
               </td></tr>
@@ -101,32 +117,32 @@ function primaryButton(text: string, href: string): string {
 function secondaryButton(text: string, href: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top: 8px;">
     <tr>
-      <td style="border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 24px;">
-        <a href="${href}" style="color: ${DEEP}; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block;">${text}</a>
+      <td style="border: 2px solid #e5e7eb; border-radius: 10px; padding: 12px 24px; background-color: #ffffff;">
+        <a href="${href}" style="color: ${DEEP} !important; font-size: 14px; font-weight: 600; text-decoration: none; display: inline-block;">${text}</a>
       </td>
     </tr>
   </table>`;
 }
 
 function statCard(value: string, label: string, color: string): string {
-  return `<td style="background: #f9fafb; border-radius: 12px; padding: 16px 20px; text-align: center; width: 50%;">
-    <div style="font-size: 28px; font-weight: 800; color: ${color}; line-height: 1;">${value}</div>
-    <div style="font-size: 12px; color: #6b7280; margin-top: 6px; font-weight: 500;">${label}</div>
+  return `<td style="background: #f9fafb !important; border-radius: 12px; padding: 16px 20px; text-align: center; width: 50%;">
+    <div style="font-size: 28px; font-weight: 800; color: ${color} !important; line-height: 1;">${value}</div>
+    <div style="font-size: 12px; color: #6b7280 !important; margin-top: 6px; font-weight: 500;">${label}</div>
   </td>`;
 }
 
 function heading(text: string): string {
-  return `<h1 style="font-size: 24px; font-weight: 800; color: ${DEEP}; margin: 0 0 8px; line-height: 1.3;">${text}</h1>`;
+  return `<h1 class="email-heading" style="font-size: 24px; font-weight: 800; color: ${DEEP} !important; margin: 0 0 8px; line-height: 1.3;">${text}</h1>`;
 }
 
 function paragraph(text: string): string {
-  return `<p style="font-size: 15px; color: #4b5563; margin: 0 0 20px; line-height: 1.7;">${text}</p>`;
+  return `<p class="email-paragraph" style="font-size: 15px; color: #4b5563 !important; margin: 0 0 20px; line-height: 1.7;">${text}</p>`;
 }
 
 function infoBox(label: string, content: string, color: string, bgColor: string): string {
-  return `<div style="background: ${bgColor}; border-radius: 12px; padding: 20px; margin-bottom: 24px; border-left: 4px solid ${color};">
-    <p style="font-size: 11px; font-weight: 700; color: ${color}; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.8px;">${label}</p>
-    <p style="font-size: 14px; color: #374151; margin: 0; line-height: 1.7;">${content}</p>
+  return `<div style="background: ${bgColor} !important; border-radius: 12px; padding: 20px; margin-bottom: 24px; border-left: 4px solid ${color};">
+    <p style="font-size: 11px; font-weight: 700; color: ${color} !important; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.8px;">${label}</p>
+    <p style="font-size: 14px; color: #374151 !important; margin: 0; line-height: 1.7;">${content}</p>
   </div>`;
 }
 

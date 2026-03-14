@@ -39,18 +39,11 @@ function emailShell(body: string, preheader?: string): string {
     :root { color-scheme: light only; }
     body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; }
     a { color: ${VIOLET}; }
-    /* Prevent dark mode from inverting critical colors */
-    [data-ogsc] .email-header-text,
-    .email-header-text { color: #ffffff !important; }
-    [data-ogsc] .email-header-bg,
-    .email-header-bg { background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%) !important; }
+    /* Prevent dark mode from inverting body colors */
     [data-ogsc] .email-body-bg,
     .email-body-bg { background-color: #ffffff !important; }
     @media (prefers-color-scheme: dark) {
-      .email-header-text { color: #ffffff !important; }
-      .email-header-bg { background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%) !important; }
       .email-body-bg { background-color: #ffffff !important; color: ${DEEP} !important; }
-      h1, p, div, td, span { color: inherit !important; }
       .email-heading { color: ${DEEP} !important; }
       .email-paragraph { color: #4b5563 !important; }
     }
@@ -63,17 +56,8 @@ function emailShell(body: string, preheader?: string): string {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
         <!-- Header -->
         <tr>
-          <td class="email-header-bg" style="background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%); padding: 32px 40px;">
-            <table role="presentation" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding-right: 10px; vertical-align: middle; background-color: ${DEEP};">
-                  <img src="${APP_URL}/icon-transparent.png" alt="" width="24" height="24" style="display:block;" />
-                </td>
-                <td style="vertical-align: middle;">
-                  <font color="#ffffff" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Reverbic Team</font>
-                </td>
-              </tr>
-            </table>
+          <td style="background: linear-gradient(135deg, ${DEEP} 0%, #1e1b4b 100%); padding: 32px 40px;">
+            <img src="${APP_URL}/email-logo.png" alt="Reverbic" width="200" height="40" style="display:block;" />
           </td>
         </tr>
         <!-- Body -->

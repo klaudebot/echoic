@@ -34,8 +34,11 @@ export function getPriceId(tier: string, interval: "monthly" | "yearly"): string
 
 /** Price ID → plan tier reverse lookup */
 export function tierFromPriceId(priceId: string): string {
+  if (!priceId) return "free";
   for (const [tier, intervals] of Object.entries(PLAN_PRICES)) {
-    if (intervals.monthly === priceId || intervals.yearly === priceId) return tier;
+    // Skip empty env vars — they'd match any priceId via falsy comparison
+    if (intervals.monthly && intervals.monthly === priceId) return tier;
+    if (intervals.yearly && intervals.yearly === priceId) return tier;
   }
   return "free";
 }

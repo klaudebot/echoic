@@ -29,6 +29,8 @@ interface UserContextValue {
   setUser: (profile: UserProfile) => void;
   clearUser: () => void;
   signOut: () => Promise<void>;
+  /** Re-fetch org plan from database (call after billing changes) */
+  refreshPlan: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextValue>({
@@ -38,6 +40,7 @@ const UserContext = createContext<UserContextValue>({
   setUser: () => {},
   clearUser: () => {},
   signOut: async () => {},
+  refreshPlan: async () => {},
 });
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
@@ -148,8 +151,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setSupabaseUser(null);
   }, []);
 
+  const refreshPlan = useCallback(async () => {
+    const authUser = supabaseUser;
+    if (authUser) {
+      await loadProfile(authUser);
+    }
+  }, [supabaseUser, loadProfile]);
+
   return (
-    <UserContext.Provider value={{ user, supabaseUser, loading, setUser, clearUser, signOut }}>
+    <UserContext.Provider value={{ user, supabaseUser, loading, setUser, clearUser, signOut, refreshPlan }}>
       {children}
     </UserContext.Provider>
   );

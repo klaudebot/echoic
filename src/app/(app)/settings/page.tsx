@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/components/UserContext";
 import { getSupabaseBrowser } from "@/lib/supabase/client";
+import dynamic from "next/dynamic";
 import {
   User,
   Bell,
@@ -21,6 +22,8 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
+
+const UpgradeCelebration = dynamic(() => import("@/components/UpgradeCelebration"), { ssr: false });
 
 function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
   return (
@@ -45,7 +48,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
 }
 
 export default function SettingsPage() {
-  const { user, setUser } = useUser();
+  const { user, setUser, refreshPlan } = useUser();
   const router = useRouter();
 
   // Profile
@@ -78,6 +81,7 @@ export default function SettingsPage() {
   const [billingMessage, setBillingMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
   const [billingInterval, setBillingInterval] = useState<"yearly" | "monthly">("yearly");
+  const [celebratePlan, setCelebratePlan] = useState<string | null>(null);
 
   // Auto-trigger checkout when arriving from signup with a plan
   const [autoUpgradeTriggered, setAutoUpgradeTriggered] = useState(false);
@@ -96,8 +100,11 @@ export default function SettingsPage() {
     const billing = searchParams.get("billing");
     const plan = searchParams.get("plan");
     if (billing === "success" && plan) {
-      setBillingMessage({ type: "success", text: `Successfully upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}!` });
-      setTimeout(() => setBillingMessage(null), 5000);
+      // Refresh the plan data from database so UI reflects the upgrade
+      refreshPlan();
+      // Show the celebration modal
+      const displayName = plan.charAt(0).toUpperCase() + plan.slice(1);
+      setCelebratePlan(displayName);
     } else if (billing === "cancelled") {
       setBillingMessage({ type: "error", text: "Checkout was cancelled." });
       setTimeout(() => setBillingMessage(null), 4000);
@@ -172,6 +179,17 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
+      {celebratePlan && (
+        <UpgradeCelebration
+          planName={celebratePlan}
+          onClose={() => {
+            setCelebratePlan(null);
+            // Clean up URL params
+            router.replace("/settings", { scroll: false });
+          }}
+        />
+      )}
+
       {/* Header */}
       <div>
         <h1 className="font-heading text-2xl text-foreground">Settings</h1>

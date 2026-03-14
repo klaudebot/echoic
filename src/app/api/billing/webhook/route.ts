@@ -84,7 +84,7 @@ async function handleCheckoutCompleted(session: any) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = getSupabaseAdmin() as any;
-  await admin.from("organizations").update({
+  const { error: updateError } = await admin.from("organizations").update({
     stripe_subscription_id: subscription.id,
     stripe_price_id: priceId,
     plan: resolvedTier as "starter" | "pro" | "team",
@@ -97,7 +97,25 @@ async function handleCheckoutCompleted(session: any) {
     meetings_per_month_limit: limits.meetingsPerMonth,
   }).eq("id", orgId);
 
+  if (updateError) {
+    console.error(`[webhook] CRITICAL: Failed to update org ${orgId}:`, updateError.message);
+    throw new Error(`Database update failed for org ${orgId}: ${updateError.message}`);
+  }
+
   console.log(`[webhook] Org ${orgId} upgraded to ${resolvedTier}`);
+
+  // Create in-app notification for the user
+  if (userId) {
+    const planName = resolvedTier.charAt(0).toUpperCase() + resolvedTier.slice(1);
+    await admin.from("notifications").insert({
+      user_id: userId,
+      type: "plan_upgraded",
+      title: `Welcome to ${planName}!`,
+      message: `Your account has been upgraded to the ${planName} plan. Enjoy your new features!`,
+    }).then(({ error: notifError }: { error: { message: string } | null }) => {
+      if (notifError) console.error("[webhook] Failed to create upgrade notification:", notifError.message);
+    });
+  }
 
   // Send confirmation email to the buyer
   if (session.customer_email || userId) {

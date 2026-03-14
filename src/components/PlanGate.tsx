@@ -7,9 +7,8 @@ import { Lock, Sparkles, ArrowRight } from "lucide-react";
 /** Which plans can access each feature */
 const FEATURE_PLANS: Record<string, string[]> = {
   coach: ["pro", "team", "enterprise"],
-  clips: ["pro", "team", "enterprise"],
   decisions: ["pro", "team", "enterprise"],
-  analytics: ["pro", "team", "enterprise"],
+  decisions_home: ["pro", "team", "enterprise"],
 };
 
 const FEATURE_LABELS: Record<string, { name: string; description: string; requiredPlan: string }> = {
@@ -18,19 +17,14 @@ const FEATURE_LABELS: Record<string, { name: string; description: string; requir
     description: "Get AI-powered feedback on your meeting performance, communication style, and actionable improvement tips.",
     requiredPlan: "Pro",
   },
-  clips: {
-    name: "Smart Clips",
-    description: "Automatically extract key moments, decisions, and action items as shareable clips from your meetings.",
-    requiredPlan: "Pro",
-  },
   decisions: {
     name: "Decision Tracker",
     description: "Track every decision made across all your meetings in one place. Never lose track of what was agreed.",
     requiredPlan: "Pro",
   },
-  analytics: {
-    name: "Advanced Analytics",
-    description: "Deep insights into meeting patterns, time spent, speaker distribution, and team trends.",
+  decisions_home: {
+    name: "Decisions",
+    description: "See recent decisions from your meetings. Upgrade to unlock full decision tracking.",
     requiredPlan: "Pro",
   },
 };

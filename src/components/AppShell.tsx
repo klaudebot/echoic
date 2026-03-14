@@ -10,11 +10,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import {
   LayoutDashboard,
   Mic,
-  ListChecks,
-  Scissors,
-  BarChart3,
   Users,
-  Plug,
   Settings,
   Search,
   Sun,
@@ -27,7 +23,6 @@ import {
   FolderOpen,
   Sparkles,
   LogOut,
-  Target,
   CheckCircle2,
   Loader2,
   XCircle,
@@ -47,7 +42,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   {
     href: "/meetings",
     label: "Meetings",
@@ -58,14 +53,8 @@ const navItems: NavItem[] = [
       { href: "/meetings/record", label: "Record" },
     ],
   },
-  { href: "/library", label: "Library", icon: FolderOpen },
-  { href: "/action-items", label: "Action Items", icon: ListChecks },
-  { href: "/decisions", label: "Decision Log", icon: Target },
   { href: "/coach", label: "AI Coach", icon: Sparkles },
-  { href: "/clips", label: "Smart Clips", icon: Scissors },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/team", label: "Team", icon: Users },
-  { href: "/integrations", label: "Integrations", icon: Plug },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -529,7 +518,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div ref={searchRef} className="hidden sm:block relative w-full max-w-xs lg:max-w-sm" role="combobox" aria-expanded={showDropdown} aria-haspopup="listbox" aria-owns="search-results-listbox">
                 <div className="flex items-center bg-muted rounded-xl px-3 py-1.5">
                   <Search className="w-4 h-4 text-muted-foreground mr-2 shrink-0" aria-hidden="true" />
-                  <label htmlFor="global-search" className="sr-only">Search meetings, transcripts, clips</label>
+                  <label htmlFor="global-search" className="sr-only">Search meetings, transcripts, actions</label>
                   <input
                     id="global-search"
                     type="text"
@@ -537,7 +526,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => { if (searchQuery.trim() && searchResults.length > 0) setShowDropdown(true); }}
                     onKeyDown={handleSearchKeyDown}
-                    placeholder="Search meetings, transcripts, clips..."
+                    placeholder="Search meetings, transcripts, actions..."
                     className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none"
                     aria-autocomplete="list"
                     aria-controls="search-results-listbox"

@@ -2,8 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const protectedPaths = [
-  "/dashboard", "/meetings", "/library", "/action-items", "/decisions",
-  "/coach", "/clips", "/analytics", "/team", "/integrations", "/settings",
+  "/dashboard", "/meetings", "/coach", "/team", "/settings",
 ];
 
 const authPaths = ["/sign-in", "/sign-up"];

@@ -495,7 +495,7 @@ function VersionHistory({
   );
 }
 
-function EditableTitle({ meeting }: { meeting: Meeting }) {
+function EditableTitle({ meeting, onRename }: { meeting: Meeting; onRename: (title: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(meeting.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -508,6 +508,7 @@ function EditableTitle({ meeting }: { meeting: Meeting }) {
     const trimmed = value.trim();
     if (trimmed && trimmed !== meeting.title) {
       await updateMeeting(meeting.id, { title: trimmed });
+      onRename(trimmed);
     }
     setEditing(false);
   }
@@ -516,6 +517,7 @@ function EditableTitle({ meeting }: { meeting: Meeting }) {
     const dtTitle = meeting.originalTitle ?? `Recording ${formatDate(meeting.createdAt)}`;
     await updateMeeting(meeting.id, { title: dtTitle });
     setDraft(dtTitle);
+    onRename(dtTitle);
     setEditing(false);
   }
 
@@ -912,7 +914,7 @@ function SuccessBanner({ meeting }: { meeting: Meeting }) {
   );
 }
 
-function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void }) {
+function CompletedView({ meeting, onReprocess, onRestore, onRename }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void; onRename: (title: string) => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
 
@@ -936,7 +938,7 @@ function CompletedView({ meeting, onReprocess, onRestore }: { meeting: Meeting; 
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <EditableTitle meeting={meeting} />
+            <EditableTitle meeting={meeting} onRename={onRename} />
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
@@ -1258,6 +1260,7 @@ export default function MeetingDetailPage() {
           <CompletedView
             meeting={meeting}
             onRestore={refresh}
+            onRename={(title) => setMeeting({ ...meeting, title })}
           onReprocess={async () => {
             const label = meeting.audioAnalysis
               ? `Transcript (peak: ${meeting.audioAnalysis.peakDb}dB)`

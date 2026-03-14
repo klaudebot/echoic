@@ -72,11 +72,44 @@ function SignUpForm() {
     setError(null);
 
     const supabase = getSupabaseBrowser();
-    const nextPath = inviteToken
-      ? `/invite/${inviteToken}`
-      : selectedPlan
-        ? `/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`
-        : "/dashboard";
+
+    // Invite flow: create user with pre-confirmed email, then sign in immediately
+    if (inviteToken) {
+      try {
+        const res = await fetch("/api/auth/signup-with-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name, inviteToken }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setLoading(false);
+          setError(data.error || "Failed to create account");
+          return;
+        }
+
+        // Sign in immediately — email is already confirmed
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) {
+          setLoading(false);
+          setError("Account created but sign-in failed. Try signing in manually.");
+          return;
+        }
+
+        // Go straight to invite acceptance
+        router.push(`/invite/${inviteToken}`);
+      } catch {
+        setLoading(false);
+        setError("Something went wrong. Please try again.");
+      }
+      return;
+    }
+
+    // Normal signup flow
+    const nextPath = selectedPlan
+      ? `/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`
+      : "/dashboard";
     const redirectPath = `/auth/callback?next=${encodeURIComponent(nextPath)}`;
     const { data, error: authError } = await supabase.auth.signUp({
       email,
@@ -100,7 +133,6 @@ function SignUpForm() {
     }
 
     // If email confirmation is required, Supabase returns a user but no session
-    // Welcome content is in the Supabase confirmation email template — no separate welcome email
     if (data.user && !data.session) {
       setLoading(false);
       setError(null);
@@ -108,9 +140,7 @@ function SignUpForm() {
       return;
     }
 
-    if (inviteToken) {
-      router.push(`/invite/${inviteToken}`);
-    } else if (selectedPlan) {
+    if (selectedPlan) {
       router.push(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`);
     } else {
       router.push("/dashboard");

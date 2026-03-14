@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { AppLink } from "@/components/DemoContext";
 import { SoftPlanGate } from "@/components/SoftPlanGate";
 import { useUser } from "@/components/UserContext";
@@ -21,6 +21,8 @@ import {
   ChevronRight,
   Sparkles,
   Lightbulb,
+  Users,
+  X,
 } from "lucide-react";
 
 /* ─── Helpers ─── */
@@ -266,9 +268,57 @@ export default function DashboardPage() {
     );
   }
 
+  // Check for pending invites
+  const [pendingInvites, setPendingInvites] = useState<
+    { id: string; token: string; orgName: string; role: string }[]
+  >([]);
+  const [dismissedInvites, setDismissedInvites] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/team/pending-invites")
+      .then((r) => r.json())
+      .then((data) => setPendingInvites(data.invites ?? []))
+      .catch(() => {});
+  }, [user]);
+
+  const visibleInvites = pendingInvites.filter((i) => !dismissedInvites.has(i.id));
+
   /* ─── Main home hub ─── */
   return (
     <div className="space-y-8">
+      {/* Pending invite banners */}
+      {visibleInvites.map((invite) => (
+        <div
+          key={invite.id}
+          className="flex items-center gap-4 bg-brand-violet/5 border border-brand-violet/20 rounded-xl px-5 py-4"
+        >
+          <div className="w-10 h-10 rounded-xl bg-brand-violet/10 flex items-center justify-center shrink-0">
+            <Users className="w-5 h-5 text-brand-violet" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              You&apos;ve been invited to join <strong>{invite.orgName}</strong>
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              as a {invite.role}
+            </p>
+          </div>
+          <a
+            href={`/invite/${invite.token}`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-violet text-white rounded-xl text-sm font-medium hover:bg-brand-violet/90 transition-colors shrink-0"
+          >
+            View Invitation
+          </a>
+          <button
+            onClick={() => setDismissedInvites((s) => new Set([...s, invite.id]))}
+            className="p-1 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+
       {/* ── Section 1: Greeting + Quick Stats Bar ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

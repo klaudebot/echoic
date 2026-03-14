@@ -22,6 +22,8 @@ import {
   Check,
   Loader2,
   ExternalLink,
+  Building2,
+  Users,
 } from "lucide-react";
 
 const UpgradeCelebration = dynamic(() => import("@/components/UpgradeCelebration"), { ssr: false });
@@ -190,6 +192,40 @@ export default function SettingsPage() {
     }
   }
 
+  // Organization
+  const [orgName, setOrgName] = useState("");
+  const [orgNameSaved, setOrgNameSaved] = useState(false);
+  const [orgNameLoaded, setOrgNameLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!user?.organizationId || orgNameLoaded) return;
+    const supabase = getSupabaseBrowser();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("organizations")
+      .select("name")
+      .eq("id", user.organizationId)
+      .single()
+      .then(({ data }: { data: { name: string } | null }) => {
+        if (data) {
+          setOrgName(data.name);
+          setOrgNameLoaded(true);
+        }
+      });
+  }, [user?.organizationId, orgNameLoaded]);
+
+  async function handleSaveOrgName() {
+    if (!user?.organizationId || !orgName.trim()) return;
+    const supabase = getSupabaseBrowser();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+      .from("organizations")
+      .update({ name: orgName.trim() })
+      .eq("id", user.organizationId);
+    setOrgNameSaved(true);
+    setTimeout(() => setOrgNameSaved(false), 2000);
+  }
+
   // API
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
@@ -332,6 +368,62 @@ export default function SettingsPage() {
           )}
         </button>
       </div>
+
+      {/* Organization — visible to owner/admin */}
+      {(user?.orgRole === "owner" || user?.orgRole === "admin") && (
+        <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Building2 className="w-4 h-4 text-brand-cyan" />
+            <h2 className="font-heading text-lg text-foreground">Organization</h2>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1.5">Organization Name</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                placeholder="Your organization"
+                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-violet/30"
+              />
+              <button
+                onClick={handleSaveOrgName}
+                className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 bg-brand-violet text-white rounded-lg hover:bg-brand-violet/90 transition-colors"
+              >
+                {orgNameSaved ? (
+                  <><Check className="w-4 h-4" /> Saved</>
+                ) : (
+                  "Save"
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Seat usage */}
+          <div className="bg-muted rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-brand-violet/10 flex items-center justify-center text-brand-violet">
+                <Users className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-foreground">Seat Usage</div>
+                <div className="text-xs text-muted-foreground">
+                  {user?.orgPlan?.membersLimit === -1
+                    ? "Unlimited seats"
+                    : `${user?.orgPlan?.membersLimit ?? 1} seats on your plan`}
+                </div>
+              </div>
+              <a
+                href="/team"
+                className="text-xs text-brand-violet hover:text-brand-violet/80 font-medium transition-colors"
+              >
+                Manage Team
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notifications */}
       <div className="bg-card border border-border rounded-xl p-5 space-y-4">

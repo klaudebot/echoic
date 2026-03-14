@@ -32,21 +32,30 @@ function SignUpForm() {
   const searchParams = useSearchParams();
   const selectedPlan = searchParams.get("plan");
   const selectedInterval = searchParams.get("interval") || "yearly";
+  const inviteToken = searchParams.get("invite_token");
+  const inviteEmail = searchParams.get("email");
+
+  // Pre-fill email from invite
+  useEffect(() => {
+    if (inviteEmail && !email) setEmail(inviteEmail);
+  }, [inviteEmail]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Redirect if already signed in
   useEffect(() => {
     const supabase = getSupabaseBrowser();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        // If already signed in and came from a plan, go to checkout
-        if (selectedPlan) {
+        // If came from invite, redirect to invite acceptance
+        if (inviteToken) {
+          router.replace(`/invite/${inviteToken}`);
+        } else if (selectedPlan) {
           router.replace(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`);
         } else {
           router.replace("/dashboard");
         }
       }
     });
-  }, [router, selectedPlan, selectedInterval]);
+  }, [router, selectedPlan, selectedInterval, inviteToken]);
 
   const passwordStrength = (() => {
     if (password.length === 0) return { label: "", width: "0%", color: "" };
@@ -63,9 +72,12 @@ function SignUpForm() {
     setError(null);
 
     const supabase = getSupabaseBrowser();
-    const redirectPath = selectedPlan
-      ? `/auth/callback?next=${encodeURIComponent(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`)}`
-      : "/auth/callback?next=/dashboard";
+    const nextPath = inviteToken
+      ? `/invite/${inviteToken}`
+      : selectedPlan
+        ? `/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`
+        : "/dashboard";
+    const redirectPath = `/auth/callback?next=${encodeURIComponent(nextPath)}`;
     const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -96,7 +108,9 @@ function SignUpForm() {
       return;
     }
 
-    if (selectedPlan) {
+    if (inviteToken) {
+      router.push(`/invite/${inviteToken}`);
+    } else if (selectedPlan) {
       router.push(`/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`);
     } else {
       router.push("/dashboard");
@@ -105,9 +119,11 @@ function SignUpForm() {
 
   const handleOAuth = async (provider: "google" | "github") => {
     const supabase = getSupabaseBrowser();
-    const oauthNext = selectedPlan
-      ? `/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`
-      : "/dashboard";
+    const oauthNext = inviteToken
+      ? `/invite/${inviteToken}`
+      : selectedPlan
+        ? `/settings?upgrade=${selectedPlan}&interval=${selectedInterval}`
+        : "/dashboard";
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -138,7 +154,16 @@ function SignUpForm() {
             </span>
           </div>
 
-          {selectedPlan ? (
+          {inviteToken ? (
+            <>
+              <h2 className="text-3xl font-heading text-white mb-4">
+                You&apos;ve been invited to a team
+              </h2>
+              <p className="text-white/60 text-base leading-relaxed">
+                Create your account to accept the invitation and start collaborating with your team.
+              </p>
+            </>
+          ) : selectedPlan ? (
             <>
               <h2 className="text-3xl font-heading text-white mb-4">
                 You&apos;re choosing {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}
@@ -209,9 +234,11 @@ function SignUpForm() {
           ) : (<>
           <h1 className="text-2xl font-heading text-foreground sm:text-3xl">Create your account</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {selectedPlan
-              ? `Sign up to start your ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan`
-              : "Start transcribing meetings in under 2 minutes"}
+            {inviteToken
+              ? "Create your account to join your team"
+              : selectedPlan
+                ? `Sign up to start your ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan`
+                : "Start transcribing meetings in under 2 minutes"}
           </p>
 
           {/* Error */}

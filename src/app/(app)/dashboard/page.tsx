@@ -204,6 +204,22 @@ export default function DashboardPage() {
     [meetings, refresh]
   );
 
+  // Check for pending invites
+  const [pendingInvites, setPendingInvites] = useState<
+    { id: string; token: string; orgName: string; role: string }[]
+  >([]);
+  const [dismissedInvites, setDismissedInvites] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/team/pending-invites")
+      .then((r) => r.json())
+      .then((data) => setPendingInvites(data.invites ?? []))
+      .catch(() => {});
+  }, [user]);
+
+  const visibleInvites = pendingInvites.filter((i) => !dismissedInvites.has(i.id));
+
   const hasMeetings = meetings.length > 0;
   const mounted = !loading;
 
@@ -267,22 +283,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  // Check for pending invites
-  const [pendingInvites, setPendingInvites] = useState<
-    { id: string; token: string; orgName: string; role: string }[]
-  >([]);
-  const [dismissedInvites, setDismissedInvites] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!user) return;
-    fetch("/api/team/pending-invites")
-      .then((r) => r.json())
-      .then((data) => setPendingInvites(data.invites ?? []))
-      .catch(() => {});
-  }, [user]);
-
-  const visibleInvites = pendingInvites.filter((i) => !dismissedInvites.has(i.id));
 
   /* ─── Main home hub ─── */
   return (

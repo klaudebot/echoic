@@ -60,6 +60,7 @@ export interface Meeting {
   keyPoints: string[];
   actionItems: { text: string; assignee: string | null; priority: string; completed?: boolean }[];
   decisions: { text: string; madeBy: string | null }[];
+  archived?: boolean;
   transcriptVersions?: TranscriptVersion[];
 }
 
@@ -87,6 +88,7 @@ function rowToMeeting(row: any): Meeting {
     tags: [],
     notes: row.notes || "",
     createdAt: row.created_at,
+    archived: row.archived ?? false,
     status: row.status,
     processingStep: row.processing_step || undefined,
     processingProgress: row.processing_progress || undefined,
@@ -169,14 +171,19 @@ const DETAIL_SELECT = `
 `;
 
 /** Get all meetings for an organization, newest first */
-export async function getMeetings(orgId: string): Promise<Meeting[]> {
+export async function getMeetings(orgId: string, includeArchived = false): Promise<Meeting[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = getSupabaseBrowser() as any;
-  const { data, error } = await supabase
+  let query = supabase
     .from("meetings")
     .select(LIST_SELECT)
-    .eq("organization_id", orgId)
-    .order("created_at", { ascending: false });
+    .eq("organization_id", orgId);
+
+  if (!includeArchived) {
+    query = query.or("archived.is.null,archived.eq.false");
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error || !data) return [];
   return data.map(rowToMeeting);
@@ -353,6 +360,20 @@ export async function updateMeeting(
       );
     }
   }
+}
+
+/** Archive a meeting (soft-delete) */
+export async function archiveMeeting(id: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = getSupabaseBrowser() as any;
+  await supabase.from("meetings").update({ archived: true }).eq("id", id);
+}
+
+/** Unarchive a meeting */
+export async function unarchiveMeeting(id: string): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = getSupabaseBrowser() as any;
+  await supabase.from("meetings").update({ archived: false }).eq("id", id);
 }
 
 /** Delete a meeting and all related data (cascade handles children) */

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AppLink } from "@/components/DemoContext";
-import { updateMeeting, deleteMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
+import { updateMeeting, deleteMeeting, archiveMeeting, unarchiveMeeting, snapshotTranscriptVersion, restoreTranscriptVersion, type Meeting, type TranscriptVersion } from "@/lib/meeting-store";
 import { useMeeting } from "@/hooks/use-meetings";
 import { useUser } from "@/components/UserContext";
 import { runProcessingPipeline, isPipelineOrphaned } from "@/lib/process-pipeline";
@@ -40,6 +40,8 @@ import {
   ExternalLink,
   Trash2,
   MoreVertical,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -563,7 +565,7 @@ function EditableTitle({ meeting, onRename }: { meeting: Meeting; onRename: (tit
   );
 }
 
-function DeleteMeetingButton({ onDelete }: { onDelete: () => void }) {
+function MeetingMenu({ meeting, onArchive, onDelete }: { meeting: Meeting; onArchive: () => void; onDelete: () => void }) {
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -590,15 +592,34 @@ function DeleteMeetingButton({ onDelete }: { onDelete: () => void }) {
         <MoreVertical className="w-4 h-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1 w-52 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
           {!confirming ? (
-            <button
-              onClick={() => setConfirming(true)}
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-brand-rose hover:bg-brand-rose/10 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete meeting
-            </button>
+            <>
+              <button
+                onClick={() => { setOpen(false); onArchive(); }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                {meeting.archived ? (
+                  <>
+                    <ArchiveRestore className="w-4 h-4" />
+                    Unarchive meeting
+                  </>
+                ) : (
+                  <>
+                    <Archive className="w-4 h-4" />
+                    Archive meeting
+                  </>
+                )}
+              </button>
+              <div className="border-t border-border" />
+              <button
+                onClick={() => setConfirming(true)}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-brand-rose hover:bg-brand-rose/10 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete meeting
+              </button>
+            </>
           ) : (
             <div className="p-3 space-y-2">
               <p className="text-xs text-foreground font-medium">Delete this meeting?</p>
@@ -978,7 +999,7 @@ function SuccessBanner({ meeting }: { meeting: Meeting }) {
   );
 }
 
-function CompletedView({ meeting, onReprocess, onRestore, onRename, onDelete }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void; onRename: (title: string) => void; onDelete: () => void }) {
+function CompletedView({ meeting, onReprocess, onRestore, onRename, onArchive, onDelete }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void; onRename: (title: string) => void; onArchive: () => void; onDelete: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
 
@@ -1032,7 +1053,7 @@ function CompletedView({ meeting, onReprocess, onRestore, onRename, onDelete }: 
               <RefreshCw className="w-3.5 h-3.5" />
               Reprocess
             </button>
-            <DeleteMeetingButton onDelete={onDelete} />
+            <MeetingMenu meeting={meeting} onArchive={onArchive} onDelete={onDelete} />
           </div>
         </div>
 
@@ -1327,6 +1348,15 @@ export default function MeetingDetailPage() {
             meeting={meeting}
             onRestore={refresh}
             onRename={(title) => setMeeting({ ...meeting, title })}
+            onArchive={async () => {
+              if (meeting.archived) {
+                await unarchiveMeeting(id);
+                setMeeting({ ...meeting, archived: false });
+              } else {
+                await archiveMeeting(id);
+                router.push("/meetings");
+              }
+            }}
             onDelete={async () => {
               await deleteMeeting(id);
               router.push("/meetings");

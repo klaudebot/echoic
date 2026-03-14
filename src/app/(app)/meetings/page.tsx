@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AppLink } from "@/components/DemoContext";
 import { type Meeting } from "@/lib/meeting-store";
 import { useMeetings } from "@/hooks/use-meetings";
@@ -15,6 +16,7 @@ import {
   CheckCircle2,
   XCircle,
   VolumeX,
+  Archive,
 } from "lucide-react";
 
 function formatDuration(seconds: number | null): string {
@@ -154,8 +156,12 @@ function MeetingCard({ meeting }: { meeting: Meeting }) {
 }
 
 export default function MeetingsPage() {
-  const { meetings, loading } = useMeetings();
+  const [showArchived, setShowArchived] = useState(false);
+  const { meetings, loading } = useMeetings({ includeArchived: showArchived });
   const loaded = !loading;
+
+  const activeMeetings = meetings.filter((m) => !m.archived);
+  const archivedMeetings = meetings.filter((m) => m.archived);
 
   return (
     <div className="space-y-6">
@@ -186,14 +192,41 @@ export default function MeetingsPage() {
         )}
       </div>
 
-      {loaded && meetings.length === 0 && <EmptyState />}
+      {loaded && meetings.length === 0 && !showArchived && <EmptyState />}
 
-      {loaded && meetings.length > 0 && (
+      {loaded && activeMeetings.length > 0 && (
         <div className="space-y-3">
-          {meetings.map((meeting) => (
+          {activeMeetings.map((meeting) => (
             <MeetingCard key={meeting.id} meeting={meeting} />
           ))}
         </div>
+      )}
+
+      {/* Show archived toggle */}
+      {loaded && (activeMeetings.length > 0 || showArchived) && (
+        <button
+          onClick={() => setShowArchived(!showArchived)}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Archive className="w-3.5 h-3.5" />
+          {showArchived
+            ? `Hide archived${archivedMeetings.length > 0 ? ` (${archivedMeetings.length})` : ""}`
+            : "Show archived"}
+        </button>
+      )}
+
+      {/* Archived meetings */}
+      {showArchived && archivedMeetings.length > 0 && (
+        <div className="space-y-3 opacity-60">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Archived</h3>
+          {archivedMeetings.map((meeting) => (
+            <MeetingCard key={meeting.id} meeting={meeting} />
+          ))}
+        </div>
+      )}
+
+      {showArchived && archivedMeetings.length === 0 && (
+        <p className="text-xs text-muted-foreground">No archived meetings</p>
       )}
     </div>
   );

@@ -7,10 +7,11 @@ import { useBasePrefix } from "@/components/DemoContext";
 import { getDemoMeetingsForStore } from "@/lib/demo-data";
 
 /** Fetch all meetings for the current user's organization */
-export function useMeetings() {
+export function useMeetings(options?: { includeArchived?: boolean }) {
   const { user } = useUser();
   const prefix = useBasePrefix();
   const isDemo = prefix === "/demo";
+  const includeArchived = options?.includeArchived ?? false;
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,10 +26,10 @@ export function useMeetings() {
       setLoading(false);
       return;
     }
-    const data = await getMeetings(user.organizationId);
+    const data = await getMeetings(user.organizationId, includeArchived);
     setMeetings(data);
     setLoading(false);
-  }, [user?.organizationId, isDemo]);
+  }, [user?.organizationId, isDemo, includeArchived]);
 
   useEffect(() => {
     refresh();

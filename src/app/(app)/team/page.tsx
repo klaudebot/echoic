@@ -211,6 +211,7 @@ export default function TeamPage() {
           to: email,
           inviterName: user.name,
           inviterEmail: user.email,
+          inviteToken: token,
         }),
       });
       if (!res.ok) {
@@ -241,9 +242,11 @@ export default function TeamPage() {
     setResendingId(member.id);
     setResendResult(null);
 
+    const newToken = crypto.randomUUID();
     await sb.from("team_invites")
       .update({
         status: "pending",
+        token: newToken,
         invited_at: new Date().toISOString(),
         responded_at: null,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -261,6 +264,7 @@ export default function TeamPage() {
           to: member.email,
           inviterName: user.name,
           inviterEmail: user.email,
+          inviteToken: newToken,
         }),
       });
       if (!res.ok) {

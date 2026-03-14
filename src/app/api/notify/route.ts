@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     type = body.type ?? "unknown";
     to = body.to ?? "unknown";
-    const { name, meetingTitle, meetingId, summary, actionItemCount, decisionCount, errorMessage, inviterName, inviterEmail, teamName, newMemberName, newMemberEmail, resetToken } = body;
+    const { name, meetingTitle, meetingId, summary, actionItemCount, decisionCount, errorMessage, inviterName, inviterEmail, teamName, inviteToken, newMemberName, newMemberEmail, resetToken } = body;
 
     // Welcome and password-reset emails are sent pre-auth; all others require auth
     if (type !== "welcome" && type !== "password-reset") {
@@ -72,7 +72,8 @@ export async function POST(request: Request) {
           to,
           inviterName ?? "A teammate",
           inviterEmail ?? "",
-          teamName
+          teamName,
+          inviteToken
         );
         break;
 

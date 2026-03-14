@@ -265,9 +265,12 @@ export async function sendTeamInviteEmail(
   to: string,
   inviterName: string,
   inviterEmail: string,
-  teamName?: string
+  teamName?: string,
+  inviteToken?: string
 ): Promise<void> {
-  const joinUrl = `${APP_URL}/sign-up?invite=true&team=${encodeURIComponent(teamName ?? "")}&from=${encodeURIComponent(inviterEmail)}`;
+  const joinUrl = inviteToken
+    ? `${APP_URL}/invite/${inviteToken}`
+    : `${APP_URL}/sign-up?invite=true&team=${encodeURIComponent(teamName ?? "")}&from=${encodeURIComponent(inviterEmail)}`;
 
   const body = `
     <div style="display: inline-block; background: linear-gradient(135deg, #ede9fe, #f5f3ff); border-radius: 8px; padding: 6px 12px; margin-bottom: 16px;">

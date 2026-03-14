@@ -13,12 +13,15 @@ export interface OrgPlan {
   meetingsPerMonthLimit: number;
 }
 
+export type OrgRole = "owner" | "admin" | "member" | "viewer";
+
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string | null;
   organizationId: string | null;
+  orgRole: OrgRole | null;
   orgPlan?: OrgPlan | null;
 }
 
@@ -53,16 +56,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Fetch user's organization membership
     let orgId: string | null = null;
+    let orgRole: OrgRole | null = null;
     let orgPlan: OrgPlan | null = null;
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: membership } = await (supabase as any)
         .from("organization_members")
-        .select("organization_id")
+        .select("organization_id, role")
         .eq("user_id", authUser.id)
         .limit(1)
         .single();
       orgId = membership?.organization_id ?? null;
+      orgRole = (membership?.role as OrgRole) ?? null;
 
       // Fetch org plan data
       if (orgId) {
@@ -117,6 +122,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       email: authUser.email || "",
       avatarUrl: authUser.user_metadata?.avatar_url,
       organizationId: orgId,
+      orgRole,
       orgPlan,
     });
   }, []);
@@ -137,6 +143,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           email: authUser.email || "",
           avatarUrl: authUser.user_metadata?.avatar_url,
           organizationId: prev?.id === authUser.id ? prev.organizationId : null,
+          orgRole: prev?.id === authUser.id ? prev.orgRole : null,
         }));
         setLoading(false);
 

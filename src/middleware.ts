@@ -26,7 +26,8 @@ export async function middleware(request: NextRequest) {
     pathname === "/pricing" ||
     pathname === "/about" ||
     pathname.startsWith("/api/") ||
-    pathname.startsWith("/share/")
+    pathname.startsWith("/share/") ||
+    pathname.startsWith("/invite/")
   ) {
     // Still refresh session cookie if present
     const { supabaseResponse } = await updateSession(request);

@@ -40,19 +40,19 @@ const features = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
-    title: "Decision Tracker",
-    description: "A living log of every decision. Timestamped, searchable, never lost.",
+    title: "Decisions & Actions",
+    description: "Every decision and action item auto-extracted and surfaced on your Home feed.",
     color: "brand-amber",
     badge: "Exclusive",
   },
   {
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25H12" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
       </svg>
     ),
-    title: "Smart Clips",
-    description: "Shareable 30-second audio clips of key moments. Skip the recap call.",
+    title: "Activity Hub",
+    description: "One home screen for open actions, recent decisions, and meeting highlights.",
     color: "brand-rose",
     badge: "Exclusive",
   },
@@ -281,18 +281,18 @@ export default function MarketingPage() {
                 icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>,
               },
               {
-                title: "Decision Tracker",
+                title: "Decisions & Actions",
                 tagline: "Never lose a decision again.",
-                description: "Every decision is automatically extracted, timestamped, and linked to its meeting context. Cross-meeting search means your team always knows what was agreed.",
-                stats: ["Cross-meeting", "Auto-linked"],
+                description: "Every decision and action item is automatically extracted and linked to its meeting context. They surface on your Home feed so nothing falls through the cracks.",
+                stats: ["Cross-meeting", "Auto-surfaced"],
                 icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
               },
               {
-                title: "Smart Clips",
-                tagline: "Share the moment, skip the meeting.",
-                description: "AI identifies key moments and generates shareable 30-second audio clips. Async teams save 5+ hours per week by sharing clips instead of scheduling recap calls.",
-                stats: ["5+ hrs saved/wk", "Async-first"],
-                icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 004.5 9.75v7.5a2.25 2.25 0 002.25 2.25h7.5a2.25 2.25 0 002.25-2.25v-7.5a2.25 2.25 0 00-2.25-2.25h-.75m0-3l-3-3m0 0l-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 012.25 2.25v7.5a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-7.5a2.25 2.25 0 012.25-2.25H12" /></svg>,
+                title: "Activity Hub",
+                tagline: "Your meetings, one glance.",
+                description: "Open action items, recent decisions, and meeting highlights — all on one screen. No switching between tabs. Your team knows what to do the moment they log in.",
+                stats: ["Zero context-switching", "Instant clarity"],
+                icon: <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>,
               },
             ].map((card, i) => (
               <ScrollReveal key={i} delay={i * 150} variant="fade-up">
@@ -337,7 +337,7 @@ export default function MarketingPage() {
             {[
               { step: "01", title: "Record", description: "Connect Zoom, Google Meet, or Teams. Reverbic records automatically. Or upload any audio file.", color: "brand-violet" },
               { step: "02", title: "AI Processes", description: "99.2% accurate transcription with speaker identification. Summaries, action items, and decisions extracted instantly.", color: "brand-cyan" },
-              { step: "03", title: "Review & Act", description: "Searchable transcripts, smart clips, action item tracking, and decision logs. Meeting knowledge for everyone.", color: "brand-emerald" },
+              { step: "03", title: "Review & Act", description: "Searchable transcripts, action items, and decisions surface on your Home feed. Meeting knowledge for everyone.", color: "brand-emerald" },
             ].map((s, i) => (
               <ScrollReveal key={i} delay={i * 200} variant="fade-up">
                 <div className="relative p-10 md:p-12 border-b md:border-b-0 md:border-r border-border last:border-0">

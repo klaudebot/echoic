@@ -130,7 +130,7 @@ export default function LibraryPage() {
       {loaded && meetings.length > 0 && (
         <>
           {/* Stats summary */}
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
             <span className="text-muted-foreground">
               <span className="font-semibold text-brand-violet">{meetings.length}</span> recording{meetings.length === 1 ? "" : "s"}
             </span>
@@ -169,7 +169,7 @@ export default function LibraryPage() {
                 <AppLink
                   key={meeting.id}
                   href={`/meetings/${meeting.id}`}
-                  className={`flex items-center gap-4 bg-card border border-border border-l-[3px] ${accent.border} rounded-xl p-4 hover:shadow-md transition-all`}
+                  className={`flex items-center gap-3 sm:gap-4 bg-card border border-border border-l-[3px] ${accent.border} rounded-xl p-3 sm:p-4 hover:shadow-md transition-all overflow-hidden`}
                 >
                   <div className={`w-10 h-10 rounded-lg ${accent.bg} flex items-center justify-center shrink-0`}>
                     <FolderOpen className={`w-4.5 h-4.5 ${accent.icon}`} />
@@ -178,7 +178,7 @@ export default function LibraryPage() {
                     <h3 className="text-sm font-semibold text-foreground truncate">
                       {meeting.title}
                     </h3>
-                    <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-brand-violet/60" />
                         {formatDate(meeting.createdAt)}
@@ -189,7 +189,9 @@ export default function LibraryPage() {
                       </span>
                     </div>
                   </div>
-                  <StatusBadge status={meeting.status} />
+                  <div className="shrink-0">
+                    <StatusBadge status={meeting.status} />
+                  </div>
                 </AppLink>
                 );
               })}

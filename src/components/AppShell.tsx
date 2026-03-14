@@ -519,7 +519,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <div className="lg:pl-60 flex-1 flex flex-col min-h-screen">
+      <div className="lg:pl-60 flex-1 flex flex-col min-h-screen overflow-x-hidden">
         <header className="bg-card border-b border-border sticky top-0 z-20">
           <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">

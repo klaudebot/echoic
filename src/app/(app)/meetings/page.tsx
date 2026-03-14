@@ -209,6 +209,11 @@ function MeetingCard({ meeting, onAction }: { meeting: Meeting; onAction: (actio
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {meeting.visibility === "private" && (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-md bg-brand-amber/10 text-brand-amber">
+              Private
+            </span>
+          )}
           <StatusBadge status={meeting.status} />
           <MeetingCardMenu meeting={meeting} onAction={onAction} />
         </div>

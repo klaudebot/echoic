@@ -123,12 +123,22 @@ export default function InviteAcceptPage() {
   async function handleDecline() {
     setDeclining(true);
     try {
-      const supabase = getSupabaseBrowser();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
-        .from("team_invites")
-        .update({ status: "declined", responded_at: new Date().toISOString() })
-        .eq("token", token);
+      if (isLoggedIn) {
+        // Use server API for proper audit logging
+        await fetch("/api/team/decline-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+      } else {
+        // Unauthenticated — direct update (RLS allows viewing own invite by email)
+        const supabase = getSupabaseBrowser();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from("team_invites")
+          .update({ status: "declined", responded_at: new Date().toISOString() })
+          .eq("token", token);
+      }
       setDeclined(true);
     } catch {
       setError("Failed to decline invitation.");

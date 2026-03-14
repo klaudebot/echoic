@@ -470,6 +470,7 @@ export default function TeamPage() {
           inviterName: user.name,
           inviterEmail: user.email,
           inviteToken: token,
+          inviteRole,
         }),
       });
       if (!res.ok) {

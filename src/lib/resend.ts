@@ -266,7 +266,8 @@ export async function sendTeamInviteEmail(
   inviterName: string,
   inviterEmail: string,
   teamName?: string,
-  inviteToken?: string
+  inviteToken?: string,
+  inviteRole?: string
 ): Promise<void> {
   const joinUrl = inviteToken
     ? `${APP_URL}/invite/${inviteToken}`
@@ -277,7 +278,7 @@ export async function sendTeamInviteEmail(
       <span style="font-size: 12px; font-weight: 700; color: ${VIOLET}; letter-spacing: 0.5px;">TEAM INVITATION</span>
     </div>
     ${heading(`${esc(inviterName)} invited you to Reverbic`)}
-    ${paragraph(`You've been invited to collaborate on meeting transcripts, shared action items, and team insights${teamName ? ` on the <strong style="color: ${DEEP};">${esc(teamName)}</strong> team` : ""}.`)}
+    ${paragraph(`You've been invited${inviteRole && inviteRole !== "member" ? ` as <strong style="color: ${DEEP};">${esc(inviteRole)}</strong>` : ""} to collaborate on meeting transcripts, shared action items, and team insights${teamName ? ` on the <strong style="color: ${DEEP};">${esc(teamName)}</strong> team` : ""}.`)}
 
     <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
       <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${VIOLET}, ${VIOLET_LIGHT}); border-radius: 16px; margin: 0 auto 16px; line-height: 56px; text-align: center;">

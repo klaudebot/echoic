@@ -61,6 +61,7 @@ export interface Meeting {
   actionItems: { text: string; assignee: string | null; priority: string; completed?: boolean }[];
   decisions: { text: string; madeBy: string | null }[];
   archived?: boolean;
+  visibility?: "team" | "private";
   transcriptVersions?: TranscriptVersion[];
 }
 
@@ -89,6 +90,7 @@ function rowToMeeting(row: any): Meeting {
     notes: row.notes || "",
     createdAt: row.created_at,
     archived: row.archived ?? false,
+    visibility: row.visibility ?? "team",
     status: row.status,
     processingStep: row.processing_step || undefined,
     processingProgress: row.processing_progress || undefined,
@@ -248,6 +250,7 @@ export async function updateMeeting(
   if (updates.duration !== undefined) db.duration = updates.duration;
   if (updates.summary !== undefined) db.summary = updates.summary;
   if (updates.notes !== undefined) db.notes = updates.notes;
+  if (updates.visibility !== undefined) db.visibility = updates.visibility;
 
   // Audio analysis → flat columns
   if (updates.audioAnalysis !== undefined) {

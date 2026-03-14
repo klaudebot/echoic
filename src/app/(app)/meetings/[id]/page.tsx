@@ -565,7 +565,7 @@ function EditableTitle({ meeting, onRename }: { meeting: Meeting; onRename: (tit
   );
 }
 
-function MeetingMenu({ meeting, onArchive, onDelete }: { meeting: Meeting; onArchive: () => void; onDelete: () => void }) {
+function MeetingMenu({ meeting, onArchive, onDelete, onToggleVisibility }: { meeting: Meeting; onArchive: () => void; onDelete: () => void; onToggleVisibility: () => void }) {
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -595,6 +595,23 @@ function MeetingMenu({ meeting, onArchive, onDelete }: { meeting: Meeting; onArc
         <div className="absolute right-0 top-full mt-1 w-52 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
           {!confirming ? (
             <>
+              <button
+                onClick={() => { setOpen(false); onToggleVisibility(); }}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                {meeting.visibility === "private" ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg>
+                    Make visible to team
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                    Make private
+                  </>
+                )}
+              </button>
+              <div className="border-t border-border" />
               <button
                 onClick={() => { setOpen(false); onArchive(); }}
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
@@ -999,7 +1016,7 @@ function SuccessBanner({ meeting }: { meeting: Meeting }) {
   );
 }
 
-function CompletedView({ meeting, onReprocess, onRestore, onRename, onArchive, onDelete }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void; onRename: (title: string) => void; onArchive: () => void; onDelete: () => void }) {
+function CompletedView({ meeting, onReprocess, onRestore, onRename, onArchive, onDelete, onToggleVisibility }: { meeting: Meeting; onReprocess: () => void; onRestore: () => void; onRename: (title: string) => void; onArchive: () => void; onDelete: () => void; onToggleVisibility: () => void }) {
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [seekToTime, setSeekToTime] = useState<number | null>(null);
 
@@ -1034,6 +1051,12 @@ function CompletedView({ meeting, onReprocess, onRestore, onRename, onArchive, o
                 {formatDuration(meeting.duration)}
               </span>
               <AudioBadge analysis={meeting.audioAnalysis} />
+              {meeting.visibility === "private" && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-brand-amber/10 text-brand-amber">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                  Private
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -1053,7 +1076,7 @@ function CompletedView({ meeting, onReprocess, onRestore, onRename, onArchive, o
               <RefreshCw className="w-3.5 h-3.5" />
               Reprocess
             </button>
-            <MeetingMenu meeting={meeting} onArchive={onArchive} onDelete={onDelete} />
+            <MeetingMenu meeting={meeting} onArchive={onArchive} onDelete={onDelete} onToggleVisibility={onToggleVisibility} />
           </div>
         </div>
 
@@ -1360,6 +1383,11 @@ export default function MeetingDetailPage() {
             onDelete={async () => {
               await deleteMeeting(id);
               router.push("/meetings");
+            }}
+            onToggleVisibility={async () => {
+              const newVisibility = meeting.visibility === "private" ? "team" : "private";
+              await updateMeeting(id, { visibility: newVisibility });
+              setMeeting({ ...meeting, visibility: newVisibility });
             }}
           onReprocess={async () => {
             const label = meeting.audioAnalysis

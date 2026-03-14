@@ -69,7 +69,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: org } = await (supabase as any)
           .from("organizations")
-          .select("plan, plan_status, transcription_hours_used, transcription_hours_limit, members_limit, meetings_per_month_limit")
+          .select("plan, plan_status, stripe_customer_id, transcription_hours_used, transcription_hours_limit, members_limit, meetings_per_month_limit")
           .eq("id", orgId)
           .single();
         if (org) {
@@ -81,6 +81,29 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             membersLimit: org.members_limit ?? 1,
             meetingsPerMonthLimit: org.meetings_per_month_limit ?? 10,
           };
+
+          // Fallback: if DB says "free" but org has a Stripe customer, ask the
+          // sync endpoint to reconcile (handles webhook delays / failures).
+          if (org.plan === "free" && org.stripe_customer_id) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) {
+              fetch("/api/billing/sync", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+              })
+                .then(r => r.json())
+                .then(data => {
+                  if (data.synced && data.plan && data.plan !== "free") {
+                    // Re-fetch profile to pick up the reconciled plan
+                    loadProfile(authUser);
+                  }
+                })
+                .catch(() => { /* non-critical */ });
+            }
+          }
         }
       }
     } catch {

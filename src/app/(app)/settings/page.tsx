@@ -100,11 +100,33 @@ export default function SettingsPage() {
     const billing = searchParams.get("billing");
     const plan = searchParams.get("plan");
     if (billing === "success" && plan) {
-      // Refresh the plan data from database so UI reflects the upgrade
-      refreshPlan();
-      // Show the celebration modal
+      // Show the celebration modal immediately (feels snappy)
       const displayName = plan.charAt(0).toUpperCase() + plan.slice(1);
       setCelebratePlan(displayName);
+
+      // Sync plan with Stripe — retries to handle webhook race condition
+      (async () => {
+        const supabase = getSupabaseBrowser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        };
+
+        for (let attempt = 0; attempt < 5; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 2000));
+          try {
+            const res = await fetch("/api/billing/sync", { method: "POST", headers });
+            const data = await res.json();
+            if (res.ok && (data.synced || data.plan === plan)) {
+              await refreshPlan();
+              return;
+            }
+          } catch { /* retry */ }
+        }
+        // Final fallback — just refresh whatever the DB has
+        await refreshPlan();
+      })();
     } else if (billing === "cancelled") {
       setBillingMessage({ type: "error", text: "Checkout was cancelled." });
       setTimeout(() => setBillingMessage(null), 4000);

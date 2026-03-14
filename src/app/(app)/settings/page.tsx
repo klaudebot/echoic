@@ -11,11 +11,7 @@ import {
   Bell,
   Languages,
   CreditCard,
-  Key,
   Database,
-  Eye,
-  EyeOff,
-  Copy,
   Download,
   Trash2,
   Crown,
@@ -24,6 +20,7 @@ import {
   ExternalLink,
   Building2,
   Users,
+  AlertTriangle,
 } from "lucide-react";
 
 const UpgradeCelebration = dynamic(() => import("@/components/UpgradeCelebration"), { ssr: false });
@@ -226,10 +223,11 @@ export default function SettingsPage() {
     setTimeout(() => setOrgNameSaved(false), 2000);
   }
 
-  // API
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [apiKeyCopied, setApiKeyCopied] = useState(false);
-  const apiKey = "rvb_sk_live_" + "*".repeat(24);
+  // Export & Delete
+  const [exporting, setExporting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleSaveProfile() {
     if (user) {
@@ -239,9 +237,68 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  function handleCopyApiKey() {
-    setApiKeyCopied(true);
-    setTimeout(() => setApiKeyCopied(false), 2000);
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const supabase = getSupabaseBrowser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/account/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reverbic-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Silently fail — the user will see no file download
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const supabase = getSupabaseBrowser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ confirm: "DELETE" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.code === "HAS_TEAM_MEMBERS") {
+          setDeleteError(`You have ${data.memberCount} team member${data.memberCount > 1 ? "s" : ""}. Remove all team members from the Team page before deleting your account.`);
+        } else if (data.code === "HAS_PENDING_INVITES") {
+          setDeleteError(`You have ${data.inviteCount} pending invite${data.inviteCount > 1 ? "s" : ""}. Cancel all pending invites from the Team page first.`);
+        } else {
+          setDeleteError(data.error || "Failed to delete account");
+        }
+        setDeleting(false);
+        return;
+      }
+      // Sign out and redirect
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch {
+      setDeleteError("Something went wrong. Please try again.");
+      setDeleting(false);
+    }
   }
 
   return (
@@ -630,59 +687,108 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* API */}
-      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Key className="w-4 h-4 text-brand-rose" />
-          <h2 className="font-heading text-lg text-foreground">API</h2>
-        </div>
-
-        <div>
-          <label className="text-xs font-medium text-muted-foreground block mb-1.5">API Key</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 font-mono text-sm text-foreground overflow-hidden">
-              {showApiKey ? apiKey : "rvb_sk_live_" + "*".repeat(24)}
-            </div>
-            <button
-              onClick={() => setShowApiKey(!showApiKey)}
-              className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={showApiKey ? "Hide API key" : "Show API key"}
-            >
-              {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={handleCopyApiKey}
-              className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Copy API key"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-          </div>
-          {apiKeyCopied && <p className="text-xs text-brand-emerald mt-1">Copied to clipboard!</p>}
-        </div>
-      </div>
-
-      {/* Data */}
-      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
+      {/* Data & Account */}
+      <div className="bg-card border border-border rounded-xl p-5 space-y-5">
         <div className="flex items-center gap-2 mb-1">
           <Database className="w-4 h-4 text-brand-slate" />
-          <h2 className="font-heading text-lg text-foreground">Data</h2>
+          <h2 className="font-heading text-lg text-foreground">Data & Account</h2>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <button className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors">
-            <Download className="w-4 h-4" />
-            Export All Data
-          </button>
-          <button className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 border border-destructive/30 rounded-lg text-destructive hover:bg-destructive/5 transition-colors">
-            <Trash2 className="w-4 h-4" />
-            Delete Account
-          </button>
+        {/* Export */}
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-foreground">Export All Data</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Download a JSON file with all your meetings, transcripts, action items, decisions, and settings.
+              </div>
+            </div>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 border border-border rounded-lg text-foreground hover:bg-muted transition-colors disabled:opacity-50 shrink-0"
+            >
+              {exporting ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Exporting...</>
+              ) : (
+                <><Download className="w-4 h-4" /> Export</>
+              )}
+            </button>
+          </div>
         </div>
-        <p className="text-[11px] text-muted-foreground">
-          Exporting will generate a ZIP file with all your meetings, transcripts, clips, and settings.
-          Account deletion is permanent and cannot be undone.
-        </p>
+
+        <div className="border-t border-border" />
+
+        {/* Delete Account */}
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-destructive">Delete Account</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Permanently delete your account, meetings, and all associated data. This cannot be undone.
+                {user?.orgPlan?.plan !== "free" && " Your subscription will be cancelled immediately."}
+              </div>
+            </div>
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => { setShowDeleteConfirm(true); setDeleteError(null); }}
+                className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 border border-destructive/30 rounded-lg text-destructive hover:bg-destructive/5 transition-colors shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Account
+              </button>
+            ) : (
+              <div className="shrink-0" />
+            )}
+          </div>
+
+          {showDeleteConfirm && (
+            <div className="mt-4 rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Are you absolutely sure?</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This will permanently delete your account and all data including:
+                  </p>
+                  <ul className="text-xs text-muted-foreground mt-1 space-y-0.5 list-disc list-inside">
+                    <li>All meetings, transcripts, and recordings</li>
+                    <li>Action items, decisions, and key points</li>
+                    {user?.orgPlan?.plan !== "free" && <li>Your active subscription (cancelled immediately)</li>}
+                    {user?.orgRole === "owner" && <li>Your entire organization and its data</li>}
+                  </ul>
+                </div>
+              </div>
+
+              {deleteError && (
+                <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2">
+                  <p className="text-xs text-destructive font-medium">{deleteError}</p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-destructive text-white rounded-lg text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                >
+                  {deleting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Deleting...</>
+                  ) : (
+                    <><Trash2 className="w-4 h-4" /> Permanently Delete My Account</>
+                  )}
+                </button>
+                <button
+                  onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
+                  disabled={deleting}
+                  className="px-4 py-2 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       </>
       )}
